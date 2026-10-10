@@ -7,9 +7,9 @@
 | **Phase 0** | **Project Foundation, Architecture & Planning** | **COMPLETED** | 2026-10-10 |
 | **Phase 1** | **Monorepo Infrastructure & Package Setup** | **COMPLETED** | 2026-10-10 |
 | **Phase 2A**| **Design System & Reusable UI Foundation** | **COMPLETED** | 2026-10-10 |
-| **Phase 2B**| **Backend Core API & MongoDB Authentication** | **PENDING APPROVAL** | - |
-| **Phase 3** | **Frontend Base & Design System Components** | Planned | - |
-| **Phase 4** | **Public Pages & Rest-Stop Discovery** | Planned | - |
+| **Phase 2B**| **Public Website Pages & Navigation** | **COMPLETED** | 2026-10-10 |
+| **Phase 3** | **Backend Core API & MongoDB Authentication** | **PENDING APPROVAL** | - |
+| **Phase 4** | **Public Pages & Rest-Stop Discovery API** | Planned | - |
 | **Phase 5** | **Rider Authenticated Portal & QR Check-in** | Planned | - |
 | **Phase 6** | **Merchant Portal & Facility Management** | Planned | - |
 | **Phase 7** | **Micro-Jobs Marketplace & Applications** | Planned | - |
@@ -18,82 +18,76 @@
 
 ---
 
-## Phase 2A Execution Summary
+## Phase 2B Execution Summary
 
 ### Completed Tasks
-1. **Design System Tokens & Foundation**:
-   - Enforced PitStop brand identity tokens (`#F7B928` Yellow, `#FFFFFF` Surface, `#F4F6F8` Page Backdrop, `#202124` Charcoal Text, `#686868` Muted Text, `#E3E5E8` Border).
-   - Configured custom radius tokens (`sm`, `md`, `lg`, `xl`), shadows (`shadow-subtle`, `shadow-card`), and status colors (emerald, amber, red, blue).
+1. **Public Website Route Architecture**:
+   - Built full suite of responsive public website pages under `apps/web/app/`.
+   - All pages use `PublicLayout`, `Container`, `PageHeader`, `Card`, `Badge`, `Button`, `Input`, `Select`, and `EmptyState`.
 
-2. **Reusable UI Components (`apps/web/components/ui/`)**:
-   - [`Button.tsx`](file:///c:/Users/Manish/Desktop/Pitstop/apps/web/components/ui/Button.tsx): Accessible variants (`primary`, `secondary`, `outline`, `ghost`, `danger`), sizes (`sm`, `md`, `lg`), loading spinner state, icon slots, min 44px touch targets.
-   - [`Container.tsx`](file:///c:/Users/Manish/Desktop/Pitstop/apps/web/components/ui/Container.tsx): Responsive max-width wrapper (`sm`, `md`, `lg`, `xl`, `full`) with auto margins and horizontal padding.
-   - [`SectionHeading.tsx`](file:///c:/Users/Manish/Desktop/Pitstop/apps/web/components/ui/SectionHeading.tsx): Configurable heading title, subtitle, optional status badge, alignment, and right action slot.
-   - [`Card.tsx`](file:///c:/Users/Manish/Desktop/Pitstop/apps/web/components/ui/Card.tsx): Bordered white cards with variants (`default`, `flat`, `outline`, `interactive`), hover translation, and sub-components (`CardHeader`, `CardBody`, `CardFooter`).
-   - [`Badge.tsx`](file:///c:/Users/Manish/Desktop/Pitstop/apps/web/components/ui/Badge.tsx): Rounded status pills with color variants (`yellow`, `neutral`, `success`, `warning`, `danger`, `info`) and icon slot.
-   - [`Input.tsx`](file:///c:/Users/Manish/Desktop/Pitstop/apps/web/components/ui/Input.tsx): Label, error message, helper text, left/right icon slots, focus outline, min 44px touch targets.
-   - [`Select.tsx`](file:///c:/Users/Manish/Desktop/Pitstop/apps/web/components/ui/Select.tsx): Accessible drop-down selector with label, error states, and options array.
-   - [`EmptyState.tsx`](file:///c:/Users/Manish/Desktop/Pitstop/apps/web/components/ui/EmptyState.tsx): Dashed border placeholder with icon, title, description, and action button slot.
-   - [`LoadingState.tsx`](file:///c:/Users/Manish/Desktop/Pitstop/apps/web/components/ui/LoadingState.tsx): Spinning helmet/scooter indicator with animated pulse text and optional full-page backdrop.
-   - [`PageHeader.tsx`](file:///c:/Users/Manish/Desktop/Pitstop/apps/web/components/ui/PageHeader.tsx): Standard page header with optional back button link, title, badge, description, and action button.
-
-3. **Shared Layout Components (`apps/web/components/layout/`)**:
-   - [`Navbar.tsx`](file:///c:/Users/Manish/Desktop/Pitstop/apps/web/components/layout/Navbar.tsx): Sticky navbar with glassmorphism backdrop blur, PitStop logo, desktop links, portal buttons, and mobile drawer menu toggle.
-   - [`Footer.tsx`](file:///c:/Users/Manish/Desktop/Pitstop/apps/web/components/layout/Footer.tsx): Responsive 4-column footer with brand tagline, navigation links, merchant registration links, legal pages, and copyright notice.
-   - [`PublicLayout.tsx`](file:///c:/Users/Manish/Desktop/Pitstop/apps/web/components/layout/PublicLayout.tsx): Shared wrapper combining Navbar, main content container, and Footer.
-
-4. **Homepage Refactoring (`apps/web/app/page.tsx`)**:
-   - Refactored root homepage to consume `PublicLayout`, `Button`, `Container`, `Card`, and `Badge` components cleanly while preserving all Phase 1 features.
+2. **Implemented Routes (`apps/web/app/`)**:
+   - [`/`](file:///c:/Users/Manish/Desktop/Pitstop/apps/web/app/page.tsx) — Refined landing page with brand hero, tagline *"Every rider deserves a place to stop."*, value stats, 4 core benefit cards, merchant callout, and footer.
+   - [`/how-it-works`](file:///c:/Users/Manish/Desktop/Pitstop/apps/web/app/how-it-works/page.tsx) — Step-by-step explainer for Riders (Discover -> Check-in -> Rest & Redeem -> Earn Micro-Jobs) and Merchants (Register -> QR Standee -> Deals -> Post Tasks).
+   - [`/for-merchants`](file:///c:/Users/Manish/Desktop/Pitstop/apps/web/app/for-merchants/page.tsx) — Value proposition for local merchants (footfall boost, custom deals, off-peak helper labor), facility checklist, and partner onboarding interest form.
+   - [`/about`](file:///c:/Users/Manish/Desktop/Pitstop/apps/web/app/about/page.tsx) — Platform mission, gig worker challenges, problem-solution breakdown, and four core pillars (Physical Dignity, Everyday Savings, Income Enhancement, Community Trust).
+   - [`/contact`](file:///c:/Users/Manish/Desktop/Pitstop/apps/web/app/contact/page.tsx) — Support channels, FAQs, and accessible inquiry form with clear notice that submissions will connect to the backend contact API in a future phase.
+   - [`/privacy`](file:///c:/Users/Manish/Desktop/Pitstop/apps/web/app/privacy/page.tsx) — Draft privacy policy clearly labelled as MVP specification covering opt-in GPS location boundaries, data retention, and security safeguards.
+   - [`/terms`](file:///c:/Users/Manish/Desktop/Pitstop/apps/web/app/terms/page.tsx) — Draft terms of service clearly labelled as MVP specification covering rider rest-stop conduct, merchant deal commitments, and micro-job rules.
+   - [`/jobs`](file:///c:/Users/Manish/Desktop/Pitstop/apps/web/app/jobs/page.tsx) — Off-peak micro-job board with search & category filters, clear notice of Phase 7 API integration, and `EmptyState` component demonstration.
+   - [`/explore`](file:///c:/Users/Manish/Desktop/Pitstop/apps/web/app/explore/page.tsx) — Rest-stop discovery page preview with search, facility checkboxes, and sample rest-stop cards.
 
 ---
 
 ## Empirical Verification Log
 
-- **Typecheck Verification**: Run `npm run typecheck` — Exited with code 0 across all workspaces.
-- **Lint Verification**: Run `npm run lint` — Exited with code 0 (`✔ No ESLint warnings or errors`).
-- **Monorepo Build Verification**: Run `npm run build` — Exited with code 0 (`✓ Compiled successfully`, prerendered static pages).
+- **Typecheck Verification**: Run `npm run typecheck` — Passed with 0 errors across all 3 workspaces.
+- **Lint Verification**: Run `npm run lint` — Passed with 0 errors (`✔ No ESLint warnings or errors`).
+- **Monorepo Build Verification**: Run `npm run build` — Passed with 0 errors:
+  ```
+  Route (app)                              Size     First Load JS
+  ┌ ○ /                                    2.08 kB          99 kB
+  ├ ○ /_not-found                          873 B          88.1 kB
+  ├ ○ /about                               2.08 kB          99 kB
+  ├ ○ /contact                             2.09 kB          99 kB
+  ├ ○ /explore                             2.09 kB          99 kB
+  ├ ○ /for-merchants                       2.09 kB          99 kB
+  ├ ○ /how-it-works                        2.08 kB          99 kB
+  ├ ○ /jobs                                2.08 kB          99 kB
+  ├ ○ /privacy                             2.08 kB          99 kB
+  └ ○ /terms                               2.08 kB          99 kB
+  + First Load JS shared by all            87.2 kB
+  ```
 
 ---
 
-## Files Created & Modified in Phase 2A
-
-### `apps/web/components/ui/`
-- [`apps/web/components/ui/Button.tsx`](file:///c:/Users/Manish/Desktop/Pitstop/apps/web/components/ui/Button.tsx)
-- [`apps/web/components/ui/Container.tsx`](file:///c:/Users/Manish/Desktop/Pitstop/apps/web/components/ui/Container.tsx)
-- [`apps/web/components/ui/SectionHeading.tsx`](file:///c:/Users/Manish/Desktop/Pitstop/apps/web/components/ui/SectionHeading.tsx)
-- [`apps/web/components/ui/Card.tsx`](file:///c:/Users/Manish/Desktop/Pitstop/apps/web/components/ui/Card.tsx)
-- [`apps/web/components/ui/Badge.tsx`](file:///c:/Users/Manish/Desktop/Pitstop/apps/web/components/ui/Badge.tsx)
-- [`apps/web/components/ui/Input.tsx`](file:///c:/Users/Manish/Desktop/Pitstop/apps/web/components/ui/Input.tsx)
-- [`apps/web/components/ui/Select.tsx`](file:///c:/Users/Manish/Desktop/Pitstop/apps/web/components/ui/Select.tsx)
-- [`apps/web/components/ui/EmptyState.tsx`](file:///c:/Users/Manish/Desktop/Pitstop/apps/web/components/ui/EmptyState.tsx)
-- [`apps/web/components/ui/LoadingState.tsx`](file:///c:/Users/Manish/Desktop/Pitstop/apps/web/components/ui/LoadingState.tsx)
-- [`apps/web/components/ui/PageHeader.tsx`](file:///c:/Users/Manish/Desktop/Pitstop/apps/web/components/ui/PageHeader.tsx)
-- [`apps/web/components/ui/index.ts`](file:///c:/Users/Manish/Desktop/Pitstop/apps/web/components/ui/index.ts)
-
-### `apps/web/components/layout/`
-- [`apps/web/components/layout/Navbar.tsx`](file:///c:/Users/Manish/Desktop/Pitstop/apps/web/components/layout/Navbar.tsx)
-- [`apps/web/components/layout/Footer.tsx`](file:///c:/Users/Manish/Desktop/Pitstop/apps/web/components/layout/Footer.tsx)
-- [`apps/web/components/layout/PublicLayout.tsx`](file:///c:/Users/Manish/Desktop/Pitstop/apps/web/components/layout/PublicLayout.tsx)
-- [`apps/web/components/layout/index.ts`](file:///c:/Users/Manish/Desktop/Pitstop/apps/web/components/layout/index.ts)
+## Files Created & Modified in Phase 2B
 
 ### `apps/web/app/`
 - [`apps/web/app/page.tsx`](file:///c:/Users/Manish/Desktop/Pitstop/apps/web/app/page.tsx)
+- [`apps/web/app/how-it-works/page.tsx`](file:///c:/Users/Manish/Desktop/Pitstop/apps/web/app/how-it-works/page.tsx)
+- [`apps/web/app/for-merchants/page.tsx`](file:///c:/Users/Manish/Desktop/Pitstop/apps/web/app/for-merchants/page.tsx)
+- [`apps/web/app/about/page.tsx`](file:///c:/Users/Manish/Desktop/Pitstop/apps/web/app/about/page.tsx)
+- [`apps/web/app/contact/page.tsx`](file:///c:/Users/Manish/Desktop/Pitstop/apps/web/app/contact/page.tsx)
+- [`apps/web/app/privacy/page.tsx`](file:///c:/Users/Manish/Desktop/Pitstop/apps/web/app/privacy/page.tsx)
+- [`apps/web/app/terms/page.tsx`](file:///c:/Users/Manish/Desktop/Pitstop/apps/web/app/terms/page.tsx)
+- [`apps/web/app/jobs/page.tsx`](file:///c:/Users/Manish/Desktop/Pitstop/apps/web/app/jobs/page.tsx)
+- [`apps/web/app/explore/page.tsx`](file:///c:/Users/Manish/Desktop/Pitstop/apps/web/app/explore/page.tsx)
 - [`docs/progress.md`](file:///c:/Users/Manish/Desktop/Pitstop/docs/progress.md)
 
 ---
 
-## Known Issues / Unfinished Acceptance Criteria
+## Known Issues / Unfinished Work
 
-- **None**. All Phase 2A requirements met and verified.
+- **None**. All requested public pages exist, build without errors, and use the design system components.
 
 ---
 
 ## Next Recommended Step
 
-- **Phase 2B: Backend Core API & MongoDB Authentication**
+- **Phase 3: Backend Core API, Database Schemas & Authentication**
   - Configure MongoDB Atlas / Mongoose connection in `apps/api/src/config/db.ts`.
   - Create Mongoose models (`User`, `RestStop`, `Deal`, `Job`, `CheckIn`).
   - Implement `/api/v1/auth/register`, `/api/v1/auth/login`, and `/api/v1/auth/me`.
   - Create JWT authentication and Role-Based Access Control (RBAC) middleware.
 
-*Note: Phase 2A is complete. Awaiting user approval before commencing Phase 2B.*
+*Note: Phase 2B is complete. Awaiting user approval before commencing Phase 3.*
