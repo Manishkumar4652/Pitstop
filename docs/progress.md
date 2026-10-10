@@ -6,7 +6,8 @@
 | :--- | :--- | :--- | :--- |
 | **Phase 0** | **Project Foundation, Architecture & Planning** | **COMPLETED** | 2026-10-10 |
 | **Phase 1** | **Monorepo Infrastructure & Package Setup** | **COMPLETED** | 2026-10-10 |
-| **Phase 2** | **Backend Core API & MongoDB Authentication** | **PENDING APPROVAL** | - |
+| **Phase 2A**| **Design System & Reusable UI Foundation** | **COMPLETED** | 2026-10-10 |
+| **Phase 2B**| **Backend Core API & MongoDB Authentication** | **PENDING APPROVAL** | - |
 | **Phase 3** | **Frontend Base & Design System Components** | Planned | - |
 | **Phase 4** | **Public Pages & Rest-Stop Discovery** | Planned | - |
 | **Phase 5** | **Rider Authenticated Portal & QR Check-in** | Planned | - |
@@ -17,108 +18,82 @@
 
 ---
 
-## Phase 1 Execution Summary
+## Phase 2A Execution Summary
 
 ### Completed Tasks
-1. **Monorepo Root Setup**:
-   - Created root `package.json` with npm workspaces (`apps/*`, `packages/*`).
-   - Configured root commands: `npm run dev` (using `concurrently`), `npm run build`, `npm run lint`, and `npm run typecheck`.
-   - Verified `.gitignore` and `.env.example` protecting environment variables and build outputs.
+1. **Design System Tokens & Foundation**:
+   - Enforced PitStop brand identity tokens (`#F7B928` Yellow, `#FFFFFF` Surface, `#F4F6F8` Page Backdrop, `#202124` Charcoal Text, `#686868` Muted Text, `#E3E5E8` Border).
+   - Configured custom radius tokens (`sm`, `md`, `lg`, `xl`), shadows (`shadow-subtle`, `shadow-card`), and status colors (emerald, amber, red, blue).
 
-2. **Shared Types Package (`packages/shared-types`)**:
-   - Created TypeScript package with build scripts generating JS and `.d.ts` declaration files into `dist/`.
-   - Exported domain enums: `UserRole`, `Facility`, `JobStatus`, `CheckinStatus`, `RestStopStatus`, `CapacityStatus`, `JobCategory`.
-   - Created Zod validation schemas and inferred types for Auth (`RegisterRequestSchema`, `LoginRequestSchema`), Rest-Stop (`CreateRestStopRequestSchema`, `RestStopQuerySchema`), Job (`CreateJobRequestSchema`, `JobApplicationRequestSchema`), and Check-In (`CheckinRequestSchema`, `CheckinVerifySchema`).
-   - Public DTO schemas cleanly separate request payloads from internal database models and credentials.
+2. **Reusable UI Components (`apps/web/components/ui/`)**:
+   - [`Button.tsx`](file:///c:/Users/Manish/Desktop/Pitstop/apps/web/components/ui/Button.tsx): Accessible variants (`primary`, `secondary`, `outline`, `ghost`, `danger`), sizes (`sm`, `md`, `lg`), loading spinner state, icon slots, min 44px touch targets.
+   - [`Container.tsx`](file:///c:/Users/Manish/Desktop/Pitstop/apps/web/components/ui/Container.tsx): Responsive max-width wrapper (`sm`, `md`, `lg`, `xl`, `full`) with auto margins and horizontal padding.
+   - [`SectionHeading.tsx`](file:///c:/Users/Manish/Desktop/Pitstop/apps/web/components/ui/SectionHeading.tsx): Configurable heading title, subtitle, optional status badge, alignment, and right action slot.
+   - [`Card.tsx`](file:///c:/Users/Manish/Desktop/Pitstop/apps/web/components/ui/Card.tsx): Bordered white cards with variants (`default`, `flat`, `outline`, `interactive`), hover translation, and sub-components (`CardHeader`, `CardBody`, `CardFooter`).
+   - [`Badge.tsx`](file:///c:/Users/Manish/Desktop/Pitstop/apps/web/components/ui/Badge.tsx): Rounded status pills with color variants (`yellow`, `neutral`, `success`, `warning`, `danger`, `info`) and icon slot.
+   - [`Input.tsx`](file:///c:/Users/Manish/Desktop/Pitstop/apps/web/components/ui/Input.tsx): Label, error message, helper text, left/right icon slots, focus outline, min 44px touch targets.
+   - [`Select.tsx`](file:///c:/Users/Manish/Desktop/Pitstop/apps/web/components/ui/Select.tsx): Accessible drop-down selector with label, error states, and options array.
+   - [`EmptyState.tsx`](file:///c:/Users/Manish/Desktop/Pitstop/apps/web/components/ui/EmptyState.tsx): Dashed border placeholder with icon, title, description, and action button slot.
+   - [`LoadingState.tsx`](file:///c:/Users/Manish/Desktop/Pitstop/apps/web/components/ui/LoadingState.tsx): Spinning helmet/scooter indicator with animated pulse text and optional full-page backdrop.
+   - [`PageHeader.tsx`](file:///c:/Users/Manish/Desktop/Pitstop/apps/web/components/ui/PageHeader.tsx): Standard page header with optional back button link, title, badge, description, and action button.
 
-3. **Backend API Foundation (`apps/api`)**:
-   - Created Express REST API in TypeScript strict mode with `tsx` development runtime.
-   - Separated application creation (`src/app.ts`) from server listening (`src/server.ts`).
-   - Configured security headers with `helmet`, JSON body parsing limit (`1mb`), and CORS rules.
-   - Implemented `GET /health` endpoint returning JSON status:
-     ```json
-     {
-       "status": "ok",
-       "service": "PitStop REST API",
-       "environment": "development",
-       "timestamp": "2026-10-10T17:47:32.451Z",
-       "uptimeSeconds": 219
-     }
-     ```
+3. **Shared Layout Components (`apps/web/components/layout/`)**:
+   - [`Navbar.tsx`](file:///c:/Users/Manish/Desktop/Pitstop/apps/web/components/layout/Navbar.tsx): Sticky navbar with glassmorphism backdrop blur, PitStop logo, desktop links, portal buttons, and mobile drawer menu toggle.
+   - [`Footer.tsx`](file:///c:/Users/Manish/Desktop/Pitstop/apps/web/components/layout/Footer.tsx): Responsive 4-column footer with brand tagline, navigation links, merchant registration links, legal pages, and copyright notice.
+   - [`PublicLayout.tsx`](file:///c:/Users/Manish/Desktop/Pitstop/apps/web/components/layout/PublicLayout.tsx): Shared wrapper combining Navbar, main content container, and Footer.
 
-4. **Frontend Web Foundation (`apps/web`)**:
-   - Created Next.js App Router application with React, TypeScript strict mode, and Tailwind CSS.
-   - Integrated PitStop design system tokens (`#F7B928`, `#202124`, `#F4F6F8`, `#E3E5E8`).
-   - Configured `next.config.js` with `transpilePackages: ['shared-types']`.
-   - Created responsive homepage (`app/page.tsx`) featuring navigation bar, tagline *"Every rider deserves a place to stop."*, hero section, CTA buttons, core benefit cards, merchant banner, and footer.
-   - Mobile-first layout verified with touch targets (min 44px) and zero horizontal overflow.
+4. **Homepage Refactoring (`apps/web/app/page.tsx`)**:
+   - Refactored root homepage to consume `PublicLayout`, `Button`, `Container`, `Card`, and `Badge` components cleanly while preserving all Phase 1 features.
 
 ---
 
 ## Empirical Verification Log
 
-- **Dependencies Installation**: Run `npm install` — Added 270 packages across monorepo workspaces cleanly.
-- **Monorepo Build Verification**: Run `npm run build` — Exited with code 0:
-  - `shared-types` compiled via `tsc` (generated `.d.ts` declarations).
-  - `@pitstop/api` compiled via `tsc` to `dist/server.js`.
-  - `@pitstop/web` compiled via `next build` (Prerendered `/` static page with 0 errors).
-- **Typecheck Verification**: Run `npm run typecheck` — Exited with code 0 across all 3 workspaces.
-- **Lint Verification**: Run `npm run lint` — Exited with code 0 (`No ESLint warnings or errors`).
-- **API Health Endpoint**: Tested `Invoke-RestMethod http://localhost:5000/health` — Received HTTP 200 with status `"ok"`.
-- **Background Processes**: Verified all test server processes were terminated cleanly after testing.
+- **Typecheck Verification**: Run `npm run typecheck` — Exited with code 0 across all workspaces.
+- **Lint Verification**: Run `npm run lint` — Exited with code 0 (`✔ No ESLint warnings or errors`).
+- **Monorepo Build Verification**: Run `npm run build` — Exited with code 0 (`✓ Compiled successfully`, prerendered static pages).
 
 ---
 
-## Files Created & Modified
+## Files Created & Modified in Phase 2A
 
-### Monorepo Infrastructure
-- [`package.json`](file:///c:/Users/Manish/Desktop/Pitstop/package.json)
-- [`package-lock.json`](file:///c:/Users/Manish/Desktop/Pitstop/package-lock.json)
-- [`README.md`](file:///c:/Users/Manish/Desktop/Pitstop/README.md)
-- [`docs/progress.md`](file:///c:/Users/Manish/Desktop/Pitstop/docs/progress.md)
+### `apps/web/components/ui/`
+- [`apps/web/components/ui/Button.tsx`](file:///c:/Users/Manish/Desktop/Pitstop/apps/web/components/ui/Button.tsx)
+- [`apps/web/components/ui/Container.tsx`](file:///c:/Users/Manish/Desktop/Pitstop/apps/web/components/ui/Container.tsx)
+- [`apps/web/components/ui/SectionHeading.tsx`](file:///c:/Users/Manish/Desktop/Pitstop/apps/web/components/ui/SectionHeading.tsx)
+- [`apps/web/components/ui/Card.tsx`](file:///c:/Users/Manish/Desktop/Pitstop/apps/web/components/ui/Card.tsx)
+- [`apps/web/components/ui/Badge.tsx`](file:///c:/Users/Manish/Desktop/Pitstop/apps/web/components/ui/Badge.tsx)
+- [`apps/web/components/ui/Input.tsx`](file:///c:/Users/Manish/Desktop/Pitstop/apps/web/components/ui/Input.tsx)
+- [`apps/web/components/ui/Select.tsx`](file:///c:/Users/Manish/Desktop/Pitstop/apps/web/components/ui/Select.tsx)
+- [`apps/web/components/ui/EmptyState.tsx`](file:///c:/Users/Manish/Desktop/Pitstop/apps/web/components/ui/EmptyState.tsx)
+- [`apps/web/components/ui/LoadingState.tsx`](file:///c:/Users/Manish/Desktop/Pitstop/apps/web/components/ui/LoadingState.tsx)
+- [`apps/web/components/ui/PageHeader.tsx`](file:///c:/Users/Manish/Desktop/Pitstop/apps/web/components/ui/PageHeader.tsx)
+- [`apps/web/components/ui/index.ts`](file:///c:/Users/Manish/Desktop/Pitstop/apps/web/components/ui/index.ts)
 
-### `packages/shared-types`
-- [`packages/shared-types/package.json`](file:///c:/Users/Manish/Desktop/Pitstop/packages/shared-types/package.json)
-- [`packages/shared-types/tsconfig.json`](file:///c:/Users/Manish/Desktop/Pitstop/packages/shared-types/tsconfig.json)
-- [`packages/shared-types/src/index.ts`](file:///c:/Users/Manish/Desktop/Pitstop/packages/shared-types/src/index.ts)
-- [`packages/shared-types/src/enums/index.ts`](file:///c:/Users/Manish/Desktop/Pitstop/packages/shared-types/src/enums/index.ts)
-- [`packages/shared-types/src/schemas/auth.schema.ts`](file:///c:/Users/Manish/Desktop/Pitstop/packages/shared-types/src/schemas/auth.schema.ts)
-- [`packages/shared-types/src/schemas/rest-stop.schema.ts`](file:///c:/Users/Manish/Desktop/Pitstop/packages/shared-types/src/schemas/rest-stop.schema.ts)
-- [`packages/shared-types/src/schemas/job.schema.ts`](file:///c:/Users/Manish/Desktop/Pitstop/packages/shared-types/src/schemas/job.schema.ts)
-- [`packages/shared-types/src/schemas/checkin.schema.ts`](file:///c:/Users/Manish/Desktop/Pitstop/packages/shared-types/src/schemas/checkin.schema.ts)
-- [`packages/shared-types/src/schemas/index.ts`](file:///c:/Users/Manish/Desktop/Pitstop/packages/shared-types/src/schemas/index.ts)
+### `apps/web/components/layout/`
+- [`apps/web/components/layout/Navbar.tsx`](file:///c:/Users/Manish/Desktop/Pitstop/apps/web/components/layout/Navbar.tsx)
+- [`apps/web/components/layout/Footer.tsx`](file:///c:/Users/Manish/Desktop/Pitstop/apps/web/components/layout/Footer.tsx)
+- [`apps/web/components/layout/PublicLayout.tsx`](file:///c:/Users/Manish/Desktop/Pitstop/apps/web/components/layout/PublicLayout.tsx)
+- [`apps/web/components/layout/index.ts`](file:///c:/Users/Manish/Desktop/Pitstop/apps/web/components/layout/index.ts)
 
-### `apps/api`
-- [`apps/api/package.json`](file:///c:/Users/Manish/Desktop/Pitstop/apps/api/package.json)
-- [`apps/api/tsconfig.json`](file:///c:/Users/Manish/Desktop/Pitstop/apps/api/tsconfig.json)
-- [`apps/api/src/app.ts`](file:///c:/Users/Manish/Desktop/Pitstop/apps/api/src/app.ts)
-- [`apps/api/src/server.ts`](file:///c:/Users/Manish/Desktop/Pitstop/apps/api/src/server.ts)
-
-### `apps/web`
-- [`apps/web/package.json`](file:///c:/Users/Manish/Desktop/Pitstop/apps/web/package.json)
-- [`apps/web/tsconfig.json`](file:///c:/Users/Manish/Desktop/Pitstop/apps/web/tsconfig.json)
-- [`apps/web/next.config.js`](file:///c:/Users/Manish/Desktop/Pitstop/apps/web/next.config.js)
-- [`apps/web/postcss.config.js`](file:///c:/Users/Manish/Desktop/Pitstop/apps/web/postcss.config.js)
-- [`apps/web/tailwind.config.js`](file:///c:/Users/Manish/Desktop/Pitstop/apps/web/tailwind.config.js)
-- [`apps/web/.eslintrc.json`](file:///c:/Users/Manish/Desktop/Pitstop/apps/web/.eslintrc.json)
-- [`apps/web/app/globals.css`](file:///c:/Users/Manish/Desktop/Pitstop/apps/web/app/globals.css)
-- [`apps/web/app/layout.tsx`](file:///c:/Users/Manish/Desktop/Pitstop/apps/web/app/layout.tsx)
+### `apps/web/app/`
 - [`apps/web/app/page.tsx`](file:///c:/Users/Manish/Desktop/Pitstop/apps/web/app/page.tsx)
+- [`docs/progress.md`](file:///c:/Users/Manish/Desktop/Pitstop/docs/progress.md)
 
 ---
 
 ## Known Issues / Unfinished Acceptance Criteria
 
-- **None**. All Phase 1 acceptance criteria met and verified.
+- **None**. All Phase 2A requirements met and verified.
 
 ---
 
 ## Next Recommended Step
 
-- **Phase 2: Backend Core API, Database Schemas & Authentication**
+- **Phase 2B: Backend Core API & MongoDB Authentication**
   - Configure MongoDB Atlas / Mongoose connection in `apps/api/src/config/db.ts`.
   - Create Mongoose models (`User`, `RestStop`, `Deal`, `Job`, `CheckIn`).
   - Implement `/api/v1/auth/register`, `/api/v1/auth/login`, and `/api/v1/auth/me`.
-  - Create JWT and RBAC middleware.
+  - Create JWT authentication and Role-Based Access Control (RBAC) middleware.
 
-*Note: Phase 1 is complete. Awaiting user approval before commencing Phase 2.*
+*Note: Phase 2A is complete. Awaiting user approval before commencing Phase 2B.*
