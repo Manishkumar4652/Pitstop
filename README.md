@@ -79,14 +79,14 @@ Before running PitStop locally, ensure you have installed:
    ```
    *(Ensure you update `.env` with your local MongoDB connection string if required)*
 
-3. **Install Dependencies** *(Will be initialized in Phase 1)*:
+3. **Install Dependencies**:
    ```bash
    npm install
    ```
 
 ---
 
-## 🏃 Local Development Commands *(Planned for Phase 1+)*
+## 🏃 Local Development Commands
 
 - **Start all apps concurrently**:
   ```bash
@@ -104,6 +104,14 @@ Before running PitStop locally, ensure you have installed:
   ```bash
   npm run build
   ```
+- **Run typecheck across all workspaces**:
+  ```bash
+  npm run typecheck
+  ```
+- **Run linting across all workspaces**:
+  ```bash
+  npm run lint
+  ```
 
 ---
 
@@ -120,6 +128,6 @@ Comprehensive documentation is available in the [`docs/`](file:///c:/Users/Manis
 
 ## 📌 Current Status
 
-- **Current Phase**: **Phase 0 — Project Foundation, Architecture & Planning** (Completed)
-- **Next Phase**: **Phase 1 — Monorepo Infrastructure & Package Setup** (Awaiting approval)
+- **Current Phase**: **Phase 1 — Monorepo Infrastructure & Package Setup** (Completed)
+- **Next Phase**: **Phase 2 — Backend Core API, Database Schemas & Authentication** (Awaiting approval)
 - **License**: Proprietary / Private

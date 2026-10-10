@@ -1,0 +1,21 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --pitstop-yellow: #F7B928;
+  --pitstop-yellow-dark: #D99B10;
+  --pitstop-yellow-light: #FEF5DC;
+  --pitstop-bg-main: #FFFFFF;
+  --pitstop-bg-page: #F4F6F8;
+  --pitstop-text-primary: #202124;
+  --pitstop-text-secondary: #686868;
+  --pitstop-border: #E3E5E8;
+}
+
+body {
+  background-color: var(--pitstop-bg-page);
+  color: var(--pitstop-text-primary);
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+}
