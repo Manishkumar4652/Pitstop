@@ -3,8 +3,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
 import {
-  Search,
-  X,
   Filter,
   SlidersHorizontal,
   List,
@@ -24,7 +22,6 @@ import {
   Card,
   Badge,
   Button,
-  Input,
   Select,
   EmptyState
 } from '@/components/ui';
@@ -55,7 +52,6 @@ export function ExploreContent({ initialData, initialError }: ExploreContentProp
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(initialError || null);
 
-  const [searchQuery, setSearchQuery] = useState('');
   const [selectedFacilities, setSelectedFacilities] = useState<Facility[]>([]);
   const [sortBy, setSortBy] = useState<SortOption>('newest');
   const [page, setPage] = useState(1);
@@ -79,7 +75,7 @@ export function ExploreContent({ initialData, initialError }: ExploreContentProp
 
   // Client-side query fetcher calling the internal /api/rest-stops route handler
   const loadRestStops = useCallback(
-    async (targetPage: number, querySearch: string, facilities: Facility[], sort: SortOption) => {
+    async (targetPage: number, facilities: Facility[], sort: SortOption) => {
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }
@@ -94,9 +90,6 @@ export function ExploreContent({ initialData, initialError }: ExploreContentProp
       qs.set('page', String(targetPage));
       qs.set('limit', '12');
 
-      if (querySearch.trim() !== '') {
-        qs.set('search', querySearch.trim());
-      }
       if (facilities.length > 0) {
         qs.set('facilities', facilities.join(','));
       }
@@ -132,7 +125,7 @@ export function ExploreContent({ initialData, initialError }: ExploreContentProp
     []
   );
 
-  // Debounced search and filter watcher
+  // Debounced filter watcher
   useEffect(() => {
     if (isFirstRender.current) {
       isFirstRender.current = false;
@@ -140,11 +133,11 @@ export function ExploreContent({ initialData, initialError }: ExploreContentProp
     }
 
     const timer = setTimeout(() => {
-      loadRestStops(page, searchQuery, selectedFacilities, sortBy);
+      loadRestStops(page, selectedFacilities, sortBy);
     }, 300);
 
     return () => clearTimeout(timer);
-  }, [searchQuery, selectedFacilities, sortBy, page, loadRestStops]);
+  }, [selectedFacilities, sortBy, page, loadRestStops]);
 
   // Toggle single facility
   const toggleFacility = (facility: Facility) => {
@@ -156,7 +149,6 @@ export function ExploreContent({ initialData, initialError }: ExploreContentProp
 
   // Reset all filters
   const resetFilters = () => {
-    setSearchQuery('');
     setSelectedFacilities([]);
     setSortBy('newest');
     setPage(1);
@@ -168,7 +160,7 @@ export function ExploreContent({ initialData, initialError }: ExploreContentProp
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const hasActiveFilters = searchQuery.trim().length > 0 || selectedFacilities.length > 0;
+  const hasActiveFilters = selectedFacilities.length > 0;
   const totalCount = pagination?.total ?? items.length;
   const currentPage = pagination?.page ?? page;
   const totalPages = pagination?.totalPages ?? 1;
@@ -179,43 +171,10 @@ export function ExploreContent({ initialData, initialError }: ExploreContentProp
       <section className="border-b border-pitstop-border bg-white py-6" aria-label="Search and filter controls">
         <Container size="xl">
           <div className="space-y-4">
-            {/* Top Row: Search Input + Sort Dropdown + View Toggle */}
-            <div className="grid gap-4 md:grid-cols-12 items-center">
-              {/* Search Field */}
-              <div className="md:col-span-6 lg:col-span-6">
-                <div className="relative">
-                  <Input
-                    id="rest-stop-search"
-                    label="Search Rest Stops"
-                    aria-label="Search rest stops by name, area, or landmark"
-                    placeholder="Search by stop name, area, or landmark (e.g. Indiranagar, MG Road)..."
-                    value={searchQuery}
-                    onChange={(e) => {
-                      setSearchQuery(e.target.value);
-                      setPage(1);
-                    }}
-                    leftIcon={<Search className="h-4 w-4 text-pitstop-muted" aria-hidden="true" />}
-                    rightIcon={
-                      searchQuery ? (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setSearchQuery('');
-                            setPage(1);
-                          }}
-                          className="text-pitstop-muted hover:text-pitstop-charcoal p-1 rounded focus:outline-none focus:ring-2 focus:ring-pitstop-yellow"
-                          aria-label="Clear search query"
-                        >
-                          <X className="h-4 w-4" aria-hidden="true" />
-                        </button>
-                      ) : undefined
-                    }
-                  />
-                </div>
-              </div>
-
+            {/* Top Controls: Sort Dropdown + View Toggle (List vs Map) */}
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
               {/* Sort Selector: Honest labels matching backend sorting options */}
-              <div className="md:col-span-3 lg:col-span-3">
+              <div className="w-full sm:w-64">
                 <Select
                   id="sort-select"
                   label="Sort By"
@@ -234,8 +193,8 @@ export function ExploreContent({ initialData, initialError }: ExploreContentProp
                 />
               </div>
 
-              {/* View Selector Controls */}
-              <div className="md:col-span-3 lg:col-span-3 flex flex-col gap-1.5">
+              {/* View Selector Controls: List vs Map */}
+              <div className="w-full sm:w-auto flex flex-col gap-1.5">
                 <span className="text-xs font-semibold text-pitstop-charcoal">
                   Display View
                 </span>
@@ -247,10 +206,11 @@ export function ExploreContent({ initialData, initialError }: ExploreContentProp
                   <button
                     type="button"
                     onClick={() => setViewMode('list')}
-                    className={`flex-1 inline-flex items-center justify-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-semibold transition-all min-h-[36px] ${viewMode === 'list'
+                    className={`flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 rounded-md px-4 py-1.5 text-xs font-semibold transition-all min-h-[36px] ${
+                      viewMode === 'list'
                         ? 'bg-white text-pitstop-charcoal shadow-subtle'
                         : 'text-pitstop-muted hover:text-pitstop-charcoal'
-                      }`}
+                    }`}
                     aria-pressed={viewMode === 'list'}
                   >
                     <List className="h-3.5 w-3.5" aria-hidden="true" />
@@ -259,10 +219,11 @@ export function ExploreContent({ initialData, initialError }: ExploreContentProp
                   <button
                     type="button"
                     onClick={() => setViewMode('map')}
-                    className={`flex-1 inline-flex items-center justify-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-semibold transition-all min-h-[36px] ${viewMode === 'map'
+                    className={`flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 rounded-md px-4 py-1.5 text-xs font-semibold transition-all min-h-[36px] ${
+                      viewMode === 'map'
                         ? 'bg-white text-pitstop-charcoal shadow-subtle'
                         : 'text-pitstop-muted hover:text-pitstop-charcoal'
-                      }`}
+                    }`}
                     aria-pressed={viewMode === 'map'}
                   >
                     <MapIcon className="h-3.5 w-3.5" aria-hidden="true" />
@@ -396,11 +357,6 @@ export function ExploreContent({ initialData, initialError }: ExploreContentProp
             {hasActiveFilters && (
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="text-xs text-pitstop-muted">Active:</span>
-                {searchQuery && (
-                  <Badge variant="neutral" size="sm">
-                    Query: &quot;{searchQuery}&quot;
-                  </Badge>
-                )}
                 {selectedFacilities.map((fac) => (
                   <Badge key={fac} variant="yellow" size="sm">
                     {fac.replace('_', ' ')}
@@ -434,7 +390,7 @@ export function ExploreContent({ initialData, initialError }: ExploreContentProp
                   variant="primary"
                   size="sm"
                   leftIcon={<RefreshCw className="h-4 w-4" />}
-                  onClick={() => loadRestStops(page, searchQuery, selectedFacilities, sortBy)}
+                  onClick={() => loadRestStops(page, selectedFacilities, sortBy)}
                 >
                   Retry Request
                 </Button>
@@ -492,11 +448,7 @@ export function ExploreContent({ initialData, initialError }: ExploreContentProp
               ) : (
                 <EmptyState
                   title="No Rest Stops Found"
-                  description={
-                    searchQuery
-                      ? `No rest stops match "${searchQuery}" with the selected facility requirements. Try removing one or more filters.`
-                      : 'No rest stops match all selected facility amenities. Try removing some filters to see available stops.'
-                  }
+                  description="No rest stops match all selected facility amenities. Try removing some filters to see available stops."
                   icon={<Filter className="h-7 w-7 text-pitstop-yellow-dark" />}
                   action={
                     <Button variant="primary" size="sm" onClick={resetFilters} leftIcon={<RotateCcw className="h-4 w-4" />}>
