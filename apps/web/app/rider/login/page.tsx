@@ -27,10 +27,10 @@ function LoginFormContent() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Sanitize returnUrl to prevent open-redirect vulnerabilities
-  const rawReturnUrl = searchParams.get('returnUrl') || '/rider/dashboard';
+  const rawReturnUrl = searchParams.get('returnUrl') || '/explore';
   const returnUrl = rawReturnUrl.startsWith('/') && !rawReturnUrl.startsWith('//')
     ? rawReturnUrl
-    : '/rider/dashboard';
+    : '/explore';
 
   // If already authenticated, redirect immediately
   React.useEffect(() => {

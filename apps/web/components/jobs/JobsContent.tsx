@@ -107,7 +107,7 @@ export const JobsContent: React.FC = () => {
 
   return (
     <PublicLayout>
-      {isRider && <RiderNav />}
+      <RiderNav />
 
       <main id="main-content" className="pb-20 md:pb-12">
         <PageHeader

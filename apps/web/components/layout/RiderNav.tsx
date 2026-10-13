@@ -4,7 +4,6 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { 
-  LayoutDashboard, 
   Compass, 
   Briefcase, 
   FileText,
@@ -24,12 +23,6 @@ export const RiderNav: React.FC<RiderNavProps> = ({ className = '' }) => {
   const { user, isAuthenticated } = useAuth();
 
   const navItems = [
-    {
-      label: 'Dashboard',
-      href: '/rider/dashboard',
-      icon: <LayoutDashboard className="h-4 w-4" aria-hidden="true" />,
-      active: pathname === '/rider' || pathname === '/rider/dashboard',
-    },
     {
       label: 'Explore Stops',
       href: '/explore',

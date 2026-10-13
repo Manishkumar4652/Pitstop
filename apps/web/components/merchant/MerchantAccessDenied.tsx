@@ -63,9 +63,9 @@ export const MerchantAccessDenied: React.FC<MerchantAccessDeniedProps> = ({ user
 
             <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
               {user.role === UserRole.RIDER && (
-                <Link href="/rider/dashboard">
+                <Link href="/explore">
                   <Button variant="primary" size="md" leftIcon={<Bike className="h-4 w-4" />}>
-                    Go to Rider Dashboard
+                    Explore Rest Stops
                   </Button>
                 </Link>
               )}

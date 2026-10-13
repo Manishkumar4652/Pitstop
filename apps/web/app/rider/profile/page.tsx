@@ -85,7 +85,7 @@ export default async function RiderProfilePage() {
           title="Rider Profile & Account"
           description="Manage your delivery partner account, vehicle details, platform associations, and saved preferences."
           badge="Rider Account"
-          backHref="/rider/dashboard"
+          backHref="/explore"
         />
 
         <section className="py-6 sm:py-8" aria-label="Rider profile details">
@@ -191,14 +191,14 @@ export default async function RiderProfilePage() {
                     Portal Navigation
                   </h3>
                   <div className="space-y-2">
-                    <Link href="/rider/dashboard" className="block">
-                      <Button variant="outline" fullWidth size="sm" leftIcon={<LayoutDashboard className="h-4 w-4" />}>
-                        Return to Rider Dashboard
-                      </Button>
-                    </Link>
                     <Link href="/explore" className="block">
                       <Button variant="primary" fullWidth size="sm" leftIcon={<Compass className="h-4 w-4" />}>
                         Explore Rest Stops
+                      </Button>
+                    </Link>
+                    <Link href="/jobs" className="block">
+                      <Button variant="outline" fullWidth size="sm" leftIcon={<Briefcase className="h-4 w-4" />}>
+                        Browse Micro-Jobs
                       </Button>
                     </Link>
                   </div>

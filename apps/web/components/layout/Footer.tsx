@@ -43,8 +43,8 @@ export const Footer: React.FC = () => {
                 </Link>
               </li>
               <li>
-                <Link href="/rider/dashboard" className="hover:text-pitstop-charcoal transition-colors">
-                  Rider Dashboard
+                <Link href="/rider/profile" className="hover:text-pitstop-charcoal transition-colors">
+                  Rider Account
                 </Link>
               </li>
               <li>

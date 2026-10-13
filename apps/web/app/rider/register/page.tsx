@@ -49,10 +49,10 @@ function RegisterFormContent() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Sanitize returnUrl
-  const rawReturnUrl = searchParams.get('returnUrl') || '/rider/dashboard';
+  const rawReturnUrl = searchParams.get('returnUrl') || '/explore';
   const returnUrl = rawReturnUrl.startsWith('/') && !rawReturnUrl.startsWith('//')
     ? rawReturnUrl
-    : '/rider/dashboard';
+    : '/explore';
 
   React.useEffect(() => {
     if (isAuthenticated) {

@@ -1,6 +1,6 @@
 import React, { Suspense } from 'react';
 import { Metadata } from 'next';
-import { PublicLayout } from '@/components/layout';
+import { PublicLayout, RiderNav } from '@/components/layout';
 import { LoadingState, PageHeader } from '@/components/ui';
 import { fetchPublicRestStops, PublicRestStopsResult } from '@/lib/api/rest-stops';
 import { ExploreContent } from './ExploreContent';
@@ -39,7 +39,8 @@ export default async function ExplorePage() {
 
   return (
     <PublicLayout>
-      <main id="main-content">
+      <RiderNav />
+      <main id="main-content" className="pb-20 md:pb-0">
         <PageHeader
           title="Find your next pit stop"
           description="Browse rest stop locations in Bengaluru designed for delivery partners to drink water, sit down, charge phones, and use restrooms between shifts."

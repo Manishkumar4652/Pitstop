@@ -93,7 +93,7 @@ export const Navbar: React.FC<NavbarProps> = ({ theme = 'light' }) => {
             </div>
           ) : isAuthenticated && user ? (
             <div className="flex items-center gap-2">
-              <Link href="/rider/dashboard">
+              <Link href="/explore">
                 <Button variant="primary" size="sm" leftIcon={<Bike className="h-4 w-4" />}>
                   {user.name.split(' ')[0]}
                 </Button>
@@ -134,7 +134,7 @@ export const Navbar: React.FC<NavbarProps> = ({ theme = 'light' }) => {
         {/* Mobile Hamburger Menu Button */}
         <div className="flex items-center gap-2 md:hidden">
           {isAuthenticated && user ? (
-            <Link href={user.role === UserRole.MERCHANT ? '/merchant' : '/rider/dashboard'}>
+            <Link href={user.role === UserRole.MERCHANT ? '/merchant' : '/explore'}>
               <Button variant="primary" size="sm">
                 {user.name.split(' ')[0]}
               </Button>
@@ -214,11 +214,11 @@ export const Navbar: React.FC<NavbarProps> = ({ theme = 'light' }) => {
               {isAuthenticated && user ? (
                 <>
                   <Link
-                    href={user.role === UserRole.MERCHANT ? '/merchant' : '/rider/dashboard'}
+                    href={user.role === UserRole.MERCHANT ? '/merchant' : '/explore'}
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     <Button variant="primary" fullWidth leftIcon={user.role === UserRole.MERCHANT ? <Store className="h-4 w-4" /> : <Bike className="h-4 w-4" />}>
-                      Dashboard ({user.name.split(' ')[0]})
+                      {user.role === UserRole.MERCHANT ? `Dashboard (${user.name.split(' ')[0]})` : `Explore Stops (${user.name.split(' ')[0]})`}
                     </Button>
                   </Link>
                   <LogoutButton fullWidth variant="outline" />

@@ -16,7 +16,7 @@ import {
   Users,
   ExternalLink
 } from 'lucide-react';
-import { PublicLayout } from '@/components/layout';
+import { PublicLayout, RiderNav } from '@/components/layout';
 import { Container, Card, Badge, Button } from '@/components/ui';
 import { getAllRestStopSlugs } from '@/lib/data/rest-stops';
 import { 
@@ -131,7 +131,8 @@ export default async function RestStopDetailPage({ params }: PageProps) {
 
   return (
     <PublicLayout>
-      <main id="main-content" className="py-8 sm:py-12">
+      <RiderNav />
+      <main id="main-content" className="py-8 sm:py-12 pb-20 md:pb-12">
         <Container size="xl">
           {/* Breadcrumbs & Navigation */}
           <nav aria-label="Breadcrumb" className="mb-6">
