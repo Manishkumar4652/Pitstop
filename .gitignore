@@ -23,6 +23,10 @@ yarn-error.log*
 .env.development.local
 .env.test.local
 .env.production.local
+apps/api/.env
+apps/web/.env
+**/.env
+**/.env.local
 !.env.example
 
 # Operating System files

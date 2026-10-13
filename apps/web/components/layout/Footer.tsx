@@ -47,6 +47,11 @@ export const Footer: React.FC = () => {
                   Rider Dashboard
                 </Link>
               </li>
+              <li>
+                <Link href="/admin" className="hover:text-pitstop-charcoal transition-colors">
+                  Admin Portal (Demo)
+                </Link>
+              </li>
             </ul>
           </div>
 

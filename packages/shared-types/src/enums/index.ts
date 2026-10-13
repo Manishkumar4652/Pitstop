@@ -27,6 +27,7 @@ export enum CheckinStatus {
   VERIFIED = 'verified',
   EXPIRED = 'expired',
   REJECTED = 'rejected',
+  CANCELLED = 'cancelled',
 }
 
 export enum RestStopStatus {
@@ -49,3 +50,24 @@ export enum JobCategory {
   STORE_ASSISTANT = 'store_assistant',
   OTHER = 'other',
 }
+
+export enum DealDiscountType {
+  PERCENTAGE = 'percentage',
+  FIXED_PRICE = 'fixed_price',
+  FREE_ITEM = 'free_item',
+}
+
+export enum JobApplicationStatus {
+  PENDING = 'pending',
+  ACCEPTED = 'accepted',
+  REJECTED = 'rejected',
+  WITHDRAWN = 'withdrawn',
+}
+
+export enum MerchantVerificationStatus {
+  PENDING_REVIEW = 'pending_review',
+  VERIFIED = 'verified',
+  REJECTED = 'rejected',
+  SUSPENDED = 'suspended',
+}
+

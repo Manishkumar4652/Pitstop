@@ -1,4 +1,5 @@
 import React from 'react';
+import Link from 'next/link';
 import { 
   Store, 
   TrendingUp, 
@@ -23,6 +24,13 @@ export default function ForMerchantsPage() {
         title="Partner With PitStop"
         description="Transform quiet afternoon hours into steady footfall and gain flexible local helper support by listing your restaurant, cafe, or store as a verified rest stop."
         badge="Merchant Portal"
+        action={
+          <Link href="/merchant">
+            <Button variant="primary" size="md" leftIcon={<Store className="h-4 w-4" />}>
+              Open Merchant Portal Demo
+            </Button>
+          </Link>
+        }
       />
 
       <section className="py-12 sm:py-16">
