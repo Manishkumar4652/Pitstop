@@ -55,7 +55,7 @@ export const MerchantNav: React.FC<MerchantNavProps> = ({ className = '' }) => {
     <>
       {/* Desktop Top Sub-Navigation Bar */}
       <nav 
-        className={`border-b border-pitstop-border bg-white py-2.5 px-4 sm:px-6 lg:px-8 shadow-subtle ${className}`}
+        className={`hidden md:block border-b border-pitstop-border bg-white py-2.5 px-4 sm:px-6 lg:px-8 shadow-subtle ${className}`}
         aria-label="Merchant Portal Navigation"
       >
         <div className="mx-auto max-w-7xl flex flex-wrap items-center justify-between gap-3">
