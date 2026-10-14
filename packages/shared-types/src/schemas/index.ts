@@ -4,4 +4,5 @@ export * from './deal.schema';
 export * from './job.schema';
 export * from './checkin.schema';
 export * from './admin.schema';
+export * from './stats.schema';
 

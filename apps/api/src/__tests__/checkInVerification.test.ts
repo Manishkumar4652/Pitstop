@@ -265,6 +265,8 @@ test('Secure Check-In Verification Protocol & Backend API Suite (Phase 5B1)', as
     assert.equal(validBody.data.restStopId, activeVenue1Id);
     assert.equal(validBody.data.version, 1);
     assert.ok(validBody.data.qrCredential);
+    assert.ok(validBody.data.verificationCode);
+    assert.match(validBody.data.verificationCode, /^\d{6}$/);
 
     // 2.5 Inactive rest stop rejected
     const inactiveRes = await fetch(`${baseUrl}/api/v1/merchant/rest-stops/${inactiveVenueId}/qr-credential`, {
@@ -280,6 +282,8 @@ test('Secure Check-In Verification Protocol & Backend API Suite (Phase 5B1)', as
     assert.equal(rotateRes.status, 200);
     const rotateBody = (await rotateRes.json()) as any;
     assert.equal(rotateBody.data.version, 2);
+    assert.ok(rotateBody.data.verificationCode);
+    assert.notEqual(rotateBody.data.verificationCode, validBody.data.verificationCode);
 
     // The venue's rotation version in store is now 2
     assert.equal(mockRestStopStore.get(activeVenue1Id)?.qrRotationVersion, 2);
@@ -376,6 +380,12 @@ test('Secure Check-In Verification Protocol & Backend API Suite (Phase 5B1)', as
     assert.equal(successBody.data.verificationCode, undefined, 'verificationCode must not be in rider DTO');
     assert.equal(successBody.data.qrCredential, undefined, 'qrCredential must not be in check-in DTO');
 
+    // Capacity slot occupancy verification:
+    // venue2 started with currentOccupancy: 5. After rider1 verified via QR, it must be 6.
+    const venue2AfterQr = mockRestStopStore.get(activeVenue2Id);
+    assert.equal(venue2AfterQr?.capacity.currentOccupancy, 6, 'Venue capacity occupancy must increment by 1 after QR verification');
+    assert.equal(venue2AfterQr?.capacity.status, CapacityStatus.AVAILABLE);
+
     // 3.6 Replay / cooldown protection (within 15 minutes at same rest stop)
     const replayRes = await fetch(`${baseUrl}/api/v1/check-ins/verify`, {
       method: 'POST',
@@ -391,6 +401,46 @@ test('Secure Check-In Verification Protocol & Backend API Suite (Phase 5B1)', as
     assert.equal(replayRes.status, 409);
     const replayBody = (await replayRes.json()) as any;
     assert.match(replayBody.message || '', /already recorded within the last 15 minutes/i);
+
+    // 3.7 Rider direct check-in verification via manual desk verificationCode
+    // Invalid verification code is rejected (HTTP 400)
+    const invalidCodeRes = await fetch(`${baseUrl}/api/v1/check-ins/verify`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${rider2Token}`,
+      },
+      body: JSON.stringify({
+        restStopId: activeVenue2Id,
+        verificationCode: '000000',
+      }),
+    });
+    assert.equal(invalidCodeRes.status, 400);
+
+    // Valid verification code succeeds (HTTP 201) with method 'otp'
+    const venue2ValidCode = venue2Cred.verificationCode;
+    const manualVerifyRes = await fetch(`${baseUrl}/api/v1/check-ins/verify`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${rider2Token}`,
+      },
+      body: JSON.stringify({
+        restStopId: activeVenue2Id,
+        verificationCode: venue2ValidCode,
+      }),
+    });
+    assert.equal(manualVerifyRes.status, 201);
+    const manualVerifyBody = (await manualVerifyRes.json()) as any;
+    assert.equal(manualVerifyBody.success, true);
+    assert.equal(manualVerifyBody.data.status, CheckinStatus.VERIFIED);
+    assert.equal(manualVerifyBody.data.method, 'otp');
+    assert.equal(manualVerifyBody.data.restStopId, activeVenue2Id);
+
+    // Capacity slot occupancy verification:
+    // venue2 had 6 occupied seats. After rider2 verified via manual code, it must be 7.
+    const venue2AfterManual = mockRestStopStore.get(activeVenue2Id);
+    assert.equal(venue2AfterManual?.capacity.currentOccupancy, 7, 'Venue capacity occupancy must increment by 1 after manual code verification');
   });
 
   // ==============================================================
@@ -432,6 +482,10 @@ test('Secure Check-In Verification Protocol & Backend API Suite (Phase 5B1)', as
     assert.equal(verifyBody.data.id, checkInId);
     assert.equal(verifyBody.data.status, CheckinStatus.VERIFIED);
     assert.ok(verifyBody.data.verifiedAt);
+
+    // Venue 1 started with currentOccupancy: 2. After transitioning pending to verified, it must be 3.
+    const venue1AfterTransition = mockRestStopStore.get(activeVenue1Id);
+    assert.equal(venue1AfterTransition?.capacity.currentOccupancy, 3, 'Venue capacity occupancy must increment by 1 after pending check-in transition');
   });
 
   // ==============================================================
@@ -682,5 +736,88 @@ test('Secure Check-In Verification Protocol & Backend API Suite (Phase 5B1)', as
     } finally {
       (config as any).NODE_ENV = originalEnv;
     }
+  });
+
+  // ==============================================================
+  // 10. Dynamic Slot Occupancy & Capacity Status Recalculation
+  // ==============================================================
+  await t.test('10. Rest stop slot filling and dynamic capacity status updates (AVAILABLE -> BUSY -> FULL)', async () => {
+    const slotStopId = 'rs-slot-test-venue';
+    const slotMerchantId = 'merchant-slot-owner';
+
+    mockUserStore.set(slotMerchantId, {
+      _id: slotMerchantId,
+      id: slotMerchantId,
+      name: 'Slot Test Merchant',
+      phone: '+919876543299',
+      role: UserRole.MERCHANT,
+    });
+
+    const slotStop: MockRestStopItem = {
+      _id: slotStopId,
+      id: slotStopId,
+      merchantId: slotMerchantId,
+      name: 'Micro Rest Stop Hub',
+      slug: 'micro-rest-stop-hub',
+      description: 'Small hub with limited seating.',
+      address: {
+        street: '1st Cross',
+        area: 'BTM',
+        city: 'Bengaluru',
+        state: 'Karnataka',
+        pincode: '560068',
+      },
+      location: { type: 'Point', coordinates: [77.61, 12.91] },
+      facilities: [Facility.SEATING, Facility.DRINKING_WATER],
+      images: [],
+      capacity: { maxRiders: 2, currentOccupancy: 0, status: CapacityStatus.AVAILABLE },
+      operatingHours: [{ day: 'mon', openTime: '08:00', closeTime: '22:00', isOpen: true }],
+      status: RestStopStatus.ACTIVE,
+      rating: { average: 5, count: 1 },
+      qrRotationVersion: 1,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    mockRestStopStore.set(slotStopId, slotStop);
+
+    const { qrCredential, verificationCode } = generateVenueQrCredential(slotStopId, 1);
+    slotStop.verificationCode = verificationCode;
+
+    // 1st Rider checks in via QR scan
+    const rider1Res = await fetch(`${baseUrl}/api/v1/check-ins/verify`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${rider1Token}`,
+      },
+      body: JSON.stringify({
+        restStopId: slotStopId,
+        qrCredential,
+      }),
+    });
+    assert.equal(rider1Res.status, 201);
+
+    // Occupancy is now 1 / 2 (50% -> ceil(2 * 0.8) = 2, so still AVAILABLE or BUSY depending on threshold)
+    const after1 = mockRestStopStore.get(slotStopId);
+    assert.equal(after1?.capacity.currentOccupancy, 1);
+
+    // 2nd Rider checks in via manual desk verification code
+    const rider2Res = await fetch(`${baseUrl}/api/v1/check-ins/verify`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${rider2Token}`,
+      },
+      body: JSON.stringify({
+        restStopId: slotStopId,
+        verificationCode,
+      }),
+    });
+    assert.equal(rider2Res.status, 201);
+
+    // Occupancy is now 2 / 2 (100% -> FULL)
+    const after2 = mockRestStopStore.get(slotStopId);
+    assert.equal(after2?.capacity.currentOccupancy, 2);
+    assert.equal(after2?.capacity.status, CapacityStatus.FULL, 'Rest stop status must transition to FULL when all slots are filled');
   });
 });

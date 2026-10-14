@@ -145,6 +145,59 @@ test('Rider QR Scanner & Check-In Verification BFF Suite (Phase 5B2)', async (t)
     }
   });
 
+  await t.test('POST /api/check-ins/verify forwards manual verificationCode to backend', async () => {
+    let capturedBody: any;
+    const { server, url } = await createMockBackend((req, res) => {
+      let chunks = '';
+      req.on('data', (c) => (chunks += c));
+      req.on('end', () => {
+        capturedBody = JSON.parse(chunks);
+        res.writeHead(201, { 'Content-Type': 'application/json' });
+        res.end(
+          JSON.stringify({
+            success: true,
+            data: {
+              id: 'ci-manual-1',
+              restStopId: 'rs-001',
+              restStopName: 'Chai Point Indiranagar',
+              method: 'otp',
+              status: 'verified',
+              checkInTime: new Date().toISOString(),
+              verifiedAt: new Date().toISOString(),
+            },
+          })
+        );
+      });
+    });
+
+    try {
+      process.env.PITSTOP_API_BASE_URL = url;
+      const req = new NextRequest('http://localhost:3000/api/check-ins/verify', {
+        method: 'POST',
+        headers: {
+          host: 'localhost:3000',
+          origin: 'http://localhost:3000',
+          cookie: `${AUTH_COOKIE_NAME}=test-rider-jwt-token`,
+          'content-type': 'application/json',
+        },
+        body: JSON.stringify({
+          restStopId: 'rs-001',
+          verificationCode: '482910',
+        }),
+      });
+
+      const res = await verifyHandler(req);
+      assert.equal(res.status, 201);
+      assert.equal(capturedBody.verificationCode, '482910');
+      const body = await res.json();
+      assert.equal(body.success, true);
+      assert.equal(body.data.method, 'otp');
+      assert.equal(body.data.status, 'verified');
+    } finally {
+      server.close();
+    }
+  });
+
   await t.test('POST /api/check-ins/verify cleanly forwards 409 Cooldown Conflict from backend', async () => {
     const { server, url } = await createMockBackend((_req, res) => {
       res.writeHead(409, { 'Content-Type': 'application/json' });

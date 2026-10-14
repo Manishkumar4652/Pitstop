@@ -45,6 +45,7 @@ export interface IRestStopDocument extends Document {
   dealBadge?: string;
   dealDescription?: string;
   qrRotationVersion: number;
+  verificationCode?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -219,6 +220,10 @@ const RestStopSchema = new Schema<IRestStopDocument>(
       type: Number,
       default: 1,
       min: 1,
+    },
+    verificationCode: {
+      type: String,
+      trim: true,
     },
   },
   {

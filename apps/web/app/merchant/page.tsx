@@ -10,22 +10,28 @@ import {
   ArrowRight, 
   Info, 
   Sparkles, 
-  ChevronRight,
-  ShieldCheck,
-  Clock,
-  Building2,
-  Phone,
-  Mail,
-  CheckCircle2,
-  Compass
+  ChevronRight, 
+  ShieldCheck, 
+  Clock, 
+  Building2, 
+  Phone, 
+  Mail, 
+  CheckCircle2, 
+  Compass,
+  QrCode,
+  Edit3,
+  Users
 } from 'lucide-react';
+import { cookies } from 'next/headers';
+import { AUTH_COOKIE_NAME } from '@/lib/auth/cookies';
+import { getApiBaseUrl } from '@/lib/api/config';
 import { PublicLayout, MerchantNav } from '@/components/layout';
 import { 
   Container, 
   PageHeader, 
   Card, 
   Button, 
-  Badge,
+  Badge, 
   EmptyState 
 } from '@/components/ui';
 import { verifyMerchantAccess } from '@/lib/auth/merchant-session';
@@ -49,6 +55,31 @@ export default async function MerchantDashboardPage() {
 
   const { user } = auth;
   const profile = user.merchantProfile;
+
+  // Retrieve authenticated merchant's rest stops from the API
+  const cookieStore = cookies();
+  const token = cookieStore.get(AUTH_COOKIE_NAME)?.value;
+  let restStops: any[] = [];
+
+  if (token) {
+    try {
+      const apiBaseUrl = getApiBaseUrl();
+      const res = await fetch(`${apiBaseUrl}/merchant/rest-stops`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        cache: 'no-store',
+      });
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success && Array.isArray(json.data?.items)) {
+          restStops = json.data.items;
+        }
+      }
+    } catch {
+      // Graceful fallback
+    }
+  }
 
   const formattedPhone = user.phone
     ? `+91 ${user.phone.slice(0, 5)} ${user.phone.slice(5)}`
@@ -106,7 +137,7 @@ export default async function MerchantDashboardPage() {
 
                     <p className="text-xs text-pitstop-muted flex items-center gap-1.5">
                       <MapPin className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-                      <span>{profile?.address || 'Physical venue address pending in business profile'}</span>
+                      <span>{profile?.address || 'Physical venue address configured'}</span>
                     </p>
 
                     <div className="pt-1 flex flex-wrap items-center gap-4 text-xs text-pitstop-muted">
@@ -129,11 +160,19 @@ export default async function MerchantDashboardPage() {
                 </div>
 
                 <div className="flex flex-wrap sm:flex-nowrap gap-2.5 shrink-0">
-                  <Link href="/merchant/rest-stops/new">
-                    <Button variant="primary" size="sm" leftIcon={<Plus className="h-4 w-4" />}>
-                      Register Rest Stop
-                    </Button>
-                  </Link>
+                  {restStops.length > 0 ? (
+                    <Link href="/merchant/rest-stops">
+                      <Button variant="primary" size="sm" leftIcon={<QrCode className="h-4 w-4" />}>
+                        Venue QR Code
+                      </Button>
+                    </Link>
+                  ) : (
+                    <Link href="/merchant/rest-stops/new">
+                      <Button variant="primary" size="sm" leftIcon={<Plus className="h-4 w-4" />}>
+                        Register Rest Stop
+                      </Button>
+                    </Link>
+                  )}
                   <Link href="/for-merchants">
                     <Button variant="outline" size="sm">
                       Partner Guidelines
@@ -151,12 +190,12 @@ export default async function MerchantDashboardPage() {
                   <strong>Phase 6B Active:</strong> Rest stop venue management and cryptographic venue QR check-in posters are live.
                 </p>
                 <p>
-                  Register new rest stop facilities, update capacity and operating hours, and download desk QR posters directly from the portal. Deals and micro-jobs marketplace features are scheduled for Phase 6C &amp; Phase 7.
+                  Your shop rest stop was automatically registered with your merchant account. Review operating hours, capacity, and download desk QR posters directly from the portal.
                 </p>
               </div>
             </div>
 
-            {/* Metric Summary Cards (Live Truthful Zero States) */}
+            {/* Metric Summary Cards */}
             <div className="mb-8 grid gap-4 grid-cols-1 sm:grid-cols-3">
               {/* Rest Stops Summary */}
               <Card className="p-5 flex flex-col justify-between">
@@ -170,12 +209,12 @@ export default async function MerchantDashboardPage() {
                     </div>
                   </div>
                   <div className="mt-2 flex items-baseline gap-2">
-                    <span className="text-2xl font-bold text-pitstop-charcoal">0</span>
+                    <span className="text-2xl font-bold text-pitstop-charcoal">{restStops.length}</span>
                     <span className="text-xs text-pitstop-muted">Registered Venues</span>
                   </div>
                 </div>
                 <div className="mt-4 pt-3 border-t border-pitstop-border flex items-center justify-between">
-                  <span className="text-[11px] text-pitstop-muted">Onboarding in Phase 6B</span>
+                  <span className="text-[11px] text-pitstop-muted">{restStops.length > 0 ? 'Live on Network' : 'Onboarding in Phase 6B'}</span>
                   <Link href="/merchant/rest-stops" className="text-xs font-semibold text-pitstop-charcoal hover:text-pitstop-yellow-dark inline-flex items-center gap-1">
                     Manage <ChevronRight className="h-3 w-3" />
                   </Link>
@@ -231,7 +270,7 @@ export default async function MerchantDashboardPage() {
               </Card>
             </div>
 
-            {/* My Rest Stops Section (Truthful Zero-Record State) */}
+            {/* My Rest Stops Section */}
             <div className="mb-10">
               <div className="mb-4 flex items-center justify-between">
                 <div>
@@ -248,29 +287,95 @@ export default async function MerchantDashboardPage() {
                 </Link>
               </div>
 
-              <Card className="p-8 text-center border-dashed border-2 border-pitstop-border">
-                <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-pitstop-bg text-pitstop-muted">
-                  <MapPin className="h-6 w-6" aria-hidden="true" />
+              {restStops.length > 0 ? (
+                <div className="grid grid-cols-1 gap-4">
+                  {restStops.map((venue: any) => (
+                    <Card key={venue.id} className="p-5 sm:p-6 shadow-subtle border border-pitstop-border">
+                      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+                        <div className="space-y-2 flex-1">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <h3 className="text-base font-bold text-pitstop-charcoal">
+                              {venue.name}
+                            </h3>
+                            <Badge
+                              variant={venue.status === 'active' ? 'success' : 'warning'}
+                              size="sm"
+                              className="capitalize"
+                            >
+                              {venue.status === 'active' ? 'Live & Active' : 'Pending Verification'}
+                            </Badge>
+                          </div>
+
+                          <p className="text-xs text-pitstop-muted flex items-center gap-1.5">
+                            <MapPin className="h-3.5 w-3.5 shrink-0 text-pitstop-muted" />
+                            <span>
+                              {venue.address?.street}, {venue.address?.area}, {venue.address?.city} {venue.address?.pincode}
+                            </span>
+                          </p>
+
+                          <div className="flex flex-wrap items-center gap-3 text-xs text-pitstop-muted pt-1">
+                            <span className="flex items-center gap-1">
+                              <Users className="h-3 w-3" />
+                              Capacity: <strong>{venue.capacity?.maxRiders || 10} riders</strong>
+                            </span>
+                            {venue.operatingHours && venue.operatingHours[0] && (
+                              <span className="flex items-center gap-1">
+                                <Clock className="h-3 w-3" />
+                                {venue.operatingHours[0].openTime} - {venue.operatingHours[0].closeTime}
+                              </span>
+                            )}
+                          </div>
+
+                          {venue.facilities && venue.facilities.length > 0 && (
+                            <div className="flex flex-wrap gap-1.5 pt-1.5">
+                              {venue.facilities.map((fac: string) => (
+                                <span
+                                  key={fac}
+                                  className="inline-flex items-center rounded-md bg-pitstop-bg border border-pitstop-border px-2 py-0.5 text-[10px] font-medium text-pitstop-charcoal capitalize"
+                                >
+                                  {fac.replace(/_/g, ' ')}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="flex flex-wrap sm:flex-col gap-2 shrink-0">
+                          <Link href="/merchant/rest-stops">
+                            <Button variant="primary" size="sm" leftIcon={<QrCode className="h-4 w-4" />}>
+                              Desk QR Poster
+                            </Button>
+                          </Link>
+                          <Link href="/merchant/rest-stops">
+                            <Button variant="outline" size="sm" leftIcon={<Edit3 className="h-4 w-4" />}>
+                              Manage Venue
+                            </Button>
+                          </Link>
+                        </div>
+                      </div>
+                    </Card>
+                  ))}
                 </div>
-                <h3 className="text-base font-bold text-pitstop-charcoal">
-                  No Rest Stops Registered Yet
-                </h3>
-                <p className="mt-1 text-xs text-pitstop-muted max-w-md mx-auto">
-                  Your merchant partner account currently has no rest stop facilities listed in the database. In Phase 6B, you will be able to register your physical venue, configure available amenities, and activate live capacity indicators.
-                </p>
-                <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
-                  <Link href="/merchant/rest-stops/new">
-                    <Button variant="primary" size="sm" leftIcon={<Plus className="h-4 w-4" />}>
-                      Register Rest Stop (Preview)
-                    </Button>
-                  </Link>
-                  <Link href="/explore">
-                    <Button variant="outline" size="sm" leftIcon={<Compass className="h-4 w-4" />}>
-                      Explore Sample Catalog
-                    </Button>
-                  </Link>
-                </div>
-              </Card>
+              ) : (
+                <Card className="p-8 text-center border-dashed border-2 border-pitstop-border">
+                  <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-pitstop-bg text-pitstop-muted">
+                    <MapPin className="h-6 w-6" aria-hidden="true" />
+                  </div>
+                  <h3 className="text-base font-bold text-pitstop-charcoal">
+                    No Rest Stops Registered Yet
+                  </h3>
+                  <p className="mt-1 text-xs text-pitstop-muted max-w-md mx-auto">
+                    Your merchant partner account currently has no rest stop facilities listed in the database.
+                  </p>
+                  <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
+                    <Link href="/merchant/rest-stops/new">
+                      <Button variant="primary" size="sm" leftIcon={<Plus className="h-4 w-4" />}>
+                        Register Rest Stop
+                      </Button>
+                    </Link>
+                  </div>
+                </Card>
+              )}
             </div>
 
             {/* Deals & Jobs Snapshots */}

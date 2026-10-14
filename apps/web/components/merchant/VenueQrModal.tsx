@@ -193,6 +193,21 @@ export const VenueQrModal: React.FC<VenueQrModalProps> = ({
             )}
           </div>
 
+          {/* Manual Verification Code on Desk Poster */}
+          {credentialData?.verificationCode && (
+            <div className="my-4 p-4 bg-pitstop-bg border-2 border-dashed border-pitstop-charcoal rounded-xl text-center">
+              <p className="text-xs font-bold uppercase tracking-wider text-pitstop-charcoal">
+                Manual Desk Check-In Code
+              </p>
+              <div className="text-4xl font-mono font-black tracking-widest text-pitstop-charcoal my-1.5">
+                {credentialData.verificationCode}
+              </div>
+              <p className="text-[11px] text-pitstop-muted">
+                Can&apos;t scan QR? Riders can enter this 6-digit code in the PitStop app to verify check-in.
+              </p>
+            </div>
+          )}
+
           <div className="bg-pitstop-bg border border-pitstop-border rounded-xl p-4 mb-6 text-left text-xs space-y-2">
             <p className="font-semibold text-pitstop-charcoal">
               📱 Instructions for Delivery Riders:
@@ -200,6 +215,7 @@ export const VenueQrModal: React.FC<VenueQrModalProps> = ({
             <ol className="list-decimal list-inside text-pitstop-muted space-y-1">
               <li>Open the <strong>PitStop App</strong> on your mobile device.</li>
               <li>Tap <strong>Check-In</strong> and point your camera at this QR code.</li>
+              <li>Or choose <strong>Enter Code Manually</strong> and enter desk code <strong>{credentialData?.verificationCode || 'above'}</strong>.</li>
               <li>Enjoy complimentary drinking water, seating, and phone charging while you rest.</li>
             </ol>
           </div>
@@ -297,6 +313,21 @@ export const VenueQrModal: React.FC<VenueQrModalProps> = ({
                     HMAC Verified
                   </Badge>
                 </div>
+
+                {/* Desk Verification Code */}
+                {credentialData?.verificationCode && (
+                  <div className="mt-4 w-full max-w-xs bg-pitstop-yellow/15 border-2 border-pitstop-yellow/50 rounded-xl p-3 text-center shadow-subtle">
+                    <span className="text-[11px] font-bold text-pitstop-charcoal/80 uppercase tracking-wider block">
+                      Manual Verification Code / Desk Code
+                    </span>
+                    <div className="text-3xl font-mono font-black tracking-widest text-pitstop-charcoal my-1 select-all">
+                      {credentialData.verificationCode}
+                    </div>
+                    <p className="text-[11px] text-pitstop-muted">
+                      Riders can manually enter this 6-digit code in their app to check in
+                    </p>
+                  </div>
+                )}
               </div>
 
               {/* Protocol Security Notice */}

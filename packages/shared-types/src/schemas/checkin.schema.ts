@@ -28,7 +28,8 @@ export const AdminCheckInQuerySchema = CheckInQuerySchema.extend({
 export const VerifyCheckInRequestSchema = z
   .object({
     restStopId: z.string().trim().min(1, 'Rest stop ID is required'),
-    qrCredential: z.string().trim().min(1, 'Venue QR credential is required'),
+    qrCredential: z.string().trim().optional(),
+    verificationCode: z.string().trim().optional(),
     location: z
       .object({
         latitude: z.number().min(-90).max(90),
@@ -36,7 +37,14 @@ export const VerifyCheckInRequestSchema = z
       })
       .optional(),
   })
-  .strict();
+  .strict()
+  .refine(
+    (data) => Boolean((data.qrCredential && data.qrCredential.length > 0) || (data.verificationCode && data.verificationCode.length > 0)),
+    {
+      message: 'Either venue QR credential or verification code is required',
+      path: ['qrCredential'],
+    }
+  );
 
 // Merchant desk check-in confirmation
 export const ConfirmCheckInRequestSchema = z
@@ -56,6 +64,7 @@ export const RejectCheckInRequestSchema = z
 export const VenueQrCredentialResponseSchema = z.object({
   restStopId: z.string(),
   qrCredential: z.string(),
+  verificationCode: z.string().optional(),
   expiresAt: z.string(),
   version: z.number().int().min(1),
 });

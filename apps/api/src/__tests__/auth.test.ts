@@ -325,6 +325,16 @@ test('Authentication and Authorization Test Suite (Phase 3C)', async (t) => {
       assert.equal(json.success, true);
       assert.equal(json.data.user.role, UserRole.MERCHANT);
       assert.equal(json.data.user.merchantProfile.businessName, 'Gupta Chai Point');
+
+      // Verify unified shop creation: the merchant's rest stop was created automatically!
+      const restStopsRes = await fetch(`${baseUrl}/api/v1/merchant/rest-stops`, {
+        headers: { Authorization: `Bearer ${json.data.token}` },
+      });
+      assert.equal(restStopsRes.status, 200);
+      const restStopsJson = await restStopsRes.json();
+      assert.equal(restStopsJson.success, true);
+      assert.equal(restStopsJson.data.items.length, 1);
+      assert.equal(restStopsJson.data.items[0].name, 'Gupta Chai Point');
     });
 
     await sub.test('Rejects duplicate phone registration with HTTP 409 Conflict', async () => {

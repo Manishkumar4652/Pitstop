@@ -287,6 +287,7 @@ test('Merchant Rest-Stop Management & Venue QR BFF Suite (Phase 6B)', async (t) 
           restStopId: 'rs-123',
           version: 1,
           qrCredential: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.mock_qr_token',
+          verificationCode: '482910',
           expiresAt: '2026-11-10T00:00:00.000Z',
         },
       };
@@ -311,6 +312,7 @@ test('Merchant Rest-Stop Management & Venue QR BFF Suite (Phase 6B)', async (t) 
       assert.equal(body.data.restStopId, 'rs-123');
       assert.equal(body.data.version, 1);
       assert.ok(body.data.qrCredential);
+      assert.equal(body.data.verificationCode, '482910');
     } finally {
       server.close();
     }
@@ -370,6 +372,7 @@ test('Merchant Rest-Stop Management & Venue QR BFF Suite (Phase 6B)', async (t) 
             restStopId: 'rs-123',
             version: 2,
             qrCredential: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.rotated_v2_token',
+            verificationCode: '849201',
             expiresAt: '2026-11-10T00:00:00.000Z',
           },
         };
@@ -399,6 +402,7 @@ test('Merchant Rest-Stop Management & Venue QR BFF Suite (Phase 6B)', async (t) 
       const body = await res.json();
       assert.equal(body.success, true);
       assert.equal(body.data.version, 2);
+      assert.equal(body.data.verificationCode, '849201');
       assert.match(body.message, /invalidated/i);
     } finally {
       server.close();

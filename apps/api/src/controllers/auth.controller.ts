@@ -1,13 +1,16 @@
 import { Request, Response } from 'express';
-import { UserRole, RegisterRequest, LoginRequest } from 'shared-types';
+import { UserRole, RegisterRequest, LoginRequest, Facility, CapacityStatus, RestStopStatus } from 'shared-types';
 import { User, IUserDocument } from '../models/User';
+import { RestStop } from '../models/RestStop';
 import { isDatabaseConnected } from '../config/database';
 import { hashPassword, comparePassword } from '../utils/password';
 import { signAccessToken } from '../utils/jwt';
 import { formatSafeUser } from '../utils/user';
+import { slugify, generateUniqueSlug } from '../utils/slug';
 import { sendSuccess } from '../utils/response';
 import { config } from '../config/env';
 import { BadRequestError, UnauthorizedError, ConflictError, AppError } from '../utils/errors';
+import { mockRestStopStore, MockRestStopItem } from './restStopMockStore';
 
 
 
@@ -63,8 +66,14 @@ export async function registerHandler(req: Request, res: Response): Promise<void
     // 3. Hash password
     const passwordHash = await hashPassword(body.password);
 
+    let createdUserId: string | null = null;
+
     // 4. Create new user with explicit allowlisted attributes
     try {
+      const merchantAddressString = body.merchantProfile?.shopAddress
+        ? `${body.merchantProfile.shopAddress.street}, ${body.merchantProfile.shopAddress.area}, ${body.merchantProfile.shopAddress.city}, ${body.merchantProfile.shopAddress.state} - ${body.merchantProfile.shopAddress.pincode}`
+        : body.merchantProfile?.address || 'Address pending';
+
       const newUser = new User({
         name: body.name.trim(),
         phone,
@@ -72,11 +81,87 @@ export async function registerHandler(req: Request, res: Response): Promise<void
         passwordHash,
         role: body.role,
         riderProfile: body.riderProfile,
-        merchantProfile: body.merchantProfile,
+        merchantProfile: body.merchantProfile ? {
+          businessName: body.merchantProfile.businessName.trim(),
+          businessType: body.merchantProfile.businessType,
+          ...(body.merchantProfile.gstNumber && { gstNumber: body.merchantProfile.gstNumber.trim() }),
+          address: merchantAddressString,
+          verificationStatus: 'pending_review',
+        } : undefined,
         isVerified: false,
       });
 
       await newUser.save();
+      createdUserId = newUser._id.toString();
+
+      // Automatically create the initial Shop/RestStop for the merchant
+      if (newUser.role === UserRole.MERCHANT && body.merchantProfile) {
+        const mp = body.merchantProfile;
+        const venueName = mp.businessName?.trim() || `${newUser.name.trim()}'s Rest Stop`;
+        const baseSlug = slugify(venueName) || 'rest-stop';
+        let slug = baseSlug;
+        let slugAttempt = 0;
+        while (await RestStop.findOne({ slug })) {
+          slugAttempt++;
+          slug = `${baseSlug}-${Date.now().toString(36)}-${Math.floor(100 + Math.random() * 900)}`;
+          if (slugAttempt > 5) break;
+        }
+
+        const shopAddress = mp.shopAddress ? {
+          street: mp.shopAddress.street.trim(),
+          area: mp.shopAddress.area.trim(),
+          city: mp.shopAddress.city.trim(),
+          state: mp.shopAddress.state.trim(),
+          pincode: mp.shopAddress.pincode.trim(),
+          ...(mp.shopAddress.landmark?.trim() && { landmark: mp.shopAddress.landmark.trim() }),
+        } : {
+          street: mp.address?.trim() || 'Main Market Street',
+          area: 'Central Commercial Area',
+          city: 'Jaipur',
+          state: 'Rajasthan',
+          pincode: '302001',
+        };
+
+        const coordinates: [number, number] = mp.location?.coordinates || [75.7873, 26.9124];
+        const facilities = mp.facilities && mp.facilities.length > 0
+          ? mp.facilities
+          : [Facility.DRINKING_WATER, Facility.SEATING, Facility.CHARGING];
+        const maxRiders = mp.capacity?.maxRiders && mp.capacity.maxRiders >= 1 ? mp.capacity.maxRiders : 10;
+        const openTime = mp.operatingHours?.openTime || '08:00';
+        const closeTime = mp.operatingHours?.closeTime || '22:00';
+        const days = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] as const;
+        const operatingHours = days.map((day) => ({
+          day,
+          openTime,
+          closeTime,
+          isOpen: true,
+        }));
+
+        const newRestStop = new RestStop({
+          merchantId: newUser._id,
+          name: venueName,
+          slug,
+          description: mp.description?.trim() || `${venueName} welcomes gig delivery partners with clean rest amenities, cool drinking water, and phone charging points.`,
+          address: shopAddress,
+          location: {
+            type: 'Point',
+            coordinates,
+          },
+          facilities,
+          images: [],
+          capacity: {
+            maxRiders,
+            currentOccupancy: 0,
+            status: CapacityStatus.AVAILABLE,
+          },
+          operatingHours,
+          status: RestStopStatus.ACTIVE,
+          rating: { average: 0, count: 0 },
+          qrRotationVersion: 1,
+        });
+
+        await newRestStop.save();
+      }
 
       // 5. Generate signed JWT token
       const token = signAccessToken({
@@ -94,8 +179,27 @@ export async function registerHandler(req: Request, res: Response): Promise<void
         'User registered successfully.'
       );
     } catch (err: unknown) {
+      // Roll back created user if rest stop creation or subsequent steps fail
+      if (createdUserId) {
+        try {
+          await User.findByIdAndDelete(createdUserId);
+        } catch {
+          // ignore cleanup error
+        }
+      }
+
       // Catch MongoDB unique constraint race conditions (code 11000)
       if (err && typeof err === 'object' && 'code' in err && (err as { code: number }).code === 11000) {
+        const mongoErr = err as { keyPattern?: Record<string, number> };
+        if (mongoErr.keyPattern?.phone) {
+          throw new ConflictError('An account with this phone number already exists.');
+        }
+        if (mongoErr.keyPattern?.email) {
+          throw new ConflictError('An account with this email address already exists.');
+        }
+        if (mongoErr.keyPattern?.slug) {
+          throw new ConflictError('A shop with this name or slug already exists. Please choose a slightly different shop name.');
+        }
         throw new ConflictError('An account with this phone number or email already exists.');
       }
       throw err;
@@ -129,12 +233,86 @@ export async function registerHandler(req: Request, res: Response): Promise<void
       passwordHash,
       role: body.role,
       riderProfile: body.riderProfile,
-      merchantProfile: body.merchantProfile,
+      merchantProfile: body.merchantProfile ? {
+        businessName: body.merchantProfile.businessName.trim(),
+        businessType: body.merchantProfile.businessType,
+        ...(body.merchantProfile.gstNumber && { gstNumber: body.merchantProfile.gstNumber.trim() }),
+        address: body.merchantProfile.shopAddress
+          ? `${body.merchantProfile.shopAddress.street}, ${body.merchantProfile.shopAddress.area}, ${body.merchantProfile.shopAddress.city}, ${body.merchantProfile.shopAddress.state} - ${body.merchantProfile.shopAddress.pincode}`
+          : body.merchantProfile.address || 'Address pending',
+        verificationStatus: 'pending_review',
+      } : undefined,
       isVerified: false,
       createdAt: new Date(),
     };
 
     mockUserStore.set(mockId, mockUser);
+
+    if (body.role === UserRole.MERCHANT && body.merchantProfile) {
+      const mp = body.merchantProfile;
+      const venueName = mp.businessName?.trim() || `${body.name.trim()}'s Rest Stop`;
+      let slug = slugify(venueName) || generateUniqueSlug(venueName);
+      const mockRsId = `mock-rs-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+
+      const shopAddress = mp.shopAddress ? {
+        street: mp.shopAddress.street.trim(),
+        area: mp.shopAddress.area.trim(),
+        city: mp.shopAddress.city.trim(),
+        state: mp.shopAddress.state.trim(),
+        pincode: mp.shopAddress.pincode.trim(),
+        ...(mp.shopAddress.landmark?.trim() && { landmark: mp.shopAddress.landmark.trim() }),
+      } : {
+        street: mp.address?.trim() || 'Main Market Street',
+        area: 'Central Commercial Area',
+        city: 'Jaipur',
+        state: 'Rajasthan',
+        pincode: '302001',
+      };
+
+      const coordinates: [number, number] = mp.location?.coordinates || [75.7873, 26.9124];
+      const facilities = mp.facilities && mp.facilities.length > 0
+        ? mp.facilities
+        : [Facility.DRINKING_WATER, Facility.SEATING, Facility.CHARGING];
+      const maxRiders = mp.capacity?.maxRiders && mp.capacity.maxRiders >= 1 ? mp.capacity.maxRiders : 10;
+      const openTime = mp.operatingHours?.openTime || '08:00';
+      const closeTime = mp.operatingHours?.closeTime || '22:00';
+      const days = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] as const;
+      const operatingHours = days.map((day) => ({
+        day,
+        openTime,
+        closeTime,
+        isOpen: true,
+      }));
+
+      const mockRestStop: MockRestStopItem = {
+        _id: mockRsId,
+        id: mockRsId,
+        merchantId: mockId,
+        name: venueName,
+        slug,
+        description: mp.description?.trim() || `${venueName} welcomes gig delivery partners with clean rest amenities, cool drinking water, and phone charging points.`,
+        address: shopAddress,
+        location: {
+          type: 'Point',
+          coordinates,
+        },
+        facilities,
+        images: [],
+        capacity: {
+          maxRiders,
+          currentOccupancy: 0,
+          status: CapacityStatus.AVAILABLE,
+        },
+        operatingHours,
+        status: RestStopStatus.ACTIVE,
+        rating: { average: 0, count: 0 },
+        qrRotationVersion: 1,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      mockRestStopStore.set(mockRsId, mockRestStop);
+    }
 
     const token = signAccessToken({
       userId: mockId,
@@ -254,3 +432,30 @@ export async function getMeHandler(req: Request, res: Response): Promise<void> {
     200
   );
 }
+
+/**
+ * Handler for GET /api/v1/auth/check-phone?phone=...
+ * Checks if a phone number is already registered in the system.
+ */
+export async function checkPhoneHandler(req: Request, res: Response): Promise<void> {
+  const phone = typeof req.query.phone === 'string' ? req.query.phone.trim() : '';
+  if (!phone || !/^[6-9]\d{9}$/.test(phone)) {
+    throw new BadRequestError('A valid 10-digit Indian mobile number is required.');
+  }
+
+  let exists = false;
+  if (isDatabaseConnected()) {
+    const existing = await User.findOne({ phone }).lean();
+    exists = Boolean(existing);
+  } else {
+    for (const u of mockUserStore.values()) {
+      if (u.phone === phone) {
+        exists = true;
+        break;
+      }
+    }
+  }
+
+  sendSuccess(res, { available: !exists }, 200);
+}
+

@@ -8,6 +8,7 @@ import {
   registerHandler,
   loginHandler,
   getMeHandler,
+  checkPhoneHandler,
 } from '../controllers/auth.controller';
 
 export const authRouter = Router();
@@ -26,6 +27,11 @@ const loginLimiter = createRateLimiter({
 });
 
 // Public routes
+authRouter.get(
+  '/check-phone',
+  asyncHandler(checkPhoneHandler)
+);
+
 authRouter.post(
   '/register',
   registerLimiter,

@@ -1773,3 +1773,104 @@ Phase 6A connected the merchant portal to the existing backend authentication an
    - Added dedicated quick demo helper cards with "Auto Fill" buttons on Rider (`9876543212` / `Password@123`), Merchant (`9876543211` / `Password@123`), and Admin (`9876543210` / `Password@123`) login pages so test credentials can be tested instantly.
 4. **Verification**:
    - TypeScript compilation verified (`npx tsc -p apps/web/tsconfig.json --noEmit` passed with 0 errors).
+
+---
+
+## Unified Merchant & Shop Single Onboarding Milestone
+
+### Completed Tasks
+1. **Single Account Paradigm ("Merchant IS the Shop")**:
+   - Removed the dual-step friction where a user first registered a merchant user and then had to separately register their shop/venue.
+   - All physical shop/rest-stop details (venue name, category, full address with area & pincode, GPS coordinates with auto-detection, rider facilities, seating capacity, operating hours, and welcome note) are now collected upfront during Merchant registration.
+2. **Schema & API Contracts (`packages/shared-types`)**:
+   - Expanded [`RegisterRequestSchema`](file:///c:/Users/Manish/Desktop/Pitstop1/packages/shared-types/src/schemas/auth.schema.ts) under `merchantProfile` to accept `shopAddress`, `location`, `facilities`, `capacity`, `operatingHours`, and `description`.
+   - Maintained 100% backward compatibility for existing callers passing legacy `address` strings.
+3. **Backend Unified Registration & Auto-Creation (`apps/api`)**:
+   - Updated [`auth.controller.ts`](file:///c:/Users/Manish/Desktop/Pitstop1/apps/api/src/controllers/auth.controller.ts) `registerHandler`:
+     - Creates the authenticated `User` account with role `MERCHANT`.
+     - Automatically creates and persists the associated `RestStop` document in MongoDB (and in `mockRestStopStore` for offline test suites), linking it to `merchantId`.
+     - New shop is immediately `ACTIVE` and discoverable with QR credentials ready to generate.
+4. **Mobile-First Progressive Registration Experience (`apps/web`)**:
+   - Re-architected [`merchant/register/page.tsx`](file:///c:/Users/Manish/Desktop/Pitstop1/apps/web/app/merchant/register/page.tsx) with a smooth 4-step wizard:
+     - **Step 1: Owner & Login**: Contact person name, mobile number, email, password.
+     - **Step 2: Shop Details**: Shop/business name, category, optional GSTIN, rider description note.
+     - **Step 3: Location & GPS**: Street, area, city, state, 6-digit pincode, landmark, and one-tap "Auto-Detect GPS" button.
+     - **Step 4: Amenities & Capacity**: Interactive amenity toggle chips (water, seating, charging, restroom, Wi-Fi, parking, AC, first aid), max rider capacity, operating hours.
+   - Minimum 44px touch targets on mobile smartphone screens with real-time step validation and smooth Next/Back navigation.
+5. **Dynamic Merchant Dashboard Venue Presentation**:
+   - Updated [`merchant/page.tsx`](file:///c:/Users/Manish/Desktop/Pitstop1/apps/web/app/merchant/page.tsx) to query the merchant's rest stops using their HttpOnly session token.
+   - Replaced static zero-record placeholder with live card displaying the newly registered shop, operating hours, amenities badges, and direct links to "Desk QR Poster" and "Manage Venue".
+6. **Registration Conflict Resolution & Step 1 Pre-Check**:
+   - **Root Cause**: When duplicate submissions or partial failures occurred, users were left stranded on Step 4 (Amenities & Capacity) seeing an unexpected "An account with this phone number already exists" message because phone check only ran during final submission, and previous attempts had already created the user document in MongoDB Atlas.
+   - **Step 1 Real-time Phone Availability Check**: Added `GET /api/v1/auth/check-phone` and Next.js BFF `GET /api/auth/check-phone`. When clicking "Continue" on Step 1, the system checks whether the 10-digit number is available in real time, preventing users from filling steps 2-4 only to encounter an error at the end.
+   - **Rollback Guarantee**: In [`apps/api/src/controllers/auth.controller.ts`](file:///c:/Users/Manish/Desktop/Pitstop1/apps/api/src/controllers/auth.controller.ts), if shop creation fails after user creation, the newly created user is automatically rolled back (`User.findByIdAndDelete`), eliminating orphan user accounts.
+   - **Unique Slug Generation Loop**: Implemented candidate slug generation with randomized collision retry to ensure duplicate shop names never trigger an unhandled MongoDB 11000 index collision.
+   - **Automatic Step 1 Redirection**: In [`merchant/register/page.tsx`](file:///c:/Users/Manish/Desktop/Pitstop1/apps/web/app/merchant/register/page.tsx), if final registration fails due to duplicate phone or email, the wizard automatically switches back to Step 1 and highlights the credential inputs.
+   - **Database Cleanup**: Cleared orphan test merchant accounts (`7014162252`, `6985365289`, `9865784512`, etc.) in MongoDB Atlas so the numbers are completely free for real testing.
+7. **Empirical Verification**:
+   - Monorepo test suite passed: 327 API tests + 111 Web tests passing (0 failures).
+   - Validated phone check endpoint and verified end-to-end merchant registration.
+8. **Admin Portal Mobile Navigation Streamlining**:
+   - Updated [`AdminNav.tsx`](file:///c:/Users/Manish/Desktop/Pitstop1/apps/web/components/layout/AdminNav.tsx) top sub-navigation container with `hidden md:block`.
+   - On smartphone/mobile screens, the duplicate top tabs under the main navigation bar are now hidden, keeping only the clean mobile bottom navigation bar (`md:hidden fixed bottom-0`), matching the mobile UX pattern of the Merchant and Rider portals.
+9. **Real & Verified Platform Impact Metrics on Landing Page**:
+   - Replaced static placeholder counts (`5,000+` riders, `120+` stops) with live, dynamic metrics calculated directly from the MongoDB database.
+   - Added `PublicPlatformStatsSchema` and `PublicPlatformStats` interface to `packages/shared-types`.
+   - Built `GET /api/v1/stats/public` in `apps/api` (`stats.controller.ts`) querying active riders, verified active rest stops, distinct cities, and real aggregate amenity ratings.
+   - Added [`fetchPublicPlatformStats`](file:///c:/Users/Manish/Desktop/Pitstop1/apps/web/lib/api/public-stats.ts) in `apps/web` with 30s ISR caching for high-speed page loads.
+   - Updated [`apps/web/app/page.tsx`](file:///c:/Users/Manish/Desktop/Pitstop1/apps/web/app/page.tsx) to render real metrics and cities dynamically.
+
+
+
+
+---
+
+## QR Code & Manual Desk Verification Code Dual Verification Milestone
+
+### Completed Tasks
+1. **Cryptographic Verification Code Utility (pps/api/src/utils/qr.ts)**:
+   - Implemented generateVenueVerificationCode(restStopId, version): Generates a tamper-proof 6-digit numeric verification code (100000-999999) using HMAC-SHA256 bound to the rest stop and rotation version.
+   - Updated generateVenueQrCredential(...): Generates and returns both the signed qrCredential token and the clean 6-digit erificationCode.
+   - Implemented erifyVenueVerificationCode(...): Performs timing-safe validation against the venue's rotation version and stored/dynamic code.
+2. **Schema & Models Synchronization**:
+   - Added erificationCode?: string to VenueQrCredentialResponseSchema and permitted erificationCode?: string in VerifyCheckInRequestSchema (packages/shared-types).
+   - Added erificationCode field to IRestStopDocument and RestStopSchema in pps/api/src/models/RestStop.ts.
+   - Updated MockRestStopItem in pps/api/src/controllers/restStopMockStore.ts.
+3. **Backend Controller & Check-In Verification (pps/api/src/controllers/checkIn.controller.ts)**:
+   - getVenueQrCredentialHandler: Returns both qrCredential and erificationCode, persisting the code to the rest stop document.
+   - otateVenueQrCredentialHandler: Atomically increments rotation version and generates a new 6-digit erificationCode, instantly revoking previous QR tokens and old manual codes.
+   - erifyRiderCheckInHandler: Supports dual verification paths:
+     - Scanned QR code tokens (HMAC payloads with dot separator) are verified with erifyVenueQrCredential.
+     - 6-digit manual verification codes (submitted via erificationCode or typed manually) are verified with erifyVenueVerificationCode.
+     - Transitions pending check-in to verified or creates a new verified check-in with method qr_code (for scan) or otp (for manual code).
+4. **Merchant Desk Poster & Screen Modal (pps/web/components/merchant/VenueQrModal.tsx)**:
+   - Screen View: Displays a dedicated 'Manual Verification Code / Desk Code' badge with the 6-digit code in 3xl bold monospace text right below the QR code.
+   - Printable Poster View: Prints a dedicated 'Manual Desk Check-In Code' section below the QR code with rider instructions to use either the camera scanner or manual 6-digit code.
+5. **Rider Mobile Check-In Scanner & Manual Input (pps/web/components/rider/QrScannerModal.tsx)**:
+   - Upgraded the manual entry accordion from complex token string entry to a friendly 'Desk Verification Code (6 Digits)' form with numeric keyboard mode (inputMode='numeric', placeholder='e.g. 482910').
+   - Automatically detects whether the rider submitted an HMAC token or a 6-digit code and calls /api/check-ins/verify accordingly.
+6. **Testing & Verification**:
+   - Updated pps/api/src/__tests__/checkInVerification.test.ts to assert verification code generation, rotation invalidation, and manual code verification. All 327 API tests passing.
+   - Updated pps/web/lib/api/__tests__/merchant-rest-stops.test.ts and check-ins.test.ts to verify manual verification code handling. All 112 Web tests passing.
+
+
+---
+
+## Rest Stop Slot Filling & Dynamic Capacity Status Milestone
+
+### Completed Tasks
+1. **Dynamic Capacity Recalculation Engine (`apps/api/src/controllers/checkIn.controller.ts`)**:
+   - Implemented `computeUpdatedCapacity(capacity, delta = 1)` helper function.
+   - Atomically increments `capacity.currentOccupancy` by 1 upon every verified check-in, capped at `capacity.maxRiders`.
+   - Automatically recalculates `capacity.status`:
+     - If `newOccupancy >= maxRiders`: status dynamically updates to `CapacityStatus.FULL`.
+     - Else if `newOccupancy >= Math.ceil(maxRiders * 0.8)`: status dynamically updates to `CapacityStatus.BUSY`.
+     - Else: status dynamically updates to `CapacityStatus.AVAILABLE`.
+2. **Check-In Verification Integration**:
+   - Integrated into `verifyRiderCheckInHandler` across both MongoDB Atlas and mock in-memory stores for direct QR scans and manual desk code entries.
+   - Handles both newly initiated direct check-ins (`201 Created`) and existing pending check-in transitions (`200 OK`).
+   - Integrated into `confirmMerchantCheckInHandler` across both MongoDB Atlas and mock in-memory stores when a merchant manually confirms a pending check-in from their desk portal.
+3. **Automated Integration Testing & Verification**:
+   - Enhanced `apps/api/src/__tests__/checkInVerification.test.ts` with assertions verifying occupancy increments upon QR scan and manual code entry.
+   - Added test 10 verifying full status transitions (`AVAILABLE` -> `BUSY` -> `FULL`) and ceiling clamping.
+   - Full monorepo test suite passing: 328 API tests + 112 Web tests passing with 0 failures and 0 TypeScript errors.

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { UserRole } from '../enums';
+import { UserRole, Facility } from '../enums';
 
 // Phone number regex for Indian mobile numbers (10 digits starting with 6-9)
 const phoneRegex = /^[6-9]\d{9}$/;
@@ -26,10 +26,39 @@ export const RegisterRequestSchema = z.object({
     .optional(),
   merchantProfile: z
     .object({
-      businessName: z.string().trim().min(2, 'Business name is required'),
+      businessName: z.string().trim().min(2, 'Business or shop name is required'),
       businessType: z.enum(['restaurant', 'tea_stall', 'garage', 'supermarket', 'service_center', 'other']),
       gstNumber: z.string().trim().optional(),
-      address: z.string().trim().min(5, 'Full address is required'),
+      address: z.string().trim().optional(),
+      description: z.string().trim().optional(),
+      shopAddress: z
+        .object({
+          street: z.string().trim().min(2, 'Street address is required'),
+          area: z.string().trim().min(2, 'Area or locality is required'),
+          city: z.string().trim().min(2, 'City is required'),
+          state: z.string().trim().min(2, 'State is required'),
+          pincode: z.string().trim().regex(/^\d{6}$/, 'Pincode must be 6 digits'),
+          landmark: z.string().trim().optional(),
+        })
+        .optional(),
+      location: z
+        .object({
+          type: z.literal('Point').default('Point'),
+          coordinates: z.tuple([z.number(), z.number()]),
+        })
+        .optional(),
+      facilities: z.array(z.nativeEnum(Facility)).optional(),
+      capacity: z
+        .object({
+          maxRiders: z.number().int().min(1, 'Capacity must be at least 1 rider'),
+        })
+        .optional(),
+      operatingHours: z
+        .object({
+          openTime: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'Invalid time format (HH:mm)'),
+          closeTime: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'Invalid time format (HH:mm)'),
+        })
+        .optional(),
     })
     .optional(),
 });

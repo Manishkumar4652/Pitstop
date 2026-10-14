@@ -40,6 +40,7 @@ export interface MockRestStopItem {
   dealBadge?: string;
   dealDescription?: string;
   qrRotationVersion?: number;
+  verificationCode?: string;
   createdAt: Date;
   updatedAt: Date;
 }

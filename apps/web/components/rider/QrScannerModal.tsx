@@ -181,10 +181,13 @@ export function QrScannerModal({
     setStatus('verifying');
     setErrorMessage('');
 
+    const isHmac = credential.includes('.');
+
     try {
       const checkInResult = await verifyVenueCheckIn({
         restStopId: restStopToUse,
-        qrCredential: credential,
+        qrCredential: isHmac ? credential : credential,
+        verificationCode: !isHmac ? credential : undefined,
       });
 
       setVerifiedCheckIn(checkInResult);
@@ -574,7 +577,7 @@ export function QrScannerModal({
             >
               <span className="flex items-center gap-1.5">
                 <Keyboard className="h-3.5 w-3.5" />
-                <span>Can&apos;t scan? Enter Venue Token Manually</span>
+                <span>Can&apos;t scan? Enter 6-Digit Desk Code Manually</span>
               </span>
               <ChevronRight
                 className={`h-4 w-4 transition-transform duration-200 ${showManualInput ? 'rotate-90' : ''}`}
@@ -585,19 +588,21 @@ export function QrScannerModal({
               <form onSubmit={handleManualSubmit} className="mt-3 space-y-3 bg-pitstop-bg p-3.5 rounded-xl border border-pitstop-border">
                 <div>
                   <label htmlFor="manual-token-input" className="block text-xs font-bold text-pitstop-charcoal mb-1">
-                    Venue QR Credential Token
+                    Desk Verification Code (6 Digits)
                   </label>
                   <input
                     id="manual-token-input"
                     type="text"
+                    inputMode="numeric"
                     value={manualToken}
-                    onChange={(e) => setManualToken(e.target.value)}
-                    placeholder="Paste or enter venue QR credential string..."
-                    className="w-full rounded-lg border border-pitstop-border bg-white px-3 py-2 text-xs text-pitstop-charcoal focus:outline-none focus:ring-2 focus:ring-pitstop-yellow font-mono"
+                    onChange={(e) => setManualToken(e.target.value.trim())}
+                    placeholder="e.g. 482910"
+                    maxLength={300}
+                    className="w-full rounded-lg border border-pitstop-border bg-white px-3 py-2 text-sm text-pitstop-charcoal tracking-widest font-mono font-bold focus:outline-none focus:ring-2 focus:ring-pitstop-yellow text-center"
                     required
                   />
-                  <p className="text-[10px] text-pitstop-muted mt-1">
-                    Enter the token string printed on the venue card or provided by the merchant counter desk.
+                  <p className="text-[10px] text-pitstop-muted mt-1 text-center">
+                    Enter the 6-digit verification code displayed on the rest stop desk poster.
                   </p>
                 </div>
 
@@ -609,7 +614,7 @@ export function QrScannerModal({
                     disabled={status === 'verifying' || !manualToken.trim()}
                     leftIcon={status === 'verifying' ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : undefined}
                   >
-                    Verify Code
+                    Verify Desk Code
                   </Button>
                 </div>
               </form>

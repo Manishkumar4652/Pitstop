@@ -4,6 +4,7 @@ import mongoose, { Types } from 'mongoose';
 import {
   CheckinStatus,
   RestStopStatus,
+  CapacityStatus,
   UserRole,
   CreateCheckInRequest,
   VerifyCheckInRequest,
@@ -16,7 +17,11 @@ import { CheckIn } from '../models/CheckIn';
 import { RestStop } from '../models/RestStop';
 import { isDatabaseConnected } from '../config/database';
 import { config } from '../config/env';
-import { generateVenueQrCredential, verifyVenueQrCredential } from '../utils/qr';
+import {
+  generateVenueQrCredential,
+  verifyVenueQrCredential,
+  verifyVenueVerificationCode,
+} from '../utils/qr';
 import {
   formatRiderCheckIn,
   formatMerchantCheckIn,
@@ -35,6 +40,31 @@ import { mockRestStopStore } from './restStopMockStore';
 import { mockUserStore } from './auth.controller';
 
 const DUPLICATE_CHECKIN_WINDOW_MS = 15 * 60 * 1000; // 15 minutes cooldown per venue
+
+/**
+ * Helper to recalculate rest stop capacity occupancy and status when a rider checks in.
+ */
+function computeUpdatedCapacity(
+  capacity?: { maxRiders: number; currentOccupancy: number; status: CapacityStatus },
+  delta: number = 1
+): { maxRiders: number; currentOccupancy: number; status: CapacityStatus } {
+  const maxRiders = Math.max(1, capacity?.maxRiders || 10);
+  const currentOccupancy = Math.max(0, capacity?.currentOccupancy || 0);
+  const newOccupancy = Math.min(maxRiders, Math.max(0, currentOccupancy + delta));
+
+  let status: CapacityStatus = CapacityStatus.AVAILABLE;
+  if (newOccupancy >= maxRiders) {
+    status = CapacityStatus.FULL;
+  } else if (newOccupancy >= Math.ceil(maxRiders * 0.8)) {
+    status = CapacityStatus.BUSY;
+  }
+
+  return {
+    maxRiders,
+    currentOccupancy: newOccupancy,
+    status,
+  };
+}
 
 /**
  * POST /api/v1/check-ins
@@ -582,15 +612,49 @@ export async function verifyRiderCheckInHandler(
       throw new BadRequestError('Cannot check in at a rest stop that is not approved and active.');
     }
 
-    // Cryptographic signature and version validation
-    const qrCheck = verifyVenueQrCredential(
-      body.qrCredential,
-      body.restStopId,
-      restStop.qrRotationVersion || 1
-    );
+    const submittedToken = (body.qrCredential || '').trim();
+    const submittedCode = (body.verificationCode || '').trim();
 
-    if (!qrCheck.valid) {
-      throw new BadRequestError(qrCheck.error || 'Invalid venue QR credential.');
+    let isCredentialValid = false;
+    let checkInMethod: 'qr_code' | 'otp' = 'qr_code';
+    let verifyError = 'Invalid venue QR credential or verification code.';
+
+    // 1. Try QR credential validation if submitted token has HMAC format
+    if (submittedToken && submittedToken.includes('.')) {
+      const qrCheck = verifyVenueQrCredential(
+        submittedToken,
+        body.restStopId,
+        restStop.qrRotationVersion || 1
+      );
+      if (qrCheck.valid) {
+        isCredentialValid = true;
+        checkInMethod = 'qr_code';
+      } else {
+        verifyError = qrCheck.error || 'Invalid venue QR credential.';
+      }
+    }
+
+    // 2. If not validated yet, try manual verification code (from body.verificationCode or submittedToken)
+    if (!isCredentialValid) {
+      const candidateCode = submittedCode || submittedToken;
+      if (candidateCode) {
+        const isCodeValid = verifyVenueVerificationCode(
+          candidateCode,
+          body.restStopId,
+          restStop.qrRotationVersion || 1,
+          restStop.verificationCode
+        );
+        if (isCodeValid) {
+          isCredentialValid = true;
+          checkInMethod = 'otp';
+        } else if (!submittedToken.includes('.')) {
+          verifyError = 'Invalid or expired venue verification code.';
+        }
+      }
+    }
+
+    if (!isCredentialValid) {
+      throw new BadRequestError(verifyError);
     }
 
     // Cooldown check: Prevent repeated verified check-ins within cooldown window
@@ -619,7 +683,7 @@ export async function verifyRiderCheckInHandler(
         $set: {
           status: CheckinStatus.VERIFIED,
           verifiedAt: now,
-          method: 'qr_code',
+          method: checkInMethod,
           ...(body.location && {
             locationAtCheckIn: {
               type: 'Point',
@@ -638,7 +702,7 @@ export async function verifyRiderCheckInHandler(
         riderId: new Types.ObjectId(riderId),
         restStopId: restStop._id,
         merchantId: restStop.merchantId,
-        method: 'qr_code',
+        method: checkInMethod,
         status: CheckinStatus.VERIFIED,
         checkInTime: now,
         verifiedAt: now,
@@ -652,11 +716,17 @@ export async function verifyRiderCheckInHandler(
       await checkInDoc.save();
     }
 
+    // Increment rest stop capacity occupancy and dynamically recalculate status
+    restStop.capacity = computeUpdatedCapacity(restStop.capacity, 1);
+    await restStop.save();
+
     sendSuccess(
       res,
       formatRiderCheckIn(checkInDoc, restStop.name),
       statusCode,
-      'Check-in verified successfully via venue QR scan.'
+      checkInMethod === 'qr_code'
+        ? 'Check-in verified successfully via venue QR scan.'
+        : 'Check-in verified successfully via manual desk code.'
     );
   } else {
     if (config.NODE_ENV === 'production') {
@@ -672,14 +742,49 @@ export async function verifyRiderCheckInHandler(
       throw new BadRequestError('Cannot check in at a rest stop that is not approved and active.');
     }
 
-    const qrCheck = verifyVenueQrCredential(
-      body.qrCredential,
-      body.restStopId,
-      restStop.qrRotationVersion || 1
-    );
+    const submittedToken = (body.qrCredential || '').trim();
+    const submittedCode = (body.verificationCode || '').trim();
 
-    if (!qrCheck.valid) {
-      throw new BadRequestError(qrCheck.error || 'Invalid venue QR credential.');
+    let isCredentialValid = false;
+    let checkInMethod: 'qr_code' | 'otp' = 'qr_code';
+    let verifyError = 'Invalid venue QR credential or verification code.';
+
+    // 1. Try QR credential validation if submitted token has HMAC format
+    if (submittedToken && submittedToken.includes('.')) {
+      const qrCheck = verifyVenueQrCredential(
+        submittedToken,
+        body.restStopId,
+        restStop.qrRotationVersion || 1
+      );
+      if (qrCheck.valid) {
+        isCredentialValid = true;
+        checkInMethod = 'qr_code';
+      } else {
+        verifyError = qrCheck.error || 'Invalid venue QR credential.';
+      }
+    }
+
+    // 2. If not validated yet, try manual verification code (from body.verificationCode or submittedToken)
+    if (!isCredentialValid) {
+      const candidateCode = submittedCode || submittedToken;
+      if (candidateCode) {
+        const isCodeValid = verifyVenueVerificationCode(
+          candidateCode,
+          body.restStopId,
+          restStop.qrRotationVersion || 1,
+          restStop.verificationCode
+        );
+        if (isCodeValid) {
+          isCredentialValid = true;
+          checkInMethod = 'otp';
+        } else if (!submittedToken.includes('.')) {
+          verifyError = 'Invalid or expired venue verification code.';
+        }
+      }
+    }
+
+    if (!isCredentialValid) {
+      throw new BadRequestError(verifyError);
     }
 
     // Cooldown check in mock store
@@ -713,14 +818,21 @@ export async function verifyRiderCheckInHandler(
     if (existingPending) {
       existingPending.status = CheckinStatus.VERIFIED;
       existingPending.verifiedAt = now;
-      existingPending.method = 'qr_code';
+      existingPending.method = checkInMethod;
       existingPending.updatedAt = now;
+
+      // Increment rest stop capacity occupancy and dynamically recalculate status
+      restStop.capacity = computeUpdatedCapacity(restStop.capacity, 1);
+      restStop.updatedAt = now;
+      mockRestStopStore.set(body.restStopId, restStop);
 
       sendSuccess(
         res,
         formatRiderCheckIn(existingPending, restStop.name),
         200,
-        'Check-in verified successfully via venue QR scan.'
+        checkInMethod === 'qr_code'
+          ? 'Check-in verified successfully via venue QR scan.'
+          : 'Check-in verified successfully via manual desk code.'
       );
       return;
     }
@@ -732,7 +844,7 @@ export async function verifyRiderCheckInHandler(
       riderId,
       restStopId: body.restStopId,
       merchantId: restStop.merchantId,
-      method: 'qr_code',
+      method: checkInMethod,
       status: CheckinStatus.VERIFIED,
       checkInTime: now,
       verifiedAt: now,
@@ -742,11 +854,18 @@ export async function verifyRiderCheckInHandler(
 
     mockCheckInStore.set(mockId, mockItem);
 
+    // Increment rest stop capacity occupancy and dynamically recalculate status
+    restStop.capacity = computeUpdatedCapacity(restStop.capacity, 1);
+    restStop.updatedAt = now;
+    mockRestStopStore.set(body.restStopId, restStop);
+
     sendSuccess(
       res,
       formatRiderCheckIn(mockItem, restStop.name),
       201,
-      'Check-in verified successfully via venue QR scan.'
+      checkInMethod === 'qr_code'
+        ? 'Check-in verified successfully via venue QR scan.'
+        : 'Check-in verified successfully via manual desk code.'
     );
   }
 }
@@ -868,11 +987,17 @@ export async function getVenueQrCredentialHandler(
     }
 
     const version = restStop.qrRotationVersion || 1;
-    const { qrCredential, expiresAt } = generateVenueQrCredential(restStop._id.toString(), version);
+    const { qrCredential, verificationCode, expiresAt } = generateVenueQrCredential(restStop._id.toString(), version);
+
+    if (!restStop.verificationCode) {
+      restStop.verificationCode = verificationCode;
+      await restStop.save();
+    }
 
     sendSuccess(res, {
       restStopId: restStop._id.toString(),
       qrCredential,
+      verificationCode: restStop.verificationCode || verificationCode,
       expiresAt: expiresAt.toISOString(),
       version,
     });
@@ -895,11 +1020,16 @@ export async function getVenueQrCredentialHandler(
     }
 
     const version = restStop.qrRotationVersion || 1;
-    const { qrCredential, expiresAt } = generateVenueQrCredential(restStop._id, version);
+    const { qrCredential, verificationCode, expiresAt } = generateVenueQrCredential(restStop._id, version);
+
+    if (!restStop.verificationCode) {
+      restStop.verificationCode = verificationCode;
+    }
 
     sendSuccess(res, {
       restStopId: restStop._id,
       qrCredential,
+      verificationCode: restStop.verificationCode || verificationCode,
       expiresAt: expiresAt.toISOString(),
       version,
     });
@@ -943,16 +1073,17 @@ export async function rotateVenueQrCredentialHandler(
     }
 
     const newVersion = (restStop.qrRotationVersion || 1) + 1;
+    const { qrCredential, verificationCode, expiresAt } = generateVenueQrCredential(restStop._id.toString(), newVersion);
     restStop.qrRotationVersion = newVersion;
+    restStop.verificationCode = verificationCode;
     await restStop.save();
-
-    const { qrCredential, expiresAt } = generateVenueQrCredential(restStop._id.toString(), newVersion);
 
     sendSuccess(
       res,
       {
         restStopId: restStop._id.toString(),
         qrCredential,
+        verificationCode,
         expiresAt: expiresAt.toISOString(),
         version: newVersion,
       },
@@ -974,16 +1105,17 @@ export async function rotateVenueQrCredentialHandler(
     }
 
     const newVersion = (restStop.qrRotationVersion || 1) + 1;
+    const { qrCredential, verificationCode, expiresAt } = generateVenueQrCredential(restStop._id, newVersion);
     restStop.qrRotationVersion = newVersion;
+    restStop.verificationCode = verificationCode;
     restStop.updatedAt = new Date();
-
-    const { qrCredential, expiresAt } = generateVenueQrCredential(restStop._id, newVersion);
 
     sendSuccess(
       res,
       {
         restStopId: restStop._id,
         qrCredential,
+        verificationCode,
         expiresAt: expiresAt.toISOString(),
         version: newVersion,
       },
@@ -1063,6 +1195,13 @@ export async function confirmMerchantCheckInHandler(
     checkIn.verifiedAt = now;
     await checkIn.save();
 
+    // Increment rest stop capacity occupancy upon merchant confirmation
+    const restStop = await RestStop.findById(checkIn.restStopId);
+    if (restStop) {
+      restStop.capacity = computeUpdatedCapacity(restStop.capacity, 1);
+      await restStop.save();
+    }
+
     sendSuccess(
       res,
       formatMerchantCheckIn(
@@ -1114,6 +1253,11 @@ export async function confirmMerchantCheckInHandler(
     item.updatedAt = now;
 
     const restStop = mockRestStopStore.get(item.restStopId);
+    if (restStop) {
+      restStop.capacity = computeUpdatedCapacity(restStop.capacity, 1);
+      restStop.updatedAt = now;
+      mockRestStopStore.set(item.restStopId, restStop);
+    }
     const rider = mockUserStore.get(item.riderId);
 
     sendSuccess(

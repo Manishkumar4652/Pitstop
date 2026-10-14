@@ -14,6 +14,7 @@ export interface MerchantRestStopsListResponse {
 export interface VenueQrCredentialResponse {
   restStopId: string;
   qrCredential: string;
+  verificationCode?: string;
   expiresAt: string;
   version: number;
 }

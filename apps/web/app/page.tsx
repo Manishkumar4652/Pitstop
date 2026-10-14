@@ -15,8 +15,21 @@ import {
   Navigation
 } from 'lucide-react';
 import { PublicLayout } from '@/components/layout';
+import { fetchPublicPlatformStats } from '@/lib/api/public-stats';
 
-export default function HomePage() {
+function formatStatCount(count: number): string {
+  if (count >= 1000) {
+    return `${count.toLocaleString('en-IN')}+`;
+  }
+  if (count >= 50) {
+    return `${count}+`;
+  }
+  return `${count}`;
+}
+
+export default async function HomePage() {
+  const stats = await fetchPublicPlatformStats();
+
   return (
     <PublicLayout theme="dark">
       {/* ──────────────────────────────────────────────────────────────────────────
@@ -397,7 +410,9 @@ export default function HomePage() {
                   </div>
                   <div>
                     <div className="text-lg font-bold text-white leading-none">PitStop Impact</div>
-                    <div className="text-xs text-gray-400 mt-1">Bangalore • Delhi • Mumbai</div>
+                    <div className="text-xs text-gray-400 mt-1">
+                      {stats.cities && stats.cities.length > 0 ? stats.cities.join(' • ') : 'Verified Stop Network'}
+                    </div>
                   </div>
                 </div>
 
@@ -407,7 +422,9 @@ export default function HomePage() {
                       <Users className="h-5 w-5 text-pitstop-yellow" />
                       <span className="text-sm font-semibold text-gray-300">Active Gig Riders</span>
                     </div>
-                    <span className="text-xl font-black text-pitstop-yellow">5,000+</span>
+                    <span className="text-xl font-black text-pitstop-yellow">
+                      {formatStatCount(stats.activeRiders)}
+                    </span>
                   </div>
 
                   <div className="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/5">
@@ -415,7 +432,9 @@ export default function HomePage() {
                       <Store className="h-5 w-5 text-pitstop-yellow" />
                       <span className="text-sm font-semibold text-gray-300">Verified Stop Hubs</span>
                     </div>
-                    <span className="text-xl font-black text-white">120+</span>
+                    <span className="text-xl font-black text-white">
+                      {formatStatCount(stats.verifiedStopHubs)}
+                    </span>
                   </div>
 
                   <div className="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/5">
@@ -423,7 +442,9 @@ export default function HomePage() {
                       <ShieldCheck className="h-5 w-5 text-emerald-400" />
                       <span className="text-sm font-semibold text-gray-300">Amenity Rating</span>
                     </div>
-                    <span className="text-xl font-black text-emerald-400">4.9 / 5</span>
+                    <span className="text-xl font-black text-emerald-400">
+                      {stats.amenityRating > 0 ? `${stats.amenityRating.toFixed(1)} / 5` : '4.9 / 5'}
+                    </span>
                   </div>
                 </div>
               </div>
