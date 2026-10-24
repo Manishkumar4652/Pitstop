@@ -9,8 +9,24 @@ import { v1Router } from './routes';
 export function createApp(customRouter?: express.Router): Express {
   const app = express();
 
+  // 0. Trust one reverse-proxy hop (Nginx, Vercel, Railway, Render, AWS ALB)
+  //    so req.ip resolves to the real client IP instead of the load-balancer IP.
+  //    Without this, per-IP rate limiting is ineffective behind a proxy.
+  app.set('trust proxy', 1);
+
   // 1. Basic Security Headers with Helmet
-  app.use(helmet());
+  app.use(
+    helmet({
+      // Strict-Transport-Security: force HTTPS for 1 year in production
+      hsts: config.NODE_ENV === 'production' ? { maxAge: 31536000, includeSubDomains: true } : false,
+      // Prevent browsers from MIME-sniffing a response away from the declared content-type
+      noSniff: true,
+      // Block site from being put in an iframe (clickjacking defense)
+      frameguard: { action: 'deny' },
+      // Disable X-Powered-By: Express (fingerprint reduction)
+      hidePoweredBy: true,
+    })
+  );
 
   // 2. Cross-Origin Resource Sharing (CORS) with origin validation
   app.use(createCorsMiddleware());
