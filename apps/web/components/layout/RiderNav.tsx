@@ -4,7 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { 
-  Compass, 
+  MapPin, 
   Briefcase, 
   FileText,
   User, 
@@ -24,9 +24,9 @@ export const RiderNav: React.FC<RiderNavProps> = ({ className = '' }) => {
 
   const navItems = [
     {
-      label: 'Explore Stops',
+      label: 'Map',
       href: '/explore',
-      icon: <Compass className="h-4 w-4" aria-hidden="true" />,
+      icon: <MapPin className="h-4 w-4" aria-hidden="true" />,
       active: pathname === '/explore' || pathname.startsWith('/rest-stops/'),
     },
     {
