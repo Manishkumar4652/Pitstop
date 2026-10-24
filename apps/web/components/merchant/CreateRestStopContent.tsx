@@ -317,7 +317,7 @@ export const CreateRestStopContent: React.FC<CreateRestStopContentProps> = ({ us
                       placeholder="Describe your venue, seating setup, and welcoming guidelines for delivery riders..."
                       value={formData.description}
                       onChange={(e) => handleInputChange('description', e.target.value)}
-                      className={`w-full rounded-lg border bg-white p-3 text-sm text-pitstop-charcoal placeholder:text-pitstop-muted/60 transition-colors focus:outline-none focus:ring-2 focus:ring-pitstop-yellow ${
+                      className={`w-full rounded-xl border bg-white p-3 text-base sm:text-sm text-pitstop-charcoal placeholder:text-pitstop-muted/60 transition-colors focus:outline-none focus:ring-2 focus:ring-pitstop-yellow ${
                         errors.description ? 'border-red-500' : 'border-pitstop-border hover:border-pitstop-muted'
                       }`}
                     />

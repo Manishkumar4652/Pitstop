@@ -156,12 +156,12 @@ export const EditJobModal: React.FC<EditJobModalProps> = ({
 
   return (
     <div 
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm overflow-y-auto"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 p-0 sm:p-4 backdrop-blur-sm overflow-y-auto"
       role="dialog"
       aria-modal="true"
       aria-labelledby="edit-job-modal-title"
     >
-      <Card className="w-full max-w-2xl bg-white p-6 sm:p-8 shadow-xl max-h-[90vh] overflow-y-auto">
+      <Card className="w-full max-w-2xl bg-white p-5 sm:p-8 rounded-t-3xl sm:rounded-2xl shadow-xl max-h-[92vh] overflow-y-auto">
         <div className="flex items-center justify-between border-b border-pitstop-border pb-4 mb-6">
           <div className="flex items-center gap-2">
             <div className="p-2 rounded-lg bg-pitstop-yellow/20 text-pitstop-charcoal">

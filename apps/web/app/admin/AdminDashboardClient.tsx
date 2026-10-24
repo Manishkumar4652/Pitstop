@@ -54,13 +54,13 @@ export default function AdminDashboardClient({ adminUser }: AdminDashboardClient
   }, [loadStats]);
 
   return (
-    <main id="main-content" className="pb-20 md:pb-12 bg-pitstop-bg min-h-[calc(100vh-64px)]">
+    <main id="main-content" className="pb-24 md:pb-12 bg-pitstop-bg min-h-[calc(100vh-64px)]">
       <PageHeader
         title="Platform Administration Console"
         description={`Logged in as ${adminUser.name}. Supervise rest stops, verify merchant registrations, and moderate community activity with live database metrics.`}
         badge="Live System Metrics"
         action={
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
             <Button
               variant="outline"
               size="md"

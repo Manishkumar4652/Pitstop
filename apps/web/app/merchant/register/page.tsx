@@ -3,10 +3,10 @@
 import React, { useState, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { 
-  Eye, 
-  EyeOff, 
-  ArrowRight, 
+import {
+  Eye,
+  EyeOff,
+  ArrowRight,
   ArrowLeft,
   Bike,
   Store,
@@ -704,11 +704,10 @@ function MerchantRegisterFormContent() {
                       key={fac.id}
                       type="button"
                       onClick={() => toggleFacility(fac.id)}
-                      className={`flex items-center gap-2 p-2.5 rounded-xl border text-left text-xs font-semibold transition-all min-h-[44px] ${
-                        isSelected
+                      className={`flex items-center gap-2 p-2.5 rounded-xl border text-left text-xs font-semibold transition-all min-h-[44px] ${isSelected
                           ? 'border-pitstop-yellow bg-pitstop-yellow-light/60 text-pitstop-charcoal shadow-xs ring-1 ring-pitstop-yellow'
                           : 'border-pitstop-border bg-white text-pitstop-muted hover:border-pitstop-charcoal/30 hover:bg-pitstop-bg'
-                      }`}
+                        }`}
                     >
                       <span className="text-base shrink-0">{fac.icon}</span>
                       <span className="flex-1 text-[11px] leading-tight">{fac.label}</span>

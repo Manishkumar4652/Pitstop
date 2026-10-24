@@ -117,12 +117,12 @@ export const JobDetailModal: React.FC<JobDetailModalProps> = ({
 
   return (
     <div 
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm overflow-y-auto"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 p-0 sm:p-4 backdrop-blur-sm overflow-y-auto"
       role="dialog"
       aria-modal="true"
       aria-labelledby="job-detail-title"
     >
-      <Card className="w-full max-w-2xl bg-white p-6 sm:p-8 shadow-xl max-h-[90vh] overflow-y-auto flex flex-col">
+      <Card className="w-full max-w-2xl bg-white p-5 sm:p-8 rounded-t-3xl sm:rounded-2xl shadow-xl max-h-[92vh] overflow-y-auto flex flex-col">
         {/* Header */}
         <div className="flex items-start justify-between border-b border-pitstop-border pb-4 mb-5">
           <div className="flex items-start gap-3">
@@ -333,7 +333,7 @@ export const JobDetailModal: React.FC<JobDetailModalProps> = ({
                   placeholder="e.g. Nearby at 100ft road, can arrive in 5 minutes with motorcycle."
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  className="w-full rounded-lg border border-pitstop-border px-3 py-2 text-xs text-pitstop-charcoal placeholder:text-pitstop-muted/60 focus:border-pitstop-yellow focus:outline-none focus:ring-2 focus:ring-pitstop-yellow/30"
+                  className="w-full rounded-xl border border-pitstop-border px-3.5 py-2.5 text-base sm:text-xs text-pitstop-charcoal placeholder:text-pitstop-muted/60 focus:border-pitstop-yellow focus:outline-none focus:ring-2 focus:ring-pitstop-yellow/30"
                 />
                 <div className="flex items-center justify-between text-[11px] text-pitstop-muted mt-1">
                   {notesError ? (

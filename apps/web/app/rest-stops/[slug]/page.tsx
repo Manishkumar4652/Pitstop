@@ -132,7 +132,7 @@ export default async function RestStopDetailPage({ params }: PageProps) {
   return (
     <PublicLayout>
       <RiderNav />
-      <main id="main-content" className="py-8 sm:py-12 pb-20 md:pb-12">
+      <main id="main-content" className="py-6 sm:py-12 pb-32 md:pb-12">
         <Container size="xl">
           {/* Breadcrumbs & Navigation */}
           <nav aria-label="Breadcrumb" className="mb-6">
@@ -439,6 +439,7 @@ export default async function RestStopDetailPage({ params }: PageProps) {
                 restStopId={stop.id}
                 restStopName={name}
                 restStopSlug={params.slug}
+                coordinates={stop.location?.coordinates}
               />
 
               {/* Merchant Details Card */}

@@ -18,4 +18,29 @@ body {
   color: var(--pitstop-text-primary);
   font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  -webkit-overflow-scrolling: touch;
 }
+
+/* Safe area padding utilities for smartphones with notches / gesture bars */
+.pb-safe {
+  padding-bottom: max(16px, env(safe-area-inset-bottom));
+}
+
+.pt-safe {
+  padding-top: max(16px, env(safe-area-inset-top));
+}
+
+.pb-bottom-nav {
+  padding-bottom: calc(4.5rem + env(safe-area-inset-bottom));
+}
+
+/* Hide scrollbar for mobile pill carousels while preserving touch scroll */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+

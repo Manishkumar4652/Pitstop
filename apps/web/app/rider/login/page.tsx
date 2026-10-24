@@ -3,11 +3,11 @@
 import React, { useState, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { 
-  Lock, 
-  Eye, 
-  EyeOff, 
-  ArrowRight, 
+import {
+  Lock,
+  Eye,
+  EyeOff,
+  ArrowRight,
   ShieldCheck,
   Store
 } from 'lucide-react';

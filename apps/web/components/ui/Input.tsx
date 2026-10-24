@@ -48,7 +48,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             id={inputId}
             disabled={disabled}
             required={required}
-            className={`w-full min-h-[44px] rounded-lg border bg-white px-3.5 py-2 text-sm text-pitstop-charcoal placeholder:text-pitstop-muted/60 transition-colors focus:outline-none focus:ring-2 focus:ring-pitstop-yellow focus:ring-offset-1 disabled:opacity-50 disabled:bg-pitstop-bg ${
+            className={`w-full min-h-[46px] rounded-lg border bg-white px-3.5 py-2.5 text-base sm:text-sm text-pitstop-charcoal placeholder:text-pitstop-muted/60 transition-colors focus:outline-none focus:ring-2 focus:ring-pitstop-yellow focus:ring-offset-1 disabled:opacity-50 disabled:bg-pitstop-bg ${
               leftIcon ? 'pl-10' : ''
             } ${rightIcon ? 'pr-10' : ''} ${
               error ? 'border-red-500 focus:ring-red-500' : 'border-pitstop-border hover:border-pitstop-muted'

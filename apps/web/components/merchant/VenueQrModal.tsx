@@ -158,7 +158,7 @@ export const VenueQrModal: React.FC<VenueQrModalProps> = ({
 
   return (
     <div 
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-pitstop-charcoal/60 backdrop-blur-xs overflow-y-auto"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-pitstop-charcoal/60 backdrop-blur-xs overflow-y-auto"
       role="dialog"
       aria-modal="true"
       aria-labelledby="venue-qr-modal-title"
@@ -229,7 +229,7 @@ export const VenueQrModal: React.FC<VenueQrModalProps> = ({
       </div>
 
       {/* Screen Interactive Modal Card */}
-      <Card className="w-full max-w-lg bg-white shadow-lift border border-pitstop-border overflow-hidden my-8 print:hidden">
+      <Card className="w-full max-w-lg bg-white shadow-lift border border-pitstop-border overflow-hidden my-0 sm:my-8 rounded-t-3xl sm:rounded-2xl max-h-[92vh] flex flex-col print:hidden">
         {/* Header */}
         <div className="p-5 border-b border-pitstop-border flex items-center justify-between bg-pitstop-bg">
           <div className="flex items-center gap-2.5">

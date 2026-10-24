@@ -36,16 +36,16 @@ export default async function HomePage() {
           HERO SECTION — Recreating Landingpage.png Fluid Liquid Waves & Diagonal Beams
           ────────────────────────────────────────────────────────────────────────── */}
       <section className="relative min-h-[85vh] lg:min-h-[88vh] overflow-hidden bg-[#12131C] px-4 py-16 sm:px-6 lg:px-8 flex items-center">
-        
+
         {/* ── BACKGROUND FLUID ARTWORK (Landingpage.png Reproduction in Pure CSS/SVG) ── */}
         <div className="pointer-events-none absolute inset-0 overflow-hidden select-none" aria-hidden="true">
-          
+
           {/* Top-Right Yellow Organic Wave */}
           <div className="absolute -top-16 -right-16 h-80 w-80 sm:h-96 sm:w-96 lg:h-[480px] lg:w-[480px]">
             <svg viewBox="0 0 500 500" className="h-full w-full" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path 
-                d="M320,0 C420,40 500,140 500,260 C500,380 430,420 380,360 C320,290 350,180 270,120 C210,75 220,20 320,0 Z" 
-                fill="url(#topRightYellowGrad)" 
+              <path
+                d="M320,0 C420,40 500,140 500,260 C500,380 430,420 380,360 C320,290 350,180 270,120 C210,75 220,20 320,0 Z"
+                fill="url(#topRightYellowGrad)"
               />
               <defs>
                 <linearGradient id="topRightYellowGrad" x1="500" y1="0" x2="250" y2="400" gradientUnits="userSpaceOnUse">
@@ -62,9 +62,9 @@ export default async function HomePage() {
           {/* Bottom-Left Massive Organic Fluid Wave */}
           <div className="absolute -bottom-24 -left-20 h-[420px] w-[420px] sm:h-[540px] sm:w-[540px] lg:h-[680px] lg:w-[680px]">
             <svg viewBox="0 0 600 600" className="h-full w-full" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path 
-                d="M0,280 C60,200 140,220 180,300 C240,420 320,440 380,520 C420,580 340,600 0,600 Z" 
-                fill="url(#bottomLeftYellowGrad)" 
+              <path
+                d="M0,280 C60,200 140,220 180,300 C240,420 320,440 380,520 C420,580 340,600 0,600 Z"
+                fill="url(#bottomLeftYellowGrad)"
               />
               <defs>
                 <linearGradient id="bottomLeftYellowGrad" x1="0" y1="200" x2="400" y2="600" gradientUnits="userSpaceOnUse">
@@ -74,7 +74,7 @@ export default async function HomePage() {
                 </linearGradient>
               </defs>
             </svg>
-            
+
             {/* Embedded Capsule Beams Inside Bottom-Left Wave (As in Landingpage.png) */}
             <div className="absolute bottom-28 left-20 h-64 w-16 -rotate-45 rounded-full bg-white/25"></div>
             <div className="absolute bottom-40 left-44 h-48 w-12 -rotate-45 rounded-full bg-amber-200/30"></div>
@@ -83,9 +83,9 @@ export default async function HomePage() {
           {/* Bottom-Right Curved Yellow Edge */}
           <div className="absolute -bottom-24 -right-20 h-72 w-72 sm:h-96 sm:w-96 lg:h-[440px] lg:w-[440px]">
             <svg viewBox="0 0 400 400" className="h-full w-full" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path 
-                d="M400,160 C340,200 320,290 340,360 C350,390 380,400 400,400 Z" 
-                fill="#F7B928" 
+              <path
+                d="M400,160 C340,200 320,290 340,360 C350,390 380,400 400,400 Z"
+                fill="#F7B928"
               />
             </svg>
           </div>
@@ -120,13 +120,13 @@ export default async function HomePage() {
         {/* ── HERO TEXT & CONTENT (Center-Right Aligned exactly as Landingpage.png) ── */}
         <div className="relative mx-auto max-w-7xl w-full z-10 py-10">
           <div className="grid items-center gap-12 lg:grid-cols-12">
-            
+
             {/* Left Spacer to position headline prominently towards center/right */}
             <div className="hidden lg:block lg:col-span-4 xl:col-span-4"></div>
 
             {/* Right/Center Content Column */}
             <div className="lg:col-span-8 xl:col-span-8 lg:pl-8">
-              
+
               {/* Subtle Tagline */}
               <div className="inline-flex items-center gap-2 mb-4">
                 <span className="h-0.5 w-6 bg-pitstop-yellow"></span>
@@ -136,7 +136,7 @@ export default async function HomePage() {
               </div>
 
               {/* Huge Stylized Headline (Landingpage.png Style) */}
-              <h1 className="text-4xl font-extrabold tracking-tight text-white sm:text-6xl lg:text-7xl leading-[1.08] uppercase">
+              <h1 className="text-3xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-white leading-[1.08] uppercase">
                 EVERY RIDER <br />
                 <span className="text-pitstop-yellow font-black">
                   DESERVES A PLACE
@@ -150,16 +150,16 @@ export default async function HomePage() {
               </p>
 
               {/* Action Buttons */}
-              <div className="mt-9 flex flex-wrap items-center gap-4">
-                <Link href="/explore">
-                  <button className="group inline-flex items-center justify-center gap-2.5 rounded-full bg-pitstop-yellow px-8 py-4 text-sm font-extrabold text-pitstop-charcoal shadow-lg shadow-pitstop-yellow/20 transition-all hover:bg-pitstop-yellow-dark hover:scale-[1.02] active:scale-[0.98]">
+              <div className="mt-8 sm:mt-9 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
+                <Link href="/explore" className="w-full sm:w-auto">
+                  <button className="w-full sm:w-auto group inline-flex items-center justify-center gap-2.5 rounded-full bg-pitstop-yellow px-8 py-4 text-sm font-extrabold text-pitstop-charcoal shadow-lg shadow-pitstop-yellow/20 transition-all hover:bg-pitstop-yellow-dark hover:scale-[1.02] active:scale-[0.98]">
                     <span>Find Nearby Rest Stops</span>
                     <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                   </button>
                 </Link>
 
-                <Link href="/for-merchants">
-                  <button className="inline-flex items-center justify-center gap-2.5 rounded-full border border-white/20 bg-white/5 px-7 py-4 text-sm font-semibold text-white backdrop-blur-sm transition-all hover:bg-white/10 hover:border-white/40 active:scale-[0.98]">
+                <Link href="/for-merchants" className="w-full sm:w-auto">
+                  <button className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 rounded-full border border-white/20 bg-white/5 px-7 py-4 text-sm font-semibold text-white backdrop-blur-sm transition-all hover:bg-white/10 hover:border-white/40 active:scale-[0.98]">
                     <Store className="h-4 w-4 text-pitstop-yellow" />
                     <span>Become a Partner Merchant</span>
                   </button>
@@ -210,7 +210,7 @@ export default async function HomePage() {
           ────────────────────────────────────────────────────────────────────────── */}
       <section className="relative bg-[#0E0F17] py-20 px-4 sm:px-6 lg:px-8 border-t border-white/10">
         <div className="mx-auto max-w-7xl">
-          
+
           <div className="text-center">
             <div className="inline-flex items-center gap-2 mb-3">
               <span className="h-0.5 w-6 bg-pitstop-yellow"></span>
@@ -219,29 +219,29 @@ export default async function HomePage() {
               </span>
               <span className="h-0.5 w-6 bg-pitstop-yellow"></span>
             </div>
-            
+
             <h2 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl lg:text-5xl">
               Essential PitStop Facilities
             </h2>
-            
+
             <p className="mx-auto mt-4 max-w-2xl text-base text-gray-400">
               Designed specifically for delivery riders and ride-hailing drivers navigating Indian roads every day.
             </p>
           </div>
 
           <div className="mt-14 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-            
+
             {/* Card 1: Verified Rest Stops */}
             <div className="group flex flex-col justify-between rounded-3xl bg-[#161724] p-8 border border-white/10 transition-all duration-200 hover:-translate-y-1 hover:border-pitstop-yellow/50 hover:shadow-xl hover:shadow-pitstop-yellow/5">
               <div>
                 <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-pitstop-yellow/15 text-pitstop-yellow border border-pitstop-yellow/30 group-hover:bg-pitstop-yellow group-hover:text-pitstop-charcoal transition-colors">
                   <Droplet className="h-7 w-7" />
                 </div>
-                
+
                 <h3 className="mt-6 text-xl font-bold text-white">
                   Verified Rest Facilities
                 </h3>
-                
+
                 <p className="mt-3 text-sm leading-relaxed text-gray-400">
                   Clean drinking water, hygienic washrooms, comfortable seating, and fast charging docks reserved exclusively for on-duty gig workers.
                 </p>
@@ -251,7 +251,7 @@ export default async function HomePage() {
                 <span className="text-sm font-bold text-gray-300 group-hover:text-pitstop-yellow transition-colors">
                   Explore Stops
                 </span>
-                <Link 
+                <Link
                   href="/explore"
                   className="flex h-10 w-10 items-center justify-center rounded-full bg-pitstop-yellow text-pitstop-charcoal shadow-sm transition-transform group-hover:scale-110"
                   aria-label="Explore rest stops"
@@ -267,11 +267,11 @@ export default async function HomePage() {
                 <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-pitstop-yellow/15 text-pitstop-yellow border border-pitstop-yellow/30 group-hover:bg-pitstop-yellow group-hover:text-pitstop-charcoal transition-colors">
                   <Coffee className="h-7 w-7" />
                 </div>
-                
+
                 <h3 className="mt-6 text-xl font-bold text-white">
                   Partner Food &amp; Chai Deals
                 </h3>
-                
+
                 <p className="mt-3 text-sm leading-relaxed text-gray-400">
                   Enjoy exclusive 50%+ discounts on hot chai, snacks, and wholesome meals at verified partner restaurants, cafes, and tea stalls on your route.
                 </p>
@@ -281,7 +281,7 @@ export default async function HomePage() {
                 <span className="text-sm font-bold text-gray-300 group-hover:text-pitstop-yellow transition-colors">
                   View Deals
                 </span>
-                <Link 
+                <Link
                   href="/explore"
                   className="flex h-10 w-10 items-center justify-center rounded-full bg-pitstop-yellow text-pitstop-charcoal shadow-sm transition-transform group-hover:scale-110"
                   aria-label="View food and chai deals"
@@ -297,11 +297,11 @@ export default async function HomePage() {
                 <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-pitstop-yellow/15 text-pitstop-yellow border border-pitstop-yellow/30 group-hover:bg-pitstop-yellow group-hover:text-pitstop-charcoal transition-colors">
                   <Briefcase className="h-7 w-7" />
                 </div>
-                
+
                 <h3 className="mt-6 text-xl font-bold text-white">
                   Off-Peak Micro-Jobs
                 </h3>
-                
+
                 <p className="mt-3 text-sm leading-relaxed text-gray-400">
                   Earn extra cash during quiet afternoon hours (2 PM – 5 PM) with short helper tasks like parcel sorting, packing, and local express deliveries.
                 </p>
@@ -311,7 +311,7 @@ export default async function HomePage() {
                 <span className="text-sm font-bold text-gray-300 group-hover:text-pitstop-yellow transition-colors">
                   Browse Jobs
                 </span>
-                <Link 
+                <Link
                   href="/jobs"
                   className="flex h-10 w-10 items-center justify-center rounded-full bg-pitstop-yellow text-pitstop-charcoal shadow-sm transition-transform group-hover:scale-110"
                   aria-label="Browse micro-jobs"
@@ -331,7 +331,7 @@ export default async function HomePage() {
       <section className="relative bg-[#12131C] py-20 px-4 sm:px-6 lg:px-8 border-t border-white/10">
         <div className="mx-auto max-w-7xl">
           <div className="grid items-center gap-12 lg:grid-cols-12 lg:gap-16">
-            
+
             {/* Left Column: Checklist */}
             <div className="lg:col-span-7">
               <div className="inline-flex items-center gap-2 mb-3">
@@ -390,8 +390,8 @@ export default async function HomePage() {
               </div>
 
               <div className="mt-10">
-                <Link href="/rider/register">
-                  <button className="group inline-flex items-center gap-3 rounded-full bg-pitstop-yellow px-8 py-4 text-sm font-extrabold text-pitstop-charcoal shadow-lg shadow-pitstop-yellow/20 transition-all hover:bg-pitstop-yellow-dark hover:scale-[1.02] active:scale-[0.98]">
+                <Link href="/rider/register" className="inline-block w-full sm:w-auto">
+                  <button className="w-full sm:w-auto justify-center group inline-flex items-center gap-3 rounded-full bg-pitstop-yellow px-8 py-4 text-sm font-extrabold text-pitstop-charcoal shadow-lg shadow-pitstop-yellow/20 transition-all hover:bg-pitstop-yellow-dark hover:scale-[1.02] active:scale-[0.98]">
                     <span>Join as a Rider Now</span>
                     <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                   </button>
@@ -471,8 +471,8 @@ export default async function HomePage() {
                 Drive steady foot traffic during slow afternoon hours (2 PM – 5 PM) and access reliable delivery partners for short-term helper tasks.
               </p>
             </div>
-            <Link href="/for-merchants" className="whitespace-nowrap">
-              <button className="group inline-flex items-center gap-2 rounded-full bg-pitstop-yellow px-7 py-3.5 text-sm font-bold text-pitstop-charcoal shadow-md transition-all hover:bg-pitstop-yellow-dark active:scale-[0.98]">
+            <Link href="/for-merchants" className="w-full sm:w-auto whitespace-nowrap">
+              <button className="w-full sm:w-auto justify-center group inline-flex items-center gap-2 rounded-full bg-pitstop-yellow px-7 py-3.5 text-sm font-bold text-pitstop-charcoal shadow-md transition-all hover:bg-pitstop-yellow-dark active:scale-[0.98]">
                 <span>Register Your Venue</span>
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
               </button>

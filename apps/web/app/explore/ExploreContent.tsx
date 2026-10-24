@@ -297,7 +297,7 @@ export function ExploreContent({ initialData, initialError }: ExploreContentProp
                       key={id}
                       type="button"
                       onClick={() => toggleFacility(id)}
-                      className={`inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-xs font-semibold transition-all min-h-[40px] focus:outline-none focus:ring-2 focus:ring-pitstop-yellow ${isSelected
+                      className={`inline-flex items-center gap-2 rounded-xl border px-3.5 py-2.5 text-xs font-semibold transition-all min-h-[44px] active:scale-95 focus:outline-none focus:ring-2 focus:ring-pitstop-yellow ${isSelected
                           ? 'border-pitstop-yellow bg-pitstop-yellow-light text-pitstop-charcoal shadow-subtle ring-1 ring-pitstop-yellow/40'
                           : 'border-pitstop-border bg-white text-pitstop-charcoal hover:bg-pitstop-bg hover:border-pitstop-muted'
                         }`}

@@ -155,10 +155,10 @@ export const CreateDealModal: React.FC<CreateDealModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-pitstop-charcoal/60 backdrop-blur-sm animate-in fade-in duration-200">
-      <Card className="w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden bg-white shadow-2xl rounded-2xl border-pitstop-border">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-pitstop-charcoal/60 backdrop-blur-sm animate-in fade-in duration-200">
+      <Card className="w-full max-w-2xl max-h-[92vh] sm:max-h-[90vh] flex flex-col overflow-hidden bg-white shadow-2xl rounded-t-3xl sm:rounded-2xl border-pitstop-border">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-pitstop-border px-6 py-4 bg-pitstop-bg">
+        <div className="flex items-center justify-between border-b border-pitstop-border px-5 sm:px-6 py-4 bg-pitstop-bg">
           <div className="flex items-center gap-2">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-pitstop-yellow text-pitstop-charcoal shadow-sm">
               <Tag className="h-5 w-5" />
@@ -177,7 +177,7 @@ export const CreateDealModal: React.FC<CreateDealModalProps> = ({
         </div>
 
         {/* Form Body */}
-        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-6">
+        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-5 sm:space-y-6">
           {serverError && (
             <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-xs text-red-700 flex items-start gap-2.5">
               <AlertCircle className="h-4 w-4 shrink-0 text-red-600 mt-0.5" />

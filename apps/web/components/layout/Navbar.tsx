@@ -18,13 +18,12 @@ export const Navbar: React.FC<NavbarProps> = ({ theme = 'light' }) => {
   const isDark = theme === 'dark';
 
   return (
-    <header className={`sticky top-0 z-50 border-b backdrop-blur-md transition-colors ${
-      isDark 
-        ? 'border-white/10 bg-[#12131C]/90 text-white' 
+    <header className={`sticky top-0 z-50 border-b backdrop-blur-md transition-colors ${isDark
+        ? 'border-white/10 bg-[#12131C]/90 text-white'
         : 'border-pitstop-border bg-white/95 text-pitstop-charcoal'
-    }`}>
+      }`}>
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        
+
         {/* Brand Logo (Preserved exact PitStop icon and text) */}
         <Link
           href="/"
@@ -48,33 +47,29 @@ export const Navbar: React.FC<NavbarProps> = ({ theme = 'light' }) => {
         <nav className="hidden items-center gap-7 md:flex" aria-label="Main Navigation">
           <Link
             href="/explore"
-            className={`text-xs uppercase font-bold tracking-wider transition-colors focus:outline-none focus:ring-2 focus:ring-pitstop-yellow rounded px-1.5 py-1 ${
-              isDark ? 'text-gray-300 hover:text-pitstop-yellow' : 'text-pitstop-charcoal hover:text-pitstop-yellow-dark'
-            }`}
+            className={`text-xs uppercase font-bold tracking-wider transition-colors focus:outline-none focus:ring-2 focus:ring-pitstop-yellow rounded px-1.5 py-1 ${isDark ? 'text-gray-300 hover:text-pitstop-yellow' : 'text-pitstop-charcoal hover:text-pitstop-yellow-dark'
+              }`}
           >
             Explore Rest Stops
           </Link>
           <Link
             href="/jobs"
-            className={`text-xs uppercase font-bold tracking-wider transition-colors focus:outline-none focus:ring-2 focus:ring-pitstop-yellow rounded px-1.5 py-1 ${
-              isDark ? 'text-gray-300 hover:text-pitstop-yellow' : 'text-pitstop-charcoal hover:text-pitstop-yellow-dark'
-            }`}
+            className={`text-xs uppercase font-bold tracking-wider transition-colors focus:outline-none focus:ring-2 focus:ring-pitstop-yellow rounded px-1.5 py-1 ${isDark ? 'text-gray-300 hover:text-pitstop-yellow' : 'text-pitstop-charcoal hover:text-pitstop-yellow-dark'
+              }`}
           >
             Micro-Jobs
           </Link>
           <Link
             href="/how-it-works"
-            className={`text-xs uppercase font-bold tracking-wider transition-colors focus:outline-none focus:ring-2 focus:ring-pitstop-yellow rounded px-1.5 py-1 ${
-              isDark ? 'text-gray-400 hover:text-white' : 'text-pitstop-muted hover:text-pitstop-charcoal'
-            }`}
+            className={`text-xs uppercase font-bold tracking-wider transition-colors focus:outline-none focus:ring-2 focus:ring-pitstop-yellow rounded px-1.5 py-1 ${isDark ? 'text-gray-400 hover:text-white' : 'text-pitstop-muted hover:text-pitstop-charcoal'
+              }`}
           >
             How It Works
           </Link>
           <Link
             href="/for-merchants"
-            className={`text-xs uppercase font-bold tracking-wider transition-colors focus:outline-none focus:ring-2 focus:ring-pitstop-yellow rounded px-1.5 py-1 ${
-              isDark ? 'text-gray-400 hover:text-white' : 'text-pitstop-muted hover:text-pitstop-charcoal'
-            }`}
+            className={`text-xs uppercase font-bold tracking-wider transition-colors focus:outline-none focus:ring-2 focus:ring-pitstop-yellow rounded px-1.5 py-1 ${isDark ? 'text-gray-400 hover:text-white' : 'text-pitstop-muted hover:text-pitstop-charcoal'
+              }`}
           >
             For Merchants
           </Link>
@@ -103,20 +98,18 @@ export const Navbar: React.FC<NavbarProps> = ({ theme = 'light' }) => {
           ) : (
             <div className="flex items-center gap-2.5">
               <Link href="/merchant/login">
-                <button className={`inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-semibold transition-all ${
-                  isDark 
-                    ? 'border border-white/20 bg-white/5 text-gray-200 hover:bg-white/10 hover:text-white' 
+                <button className={`inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-semibold transition-all ${isDark
+                    ? 'border border-white/20 bg-white/5 text-gray-200 hover:bg-white/10 hover:text-white'
                     : 'border border-pitstop-border bg-white text-pitstop-charcoal hover:bg-pitstop-bg'
-                }`}>
+                  }`}>
                   <Store className="h-3.5 w-3.5" />
                   <span>Merchant Portal</span>
                 </button>
               </Link>
 
               <Link href="/rider/login">
-                <button className={`px-3 py-2 text-xs font-semibold transition-colors ${
-                  isDark ? 'text-gray-300 hover:text-white' : 'text-pitstop-charcoal hover:text-black'
-                }`}>
+                <button className={`px-3 py-2 text-xs font-semibold transition-colors ${isDark ? 'text-gray-300 hover:text-white' : 'text-pitstop-charcoal hover:text-black'
+                  }`}>
                   Log In
                 </button>
               </Link>
@@ -149,11 +142,10 @@ export const Navbar: React.FC<NavbarProps> = ({ theme = 'light' }) => {
           <button
             type="button"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className={`inline-flex min-h-[40px] min-w-[40px] items-center justify-center rounded-lg border transition-colors ${
-              isDark 
-                ? 'border-white/20 bg-white/5 text-white hover:bg-white/10' 
+            className={`inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-xl border transition-all active:scale-95 ${isDark
+                ? 'border-white/20 bg-white/5 text-white hover:bg-white/10'
                 : 'border-pitstop-border bg-white text-pitstop-charcoal hover:bg-pitstop-bg'
-            }`}
+              }`}
             aria-expanded={mobileMenuOpen}
             aria-label="Toggle Navigation Menu"
           >
@@ -164,43 +156,38 @@ export const Navbar: React.FC<NavbarProps> = ({ theme = 'light' }) => {
 
       {/* Mobile Drawer / Collapsible Menu */}
       {mobileMenuOpen && (
-        <div className={`border-t px-4 pt-3 pb-6 md:hidden shadow-elevation animate-in slide-in-from-top-2 ${
-          isDark ? 'border-white/10 bg-[#161726]' : 'border-pitstop-border bg-white'
-        }`}>
-          <nav className="flex flex-col gap-3" aria-label="Mobile Navigation">
+        <div className={`border-t px-4 pt-4 pb-8 md:hidden shadow-elevation animate-in slide-in-from-top-2 max-h-[calc(100vh-64px)] overflow-y-auto ${isDark ? 'border-white/10 bg-[#161726]' : 'border-pitstop-border bg-white'
+          }`}>
+          <nav className="flex flex-col gap-2.5" aria-label="Mobile Navigation">
             <Link
               href="/explore"
               onClick={() => setMobileMenuOpen(false)}
-              className={`rounded-lg px-3 py-2.5 text-sm font-semibold ${
-                isDark ? 'text-white hover:bg-white/5' : 'text-pitstop-charcoal hover:bg-pitstop-bg'
-              }`}
+              className={`flex items-center min-h-[44px] rounded-xl px-3.5 py-2.5 text-sm font-semibold transition-colors ${isDark ? 'text-white hover:bg-white/5 active:bg-white/10' : 'text-pitstop-charcoal hover:bg-pitstop-bg active:bg-slate-100'
+                }`}
             >
               📍 Explore Rest Stops
             </Link>
             <Link
               href="/jobs"
               onClick={() => setMobileMenuOpen(false)}
-              className={`rounded-lg px-3 py-2.5 text-sm font-semibold ${
-                isDark ? 'text-white hover:bg-white/5' : 'text-pitstop-charcoal hover:bg-pitstop-bg'
-              }`}
+              className={`flex items-center min-h-[44px] rounded-xl px-3.5 py-2.5 text-sm font-semibold transition-colors ${isDark ? 'text-white hover:bg-white/5 active:bg-white/10' : 'text-pitstop-charcoal hover:bg-pitstop-bg active:bg-slate-100'
+                }`}
             >
               💼 Micro-Jobs Board
             </Link>
             <Link
               href="/how-it-works"
               onClick={() => setMobileMenuOpen(false)}
-              className={`rounded-lg px-3 py-2.5 text-sm font-medium ${
-                isDark ? 'text-gray-400 hover:bg-white/5 hover:text-white' : 'text-pitstop-muted hover:bg-pitstop-bg hover:text-pitstop-charcoal'
-              }`}
+              className={`rounded-lg px-3 py-2.5 text-sm font-medium ${isDark ? 'text-gray-400 hover:bg-white/5 hover:text-white' : 'text-pitstop-muted hover:bg-pitstop-bg hover:text-pitstop-charcoal'
+                }`}
             >
               💡 How It Works
             </Link>
             <Link
               href="/for-merchants"
               onClick={() => setMobileMenuOpen(false)}
-              className={`rounded-lg px-3 py-2.5 text-sm font-medium ${
-                isDark ? 'text-gray-400 hover:bg-white/5 hover:text-white' : 'text-pitstop-muted hover:bg-pitstop-bg hover:text-pitstop-charcoal'
-              }`}
+              className={`rounded-lg px-3 py-2.5 text-sm font-medium ${isDark ? 'text-gray-400 hover:bg-white/5 hover:text-white' : 'text-pitstop-muted hover:bg-pitstop-bg hover:text-pitstop-charcoal'
+                }`}
             >
               🏪 Merchant Partner Info
             </Link>

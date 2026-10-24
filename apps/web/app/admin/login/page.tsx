@@ -2,10 +2,10 @@
 
 import React, { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { 
-  Lock, 
-  Eye, 
-  EyeOff, 
+import {
+  Lock,
+  Eye,
+  EyeOff,
   ArrowRight
 } from 'lucide-react';
 import { AuthCardLayout } from '@/components/auth';

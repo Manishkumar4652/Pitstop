@@ -312,12 +312,12 @@ export function QrScannerModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
       role="dialog"
       aria-modal="true"
       aria-labelledby="scanner-modal-title"
     >
-      <div className="relative w-full max-w-lg rounded-2xl bg-white shadow-xl border border-pitstop-border overflow-hidden flex flex-col max-h-[90vh]">
+      <div className="relative w-full max-w-lg rounded-t-3xl sm:rounded-2xl bg-white shadow-xl border border-pitstop-border overflow-hidden flex flex-col max-h-[94vh]">
         {/* Modal Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-pitstop-border bg-white sticky top-0 z-10">
           <div className="flex items-center gap-2.5">
@@ -597,8 +597,7 @@ export function QrScannerModal({
                     value={manualToken}
                     onChange={(e) => setManualToken(e.target.value.trim())}
                     placeholder="e.g. 482910"
-                    maxLength={300}
-                    className="w-full rounded-lg border border-pitstop-border bg-white px-3 py-2 text-sm text-pitstop-charcoal tracking-widest font-mono font-bold focus:outline-none focus:ring-2 focus:ring-pitstop-yellow text-center"
+                    className="w-full rounded-xl border border-pitstop-border bg-white px-3.5 py-2.5 min-h-[46px] text-base text-pitstop-charcoal tracking-widest font-mono font-bold focus:outline-none focus:ring-2 focus:ring-pitstop-yellow text-center"
                     required
                   />
                   <p className="text-[10px] text-pitstop-muted mt-1 text-center">

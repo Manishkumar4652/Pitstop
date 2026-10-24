@@ -148,6 +148,24 @@ export function RestStopMap({
   const [isLocating, setIsLocating] = useState(false);
   const [locateError, setLocateError] = useState<string | null>(null);
   const [copiedKey, setCopiedKey] = useState(false);
+  const [effectiveHeight, setEffectiveHeight] = useState<string>(height);
+
+  // Dynamic responsive height: cap height gracefully on small viewports
+  useEffect(() => {
+    const updateDimensions = () => {
+      if (typeof window !== 'undefined') {
+        if (window.innerWidth < 640) {
+          // On mobile phones, cap height to 380px or 60vh
+          setEffectiveHeight('380px');
+        } else {
+          setEffectiveHeight(height);
+        }
+      }
+    };
+    updateDimensions();
+    window.addEventListener('resize', updateDimensions);
+    return () => window.removeEventListener('resize', updateDimensions);
+  }, [height]);
 
   // Sync selectedStopId prop with activeStop
   useEffect(() => {
@@ -394,7 +412,7 @@ export function RestStopMap({
   if (!isLoaded) {
     return (
       <div 
-        style={{ height }}
+        style={{ height: effectiveHeight }}
         className={`w-full rounded-2xl border border-pitstop-border bg-slate-100 flex flex-col items-center justify-center relative overflow-hidden animate-pulse ${className}`}
       >
         <div className="flex flex-col items-center gap-3">
@@ -414,7 +432,7 @@ export function RestStopMap({
   return (
     <div className={`relative w-full rounded-2xl border border-pitstop-border overflow-hidden shadow-subtle ${className}`}>
       {/* Floating Toolbar Controls */}
-      <div className="absolute top-4 left-4 z-10 flex flex-wrap items-center gap-2">
+      <div className="absolute top-3 left-3 sm:top-4 sm:left-4 z-10 flex flex-wrap items-center gap-1.5 sm:gap-2 max-w-[calc(100%-24px)]">
         {showLocateMe && (
           <Button
             type="button"
@@ -422,7 +440,7 @@ export function RestStopMap({
             size="sm"
             onClick={handleLocateMe}
             disabled={isLocating}
-            className="bg-white/95 backdrop-blur-sm shadow-md hover:bg-white text-xs font-bold"
+            className="bg-white/95 backdrop-blur-sm shadow-md hover:bg-white text-xs font-bold min-h-[38px] active:scale-95"
             leftIcon={
               isLocating ? (
                 <Loader2 className="h-3.5 w-3.5 text-blue-600 animate-spin" />
@@ -441,7 +459,7 @@ export function RestStopMap({
             variant="outline"
             size="sm"
             onClick={fitAllStops}
-            className="bg-white/95 backdrop-blur-sm shadow-md hover:bg-white text-xs font-bold"
+            className="bg-white/95 backdrop-blur-sm shadow-md hover:bg-white text-xs font-bold min-h-[38px] active:scale-95"
             leftIcon={<Maximize2 className="h-3.5 w-3.5 text-pitstop-charcoal" />}
           >
             View All ({stops.length})
@@ -457,7 +475,7 @@ export function RestStopMap({
 
       {/* Google Map Container */}
       <GoogleMap
-        mapContainerStyle={{ width: '100%', height }}
+        mapContainerStyle={{ width: '100%', height: effectiveHeight }}
         center={computedCenter}
         zoom={initialZoom}
         onLoad={onLoad}
@@ -469,7 +487,7 @@ export function RestStopMap({
           mapTypeControl: false,
           streetViewControl: false,
           fullscreenControl: interactive,
-          gestureHandling: interactive ? 'greedy' : 'none',
+          gestureHandling: interactive ? 'cooperative' : 'none',
         }}
       >
         {/* Rider GPS Marker */}

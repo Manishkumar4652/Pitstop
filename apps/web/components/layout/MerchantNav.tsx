@@ -109,7 +109,7 @@ export const MerchantNav: React.FC<MerchantNavProps> = ({ className = '' }) => {
 
       {/* Mobile Sticky Bottom Navigation Bar */}
       <nav
-        className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-pitstop-border px-2 py-1 shadow-elevation min-h-[56px] flex items-center justify-around"
+        className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-pitstop-border px-1 py-1 pb-[max(4px,env(safe-area-inset-bottom))] shadow-elevation flex items-center justify-around"
         aria-label="Mobile Merchant Navigation"
       >
         {navItems.map((item) => (
@@ -117,16 +117,16 @@ export const MerchantNav: React.FC<MerchantNavProps> = ({ className = '' }) => {
             key={item.href}
             href={item.href}
             aria-current={item.active ? 'page' : undefined}
-            className={`flex flex-col items-center justify-center flex-1 py-1 px-1 rounded-md min-h-[48px] focus:outline-none focus:ring-2 focus:ring-pitstop-yellow ${
+            className={`flex flex-col items-center justify-center flex-1 py-1 px-1 rounded-lg transition-transform active:scale-95 focus:outline-none ${
               item.active
                 ? 'text-pitstop-charcoal font-bold'
                 : 'text-pitstop-muted hover:text-pitstop-charcoal font-medium'
             }`}
           >
-            <div className={`p-1 rounded-md ${item.active ? 'bg-pitstop-yellow-light text-pitstop-charcoal' : ''}`}>
+            <div className={`p-1 rounded-md transition-colors ${item.active ? 'bg-pitstop-yellow text-pitstop-charcoal shadow-xs' : 'text-pitstop-muted'}`}>
               {item.icon}
             </div>
-            <span className="text-[10px] tracking-tight text-center leading-none mt-0.5">
+            <span className={`text-[10px] tracking-tight text-center leading-tight mt-0.5 ${item.active ? 'font-bold text-pitstop-charcoal' : 'text-pitstop-muted'}`}>
               {item.label}
             </span>
           </Link>

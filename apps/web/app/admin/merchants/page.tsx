@@ -117,7 +117,7 @@ export default function AdminMerchantsPage() {
     <PublicLayout>
       <AdminNav />
 
-      <main id="main-content" className="pb-20 md:pb-12 bg-pitstop-bg min-h-[calc(100vh-64px)]">
+      <main id="main-content" className="pb-28 md:pb-12 bg-pitstop-bg min-h-[calc(100vh-64px)]">
         <PageHeader
           title="Merchant Partner Moderation"
           description="Review business credentials, approve new store partnerships, and supervise trade licenses across the PitStop India network."
@@ -186,11 +186,11 @@ export default function AdminMerchantsPage() {
                       setSearchQuery(e.target.value);
                       setPage(1);
                     }}
-                    className="w-full pl-9 pr-4 py-2 text-sm rounded-lg border border-pitstop-border focus:outline-none focus:ring-2 focus:ring-pitstop-yellow/40 focus:border-pitstop-yellow bg-white"
+                    className="w-full pl-9 pr-4 py-2 min-h-[44px] text-base sm:text-sm rounded-lg border border-pitstop-border focus:outline-none focus:ring-2 focus:ring-pitstop-yellow/40 focus:border-pitstop-yellow bg-white"
                   />
                 </div>
 
-                <div className="flex items-center gap-2 w-full md:w-auto overflow-x-auto pb-1 md:pb-0">
+                <div className="flex items-center gap-2 w-full md:w-auto overflow-x-auto pb-1 md:pb-0 no-scrollbar">
                   <Filter className="h-4 w-4 text-pitstop-secondary hidden sm:inline" />
                   <span className="text-xs font-semibold text-pitstop-secondary hidden sm:inline mr-1">Status:</span>
                   {[
@@ -206,7 +206,7 @@ export default function AdminMerchantsPage() {
                         setStatusFilter(filter.id);
                         setPage(1);
                       }}
-                      className={`px-3 py-1.5 text-xs font-medium rounded-lg whitespace-nowrap transition-colors ${
+                      className={`px-3 py-2 sm:py-1.5 min-h-[40px] sm:min-h-0 text-xs font-medium rounded-lg whitespace-nowrap transition-colors ${
                         statusFilter === filter.id
                           ? 'bg-pitstop-charcoal text-white'
                           : 'bg-gray-100 text-pitstop-charcoal hover:bg-gray-200'
@@ -389,8 +389,8 @@ export default function AdminMerchantsPage() {
 
                 {/* Pagination Controls */}
                 {pagination && pagination.totalPages > 1 && (
-                  <div className="flex items-center justify-between pt-4 border-t border-pitstop-border">
-                    <span className="text-xs text-pitstop-secondary">
+                  <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4 border-t border-pitstop-border">
+                    <span className="text-xs text-pitstop-secondary text-center sm:text-left">
                       Showing page {pagination.page} of {pagination.totalPages} ({pagination.total} merchants total)
                     </span>
                     <div className="flex items-center gap-2">
@@ -400,6 +400,7 @@ export default function AdminMerchantsPage() {
                         disabled={!pagination.hasPrevPage}
                         onClick={() => setPage((p) => Math.max(1, p - 1))}
                         leftIcon={<ChevronLeft className="w-3.5 h-3.5" />}
+                        className="min-h-[40px] sm:min-h-0"
                       >
                         Previous
                       </Button>
@@ -409,6 +410,7 @@ export default function AdminMerchantsPage() {
                         disabled={!pagination.hasNextPage}
                         onClick={() => setPage((p) => p + 1)}
                         rightIcon={<ChevronRight className="w-3.5 h-3.5" />}
+                        className="min-h-[40px] sm:min-h-0"
                       >
                         Next
                       </Button>
@@ -423,19 +425,19 @@ export default function AdminMerchantsPage() {
         {/* Moderation Confirmation Modal */}
         {activeModal && (
           <div 
-            className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4"
+            className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4"
             role="dialog"
             aria-modal="true"
             aria-labelledby="modal-title"
           >
-            <Card className="w-full max-w-md p-6 shadow-xl border-pitstop-border bg-white animate-in fade-in zoom-in-95 duration-150">
+            <Card className="w-full sm:max-w-md p-6 shadow-xl border-pitstop-border bg-white rounded-t-3xl sm:rounded-2xl max-h-[90vh] overflow-y-auto animate-in slide-in-from-bottom-6 sm:slide-in-from-bottom-0 sm:zoom-in-95 duration-200">
               <div className="flex items-center justify-between mb-4">
                 <h3 id="modal-title" className="text-lg font-bold text-pitstop-charcoal">
                   Confirm Status Change
                 </h3>
                 <button
                   onClick={() => setActiveModal(null)}
-                  className="text-gray-400 hover:text-gray-600"
+                  className="p-1.5 -mr-1 text-gray-400 hover:text-gray-600 rounded-lg"
                   aria-label="Close modal"
                 >
                   <X className="w-5 h-5" />
@@ -466,17 +468,18 @@ export default function AdminMerchantsPage() {
                   value={moderationReason}
                   onChange={(e) => setModerationReason(e.target.value)}
                   placeholder="e.g. Verified physical shop and valid trade certificate on site..."
-                  className="w-full text-sm p-3 rounded-lg border border-pitstop-border focus:outline-none focus:ring-2 focus:ring-pitstop-yellow/40 focus:border-pitstop-yellow resize-none"
+                  className="w-full text-base sm:text-sm p-3 rounded-lg border border-pitstop-border focus:outline-none focus:ring-2 focus:ring-pitstop-yellow/40 focus:border-pitstop-yellow resize-none"
                   disabled={isSubmitting}
                 />
               </div>
 
-              <div className="flex items-center justify-end gap-3">
+              <div className="flex flex-col-reverse sm:flex-row items-center justify-end gap-3 pb-safe">
                 <Button
                   variant="outline"
                   size="md"
                   onClick={() => setActiveModal(null)}
                   disabled={isSubmitting}
+                  className="w-full sm:w-auto min-h-[46px] sm:min-h-0"
                 >
                   Cancel
                 </Button>
@@ -485,7 +488,7 @@ export default function AdminMerchantsPage() {
                   size="md"
                   onClick={handleConfirmStatusChange}
                   isLoading={isSubmitting}
-                  className={activeModal.targetStatus === 'rejected' ? 'text-red-600 border-red-300 hover:bg-red-50' : ''}
+                  className={`w-full sm:w-auto min-h-[46px] sm:min-h-0 ${activeModal.targetStatus === 'rejected' ? 'text-red-600 border-red-300 hover:bg-red-50' : ''}`}
                 >
                   Confirm {activeModal.targetStatus}
                 </Button>

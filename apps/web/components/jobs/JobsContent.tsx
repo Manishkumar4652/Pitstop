@@ -140,7 +140,7 @@ export const JobsContent: React.FC = () => {
                     setSearchQuery(e.target.value);
                     setPage(1);
                   }}
-                  className="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-pitstop-border bg-white text-pitstop-charcoal placeholder:text-pitstop-muted/70 focus:outline-none focus:ring-2 focus:ring-pitstop-yellow min-h-[44px]"
+                  className="w-full pl-9 pr-3 py-2 text-base sm:text-sm rounded-xl border border-pitstop-border bg-white text-pitstop-charcoal placeholder:text-pitstop-muted/70 focus:outline-none focus:ring-2 focus:ring-pitstop-yellow min-h-[46px]"
                   aria-label="Search jobs"
                 />
               </div>
@@ -153,7 +153,7 @@ export const JobsContent: React.FC = () => {
                     setCategoryFilter(e.target.value);
                     setPage(1);
                   }}
-                  className="px-3 py-2 text-xs font-semibold rounded-lg border border-pitstop-border bg-white text-pitstop-charcoal focus:outline-none focus:ring-2 focus:ring-pitstop-yellow min-h-[44px]"
+                  className="flex-1 sm:flex-none px-3 py-2 text-base sm:text-xs font-semibold rounded-xl border border-pitstop-border bg-white text-pitstop-charcoal focus:outline-none focus:ring-2 focus:ring-pitstop-yellow min-h-[46px]"
                   aria-label="Filter by category"
                 >
                   <option value="all">All Categories</option>
@@ -171,11 +171,11 @@ export const JobsContent: React.FC = () => {
                     setPayTypeFilter(e.target.value as any);
                     setPage(1);
                   }}
-                  className="px-3 py-2 text-xs font-semibold rounded-lg border border-pitstop-border bg-white text-pitstop-charcoal focus:outline-none focus:ring-2 focus:ring-pitstop-yellow min-h-[44px]"
+                  className="flex-1 sm:flex-none px-3 py-2 text-base sm:text-xs font-semibold rounded-xl border border-pitstop-border bg-white text-pitstop-charcoal focus:outline-none focus:ring-2 focus:ring-pitstop-yellow min-h-[46px]"
                   aria-label="Filter by payout structure"
                 >
                   <option value="all">All Payout Types</option>
-                  <option value="fixed">Fixed Task Payout</option>
+                  <option value="fixed">Fixed Payout</option>
                   <option value="hourly">Hourly Rate</option>
                 </select>
 
@@ -185,7 +185,7 @@ export const JobsContent: React.FC = () => {
                     setSortOption(e.target.value as any);
                     setPage(1);
                   }}
-                  className="px-3 py-2 text-xs font-semibold rounded-lg border border-pitstop-border bg-white text-pitstop-charcoal focus:outline-none focus:ring-2 focus:ring-pitstop-yellow min-h-[44px]"
+                  className="flex-1 sm:flex-none px-3 py-2 text-base sm:text-xs font-semibold rounded-xl border border-pitstop-border bg-white text-pitstop-charcoal focus:outline-none focus:ring-2 focus:ring-pitstop-yellow min-h-[46px]"
                   aria-label="Sort jobs"
                 >
                   <option value="newest">Newest First</option>
@@ -198,6 +198,7 @@ export const JobsContent: React.FC = () => {
                   variant="ghost"
                   onClick={loadJobs}
                   disabled={isLoading}
+                  className="min-h-[46px]"
                   leftIcon={<RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />}
                   aria-label="Refresh job listings"
                 >

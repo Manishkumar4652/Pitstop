@@ -157,12 +157,12 @@ export const JobApplicantsModal: React.FC<JobApplicantsModalProps> = ({
 
   return (
     <div 
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm overflow-y-auto"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 p-0 sm:p-4 backdrop-blur-sm overflow-y-auto"
       role="dialog"
       aria-modal="true"
       aria-labelledby="applicants-modal-title"
     >
-      <Card className="w-full max-w-3xl bg-white p-6 sm:p-8 shadow-xl max-h-[90vh] overflow-y-auto flex flex-col">
+      <Card className="w-full max-w-3xl bg-white p-5 sm:p-8 rounded-t-3xl sm:rounded-2xl shadow-xl max-h-[92vh] overflow-y-auto flex flex-col">
         {/* Header */}
         <div className="flex items-start justify-between border-b border-pitstop-border pb-4 mb-4">
           <div className="flex items-center gap-3">
