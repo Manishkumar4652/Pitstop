@@ -1927,3 +1927,25 @@ Transformed the entire PitStop SaaS platform into a 100% mobile-first, thumb-con
    - Monorepo `npm run lint`: Passed (0 ESLint warnings or errors).
    - Live Chrome DevTools verification across desktop and 390px smartphone viewports.
 
+---
+
+## Landing Experience Polish, RiderNav & Camera-Only QR Scanner Milestone
+
+### Verification Date: 2026-10-24
+### Status: COMPLETED (Verified with zero TypeScript errors & 112 passing unit/integration tests)
+
+### Objectives & Deliverables
+1. **Landing Hero RideStrip Animation (`RideStrip.tsx`, `LandingHero.tsx`)**:
+   - Integrated user-provided FontAwesome Cyclist and Merchant Shop SVG paths in `#FBBF24`.
+   - Created bold road ground line (`strokeWidth="3.5"`) with road accent dashes and `fillRule="evenodd"` door/window cutouts.
+   - Removed yellow wavy underline below headline for clean typographic aesthetics.
+2. **Landing Footer Responsive Alignment (`LandingCtaAndFooter.tsx`)**:
+   - Refactored smartphone footer into a sleek 3-column inline grid (`Platform`, `Merchants`, `Legal & Support`), reducing vertical height by >50%.
+   - Perfectly aligned desktop footer into a single 12-column baseline (`md:col-span-4`, `md:col-span-3`, `md:col-span-2`, `md:col-span-3`).
+3. **Rider Navigation Label Upgrade (`RiderNav.tsx`)**:
+   - Renamed `'Browse Jobs'` to `'Explore'` across mobile bottom bar and desktop sub-navigation.
+4. **Camera-Only QR Scanner Enforced (`QrScannerModal.tsx`, `VenueQrModal.tsx`)**:
+   - Removed 6-digit desk code manual entry, accordion, and fallback buttons from Rider QR scanner modal.
+   - Removed 6-digit desk code display block from Merchant Venue QR modal and printable poster.
+
+

@@ -11,7 +11,6 @@ import {
   Sparkles,
   ShieldCheck,
   ChevronRight,
-  Keyboard,
   CameraOff,
 } from 'lucide-react';
 import { Button, Badge } from '@/components/ui';
@@ -52,20 +51,9 @@ export function QrScannerModal({
   const [status, setStatus] = useState<ScannerStatus>('idle');
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [verifiedCheckIn, setVerifiedCheckIn] = useState<CheckInRiderResponse | null>(null);
-  const [showManualInput, setShowManualInput] = useState<boolean>(false);
-  const [manualToken, setManualToken] = useState<string>('');
-  const [manualRestStopId, setManualRestStopId] = useState<string>(initialRestStopId || '');
-
   const scannerRef = useRef<any>(null);
   const isProcessingRef = useRef<boolean>(false);
   const readerElementId = 'pitstop-qr-reader-viewport';
-
-  // Synchronize manual input with initial prop if changed
-  useEffect(() => {
-    if (initialRestStopId) {
-      setManualRestStopId(initialRestStopId);
-    }
-  }, [initialRestStopId]);
 
   // Clean stop and release camera hardware
   const stopCamera = useCallback(async () => {
@@ -171,7 +159,7 @@ export function QrScannerModal({
       return;
     }
 
-    const restStopToUse = targetRestStopId || initialRestStopId || manualRestStopId;
+    const restStopToUse = targetRestStopId || initialRestStopId;
     if (!restStopToUse) {
       setStatus('error');
       setErrorMessage('Please specify or select which rest stop you are visiting before verifying.');
@@ -291,22 +279,13 @@ export function QrScannerModal({
       } else {
         setStatus('error');
         setErrorMessage(
-          err?.message || 'Unable to start camera scanner. You can use manual token entry below.'
+          err?.message || 'Unable to start camera scanner. Please verify camera permissions and retry.'
         );
       }
     }
   };
 
-  /**
-   * Handles manual fallback token submission.
-   */
-  const handleManualSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!manualToken.trim()) return;
 
-    await stopCamera();
-    await submitVerification(manualRestStopId, manualToken.trim());
-  };
 
   if (!isOpen) return null;
 
@@ -448,7 +427,7 @@ export function QrScannerModal({
                   Camera Permission Denied
                 </h3>
                 <p className="text-xs text-pitstop-muted mt-1.5 max-w-sm mx-auto leading-relaxed">
-                  Your browser blocked camera access. Please allow camera permissions in your browser site settings, or use manual code entry.
+                  Your browser blocked camera access. Please allow camera permissions in your browser site settings to scan the QR code.
                 </p>
               </div>
 
@@ -481,16 +460,13 @@ export function QrScannerModal({
                   {status === 'unsupported' ? 'Camera API Not Supported' : 'Camera Unavailable'}
                 </h3>
                 <p className="text-xs text-pitstop-muted mt-1.5 max-w-sm mx-auto leading-relaxed">
-                  No compatible camera was detected on this device. You can verify your check-in using manual token entry below.
+                  No compatible camera was detected on this device. A camera is required to scan the venue QR code.
                 </p>
               </div>
 
-              <div className="pt-2 flex gap-2 max-w-sm mx-auto">
+              <div className="pt-2 flex justify-center max-w-xs mx-auto">
                 <Button variant="outline" fullWidth onClick={handleModalClose}>
-                  Cancel
-                </Button>
-                <Button variant="primary" fullWidth onClick={() => setShowManualInput(true)} leftIcon={<Keyboard className="h-4 w-4" />}>
-                  Enter Code Manually
+                  Close
                 </Button>
               </div>
             </div>
@@ -567,58 +543,7 @@ export function QrScannerModal({
             </div>
           )}
 
-          {/* Secure Manual-Entry Fallback Accordion */}
-          <div className="border-t border-pitstop-border pt-4">
-            <button
-              type="button"
-              onClick={() => setShowManualInput(!showManualInput)}
-              className="w-full flex items-center justify-between text-xs font-semibold text-pitstop-muted hover:text-pitstop-charcoal py-1 transition-colors"
-              aria-expanded={showManualInput}
-            >
-              <span className="flex items-center gap-1.5">
-                <Keyboard className="h-3.5 w-3.5" />
-                <span>Can&apos;t scan? Enter 6-Digit Desk Code Manually</span>
-              </span>
-              <ChevronRight
-                className={`h-4 w-4 transition-transform duration-200 ${showManualInput ? 'rotate-90' : ''}`}
-              />
-            </button>
 
-            {showManualInput && (
-              <form onSubmit={handleManualSubmit} className="mt-3 space-y-3 bg-pitstop-bg p-3.5 rounded-xl border border-pitstop-border">
-                <div>
-                  <label htmlFor="manual-token-input" className="block text-xs font-bold text-pitstop-charcoal mb-1">
-                    Desk Verification Code (6 Digits)
-                  </label>
-                  <input
-                    id="manual-token-input"
-                    type="text"
-                    inputMode="numeric"
-                    value={manualToken}
-                    onChange={(e) => setManualToken(e.target.value.trim())}
-                    placeholder="e.g. 482910"
-                    className="w-full rounded-xl border border-pitstop-border bg-white px-3.5 py-2.5 min-h-[46px] text-base text-pitstop-charcoal tracking-widest font-mono font-bold focus:outline-none focus:ring-2 focus:ring-pitstop-yellow text-center"
-                    required
-                  />
-                  <p className="text-[10px] text-pitstop-muted mt-1 text-center">
-                    Enter the 6-digit verification code displayed on the rest stop desk poster.
-                  </p>
-                </div>
-
-                <div className="flex gap-2 justify-end">
-                  <Button
-                    type="submit"
-                    variant="primary"
-                    size="sm"
-                    disabled={status === 'verifying' || !manualToken.trim()}
-                    leftIcon={status === 'verifying' ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : undefined}
-                  >
-                    Verify Desk Code
-                  </Button>
-                </div>
-              </form>
-            )}
-          </div>
         </div>
 
         {/* Modal Footer */}

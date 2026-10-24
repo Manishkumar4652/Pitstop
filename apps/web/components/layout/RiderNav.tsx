@@ -30,7 +30,7 @@ export const RiderNav: React.FC<RiderNavProps> = ({ className = '' }) => {
       active: pathname === '/explore' || pathname.startsWith('/rest-stops/'),
     },
     {
-      label: 'Browse Jobs',
+      label: 'Explore',
       href: '/jobs',
       icon: <Briefcase className="h-4 w-4" aria-hidden="true" />,
       active: pathname === '/jobs',
