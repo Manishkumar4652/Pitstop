@@ -43,12 +43,29 @@ export function extractBearerToken(authHeader?: string): string {
   return parts[1];
 }
 
+interface CachedAuthUser {
+  user: any;
+  cachedAt: number;
+}
+
+const userAuthCache = new Map<string, CachedAuthUser>();
+const USER_CACHE_TTL_MS = 20 * 1000; // 20 seconds TTL
+
+export function clearUserAuthCache(userId?: string) {
+  if (userId) {
+    userAuthCache.delete(userId);
+  } else {
+    userAuthCache.clear();
+  }
+}
+
 /**
  * Authentication middleware that verifies JWT access tokens and attaches
  * the authenticated user context to the Express Request.
  * 
  * In production/connected mode, actively verifies the user exists in MongoDB
  * to prevent privilege escalation from deleted accounts or stale token claims.
+ * Uses a short 20s in-memory cache to avoid redundant database round-trips.
  */
 export async function authenticateJwt(
   req: Request,
@@ -72,12 +89,20 @@ export async function authenticateJwt(
     }
 
     if (isDatabaseConnected()) {
-      // Query MongoDB to verify account still exists and fetch latest role
-      const user = await User.findById(payload.sub);
-      if (!user) {
-        throw new UnauthorizedError('User account not found or has been deactivated.');
+      const now = Date.now();
+      const cached = userAuthCache.get(payload.sub);
+
+      if (cached && now - cached.cachedAt < USER_CACHE_TTL_MS) {
+        req.user = cached.user;
+      } else {
+        const user = await User.findById(payload.sub);
+        if (!user) {
+          userAuthCache.delete(payload.sub);
+          throw new UnauthorizedError('User account not found or has been deactivated.');
+        }
+        userAuthCache.set(payload.sub, { user, cachedAt: now });
+        req.user = user;
       }
-      req.user = user;
     } else {
       // In production, database connection is mandatory. Never allow test mocks in production.
       if (config.NODE_ENV === 'production') {

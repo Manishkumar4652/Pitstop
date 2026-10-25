@@ -1948,4 +1948,33 @@ Transformed the entire PitStop SaaS platform into a 100% mobile-first, thumb-con
    - Removed 6-digit desk code manual entry, accordion, and fallback buttons from Rider QR scanner modal.
    - Removed 6-digit desk code display block from Merchant Venue QR modal and printable poster.
 
+---
+
+## Performance, Navigation Responsiveness & Freeze Fix Milestone
+
+### Verification Date: 2026-10-25
+### Status: COMPLETED (Verified with 328/328 passing API tests, 112/112 passing Web tests, 0 TypeScript errors)
+
+### Objectives & Deliverables
+1. **Rider Mobile Navigation Cleanup (`RiderNav.tsx`)**:
+   - Removed duplicate "My Applications" button from mobile bottom bar (now streamlined to Map, Explore, and Profile).
+2. **Eliminated Redundant Auth Network Roundtrips (`server-session.ts`, `AuthContext.tsx`)**:
+   - Wrapped `getServerSession` with React `cache()` for request-level deduplication across layout and page server components.
+   - Removed redundant client-side `refreshUser()` call on unauthenticated mount when SSR already resolved `initialUser: null`.
+3. **Instant Client-Side Navigation on Auth Actions (Rider, Merchant, Admin)**:
+   - Replaced full browser reload (`window.location.href`) with `router.push()` / `router.replace()` and `router.refresh()` across all login and registration pages (`rider/login`, `rider/register`, `merchant/login`, `merchant/register`, `admin/login`).
+4. **Jobs Marketplace Debounce & Optimistic Updates (`JobsContent.tsx`)**:
+   - Added 300ms debounce to search query and filter selection to eliminate typing lag and repeated rapid network calls.
+   - Converted `handleApplicationSubmitted` to an optimistic state update instead of triggering a full page list refetch.
+5. **Google Maps Lazy Script Isolation (`RestStopMap.tsx`)**:
+   - Extracted `RestStopMapFallback` so that `@react-google-maps/api` script is never loaded when `NEXT_PUBLIC_GOOGLE_MAPS_KEY` is empty, eliminating network timeouts and console errors.
+6. **Express API Payload Compression & In-Memory Auth Cache (`app.ts`, `auth.ts`, `auth.controller.ts`)**:
+   - Added `compression` middleware to Express backend to serve gzip/deflate compressed JSON responses.
+   - Implemented a 20-second TTL in-memory auth cache for user verifications in `authenticateJwt` middleware, cutting down repetitive MongoDB queries on rapid API actions.
+   - Invalidation of cached entries triggered on login.
+7. **Empirical Verification**:
+   - 328/328 API unit and integration tests passed.
+   - 112/112 Web BFF and frontend unit tests passed.
+   - TypeScript compilation clean with 0 errors across workspaces.
+
 

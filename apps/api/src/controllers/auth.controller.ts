@@ -11,6 +11,7 @@ import { sendSuccess } from '../utils/response';
 import { config } from '../config/env';
 import { BadRequestError, UnauthorizedError, ConflictError, AppError } from '../utils/errors';
 import { mockRestStopStore, MockRestStopItem } from './restStopMockStore';
+import { clearUserAuthCache } from '../middleware/auth';
 
 
 
@@ -360,6 +361,8 @@ export async function loginHandler(req: Request, res: Response): Promise<void> {
       userId: user._id.toString(),
       role: user.role,
     });
+
+    clearUserAuthCache(user._id.toString());
 
     sendSuccess(
       res,

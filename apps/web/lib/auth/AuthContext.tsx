@@ -23,9 +23,9 @@ export const AuthProvider: React.FC<{
   initialUser?: UserPublicProfile | null;
 }> = ({ children, initialUser = null }) => {
   const [user, setUser] = useState<UserPublicProfile | null>(initialUser);
-  const [isLoading, setIsLoading] = useState<boolean>(!initialUser);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  // Restore session on mount if initialUser was not supplied via SSR
+  // Restore session on demand or on mount if initialUser was not supplied via SSR
   const refreshUser = useCallback(async () => {
     try {
       setIsLoading(true);
@@ -49,13 +49,11 @@ export const AuthProvider: React.FC<{
     }
   }, []);
 
+  // Sync user state if initialUser changes from SSR or router.refresh()
   useEffect(() => {
-    if (!initialUser) {
-      refreshUser();
-    } else {
-      setIsLoading(false);
-    }
-  }, [initialUser, refreshUser]);
+    setUser(initialUser ?? null);
+    setIsLoading(false);
+  }, [initialUser]);
 
   const login = async (
     credentials: LoginRequest,

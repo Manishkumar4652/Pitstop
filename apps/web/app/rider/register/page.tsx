@@ -56,9 +56,9 @@ function RegisterFormContent() {
 
   React.useEffect(() => {
     if (isAuthenticated) {
-      window.location.href = returnUrl;
+      router.replace(returnUrl);
     }
-  }, [isAuthenticated, returnUrl]);
+  }, [isAuthenticated, returnUrl, router]);
 
   const handlePhoneChange = (val: string) => {
     let cleaned = val.replace(/\D/g, '');
@@ -117,7 +117,8 @@ function RegisterFormContent() {
         return;
       }
 
-      window.location.href = returnUrl;
+      router.push(returnUrl);
+      router.refresh();
     } catch {
       setError('An unexpected network error occurred. Please try again.');
       setIsSubmitting(false);

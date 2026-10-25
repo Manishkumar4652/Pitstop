@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import { cookies } from 'next/headers';
 import { UserPublicProfile } from 'shared-types';
 import { getApiBaseUrl } from '@/lib/api/config';
@@ -6,8 +7,9 @@ import { AUTH_COOKIE_NAME } from './cookies';
 /**
  * Server-side helper to retrieve the authenticated user profile in Server Components.
  * Reads the secure HttpOnly cookie and validates with Express backend.
+ * Uses React cache() to deduplicate calls within the same server render pass.
  */
-export async function getServerSession(): Promise<UserPublicProfile | null> {
+export const getServerSession = cache(async function getServerSession(): Promise<UserPublicProfile | null> {
   try {
     const cookieStore = cookies();
     const token = cookieStore.get(AUTH_COOKIE_NAME)?.value;
@@ -38,4 +40,4 @@ export async function getServerSession(): Promise<UserPublicProfile | null> {
   } catch {
     return null;
   }
-}
+});

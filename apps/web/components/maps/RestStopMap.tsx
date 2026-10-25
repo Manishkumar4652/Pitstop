@@ -123,7 +123,137 @@ export interface RestStopMapProps {
   className?: string;
 }
 
-export function RestStopMap({
+function RestStopMapFallback({
+  stops,
+  className = '',
+}: {
+  stops: RestStopDisplayItem[];
+  className?: string;
+}) {
+  const [copiedKey, setCopiedKey] = useState(false);
+
+  const handleCopyEnvSnippet = () => {
+    navigator.clipboard.writeText('NEXT_PUBLIC_GOOGLE_MAPS_KEY=');
+    setCopiedKey(true);
+    setTimeout(() => setCopiedKey(false), 2000);
+  };
+
+  return (
+    <div className={`space-y-6 ${className}`}>
+      {/* Setup Notification Card */}
+      <div className="rounded-2xl border-2 border-pitstop-yellow/30 bg-pitstop-yellow-light/20 p-6 sm:p-8">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex items-start gap-3.5">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-pitstop-yellow text-pitstop-charcoal shadow-sm">
+              <Key className="h-5 w-5" aria-hidden="true" />
+            </div>
+            <div>
+              <h3 className="text-base font-bold text-pitstop-charcoal">
+                Google Maps API Key Setup Ready
+              </h3>
+              <p className="mt-1 text-xs text-pitstop-muted leading-relaxed max-w-xl">
+                Humne <code className="px-1.5 py-0.5 rounded bg-white font-mono text-pitstop-charcoal border border-pitstop-border">apps/web/.env.local</code> create kar di hai. Apni Google Maps API key paste karein aur Next.js server restart karein to view live map tiles.
+              </p>
+            </div>
+          </div>
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleCopyEnvSnippet}
+            leftIcon={copiedKey ? <Check className="h-4 w-4 text-emerald-600" /> : <Copy className="h-4 w-4" />}
+          >
+            {copiedKey ? 'Copied key name!' : 'Copy Config Variable'}
+          </Button>
+        </div>
+
+        <div className="mt-4 rounded-xl bg-pitstop-charcoal p-3.5 text-xs text-white font-mono flex items-center justify-between overflow-x-auto">
+          <span>NEXT_PUBLIC_GOOGLE_MAPS_KEY=YOUR_API_KEY_HERE</span>
+          <span className="text-pitstop-muted text-[11px] ml-4 shrink-0">File: apps/web/.env.local</span>
+        </div>
+      </div>
+
+      {/* Offline Venue Geo-Card Table Fallback */}
+      <div className="rounded-2xl border border-pitstop-border bg-white p-6 shadow-subtle">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <MapPin className="h-4 w-4 text-pitstop-yellow-dark" />
+            <h4 className="text-sm font-bold text-pitstop-charcoal">
+              Active Rest Stops Coordinates ({stops.length} Venues)
+            </h4>
+          </div>
+          <span className="text-xs text-pitstop-muted">
+            Live Directions Links Available Below
+          </span>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {stops.map((stop) => {
+            const [lng, lat] = stop.location?.coordinates || [77.5946, 12.9716];
+            const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
+
+            return (
+              <div
+                key={stop.id}
+                className="rounded-xl border border-pitstop-border bg-pitstop-bg/40 p-4 flex flex-col justify-between hover:border-pitstop-yellow transition-all"
+              >
+                <div>
+                  <div className="flex items-start justify-between gap-2">
+                    <h5 className="text-sm font-bold text-pitstop-charcoal leading-snug">
+                      {stop.name}
+                    </h5>
+                    <Badge
+                      variant={
+                        stop.capacity.status === CapacityStatus.AVAILABLE
+                          ? 'success'
+                          : stop.capacity.status === CapacityStatus.BUSY
+                          ? 'warning'
+                          : 'danger'
+                      }
+                      size="sm"
+                    >
+                      {stop.capacity.status}
+                    </Badge>
+                  </div>
+
+                  <p className="mt-1 text-xs text-pitstop-muted">
+                    {stop.address.area}, {stop.address.city}
+                  </p>
+
+                  <div className="mt-2.5 flex items-center gap-1.5 text-[11px] font-mono text-pitstop-muted bg-white px-2 py-1 rounded border border-pitstop-border">
+                    <Navigation className="h-3 w-3 text-pitstop-yellow-dark shrink-0" />
+                    <span>{lat.toFixed(4)}° N, {lng.toFixed(4)}° E</span>
+                  </div>
+                </div>
+
+                <div className="mt-4 pt-3 border-t border-pitstop-border/60 flex items-center justify-between gap-2">
+                  <Link
+                    href={`/rest-stops/${stop.slug}`}
+                    className="text-xs font-semibold text-pitstop-charcoal hover:underline"
+                  >
+                    View Details →
+                  </Link>
+                  <a
+                    href={directionsUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-xs font-bold text-pitstop-yellow-dark hover:underline"
+                  >
+                    <span>Directions</span>
+                    <ExternalLink className="h-3 w-3" />
+                  </a>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ActiveGoogleMap({
+  apiKey,
   stops,
   selectedStopId,
   onSelectStop,
@@ -133,9 +263,7 @@ export function RestStopMap({
   initialZoom = 13,
   center,
   className = '',
-}: RestStopMapProps) {
-  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY || '';
-
+}: { apiKey: string } & RestStopMapProps) {
   const { isLoaded, loadError } = useJsApiLoader({
     id: 'pitstop-google-maps-script',
     googleMapsApiKey: apiKey,
@@ -147,7 +275,6 @@ export function RestStopMap({
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [isLocating, setIsLocating] = useState(false);
   const [locateError, setLocateError] = useState<string | null>(null);
-  const [copiedKey, setCopiedKey] = useState(false);
   const [effectiveHeight, setEffectiveHeight] = useState<string>(height);
 
   // Dynamic responsive height: cap height gracefully on small viewports
@@ -269,129 +396,7 @@ export function RestStopMap({
     );
   }, [map]);
 
-  const handleCopyEnvSnippet = () => {
-    navigator.clipboard.writeText('NEXT_PUBLIC_GOOGLE_MAPS_KEY=');
-    setCopiedKey(true);
-    setTimeout(() => setCopiedKey(false), 2000);
-  };
-
-  // 1. Fallback State: API Key Not Yet Configured in .env.local
-  if (!apiKey || apiKey.trim() === '') {
-    return (
-      <div className={`space-y-6 ${className}`}>
-        {/* Setup Notification Card */}
-        <div className="rounded-2xl border-2 border-pitstop-yellow/30 bg-pitstop-yellow-light/20 p-6 sm:p-8">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div className="flex items-start gap-3.5">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-pitstop-yellow text-pitstop-charcoal shadow-sm">
-                <Key className="h-5 w-5" aria-hidden="true" />
-              </div>
-              <div>
-                <h3 className="text-base font-bold text-pitstop-charcoal">
-                  Google Maps API Key Setup Ready
-                </h3>
-                <p className="mt-1 text-xs text-pitstop-muted leading-relaxed max-w-xl">
-                  Humne <code className="px-1.5 py-0.5 rounded bg-white font-mono text-pitstop-charcoal border border-pitstop-border">apps/web/.env.local</code> create kar di hai. Apni Google Maps API key paste karein aur Next.js server restart karein to view live map tiles.
-                </p>
-              </div>
-            </div>
-
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleCopyEnvSnippet}
-              leftIcon={copiedKey ? <Check className="h-4 w-4 text-emerald-600" /> : <Copy className="h-4 w-4" />}
-            >
-              {copiedKey ? 'Copied key name!' : 'Copy Config Variable'}
-            </Button>
-          </div>
-
-          <div className="mt-4 rounded-xl bg-pitstop-charcoal p-3.5 text-xs text-white font-mono flex items-center justify-between overflow-x-auto">
-            <span>NEXT_PUBLIC_GOOGLE_MAPS_KEY=YOUR_API_KEY_HERE</span>
-            <span className="text-pitstop-muted text-[11px] ml-4 shrink-0">File: apps/web/.env.local</span>
-          </div>
-        </div>
-
-        {/* Offline Venue Geo-Card Table Fallback */}
-        <div className="rounded-2xl border border-pitstop-border bg-white p-6 shadow-subtle">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <MapPin className="h-4 w-4 text-pitstop-yellow-dark" />
-              <h4 className="text-sm font-bold text-pitstop-charcoal">
-                Active Rest Stops Coordinates ({stops.length} Venues)
-              </h4>
-            </div>
-            <span className="text-xs text-pitstop-muted">
-              Live Directions Links Available Below
-            </span>
-          </div>
-
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {stops.map((stop) => {
-              const [lng, lat] = stop.location?.coordinates || [77.5946, 12.9716];
-              const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
-
-              return (
-                <div
-                  key={stop.id}
-                  className="rounded-xl border border-pitstop-border bg-pitstop-bg/40 p-4 flex flex-col justify-between hover:border-pitstop-yellow transition-all"
-                >
-                  <div>
-                    <div className="flex items-start justify-between gap-2">
-                      <h5 className="text-sm font-bold text-pitstop-charcoal leading-snug">
-                        {stop.name}
-                      </h5>
-                      <Badge
-                        variant={
-                          stop.capacity.status === CapacityStatus.AVAILABLE
-                            ? 'success'
-                            : stop.capacity.status === CapacityStatus.BUSY
-                            ? 'warning'
-                            : 'danger'
-                        }
-                        size="sm"
-                      >
-                        {stop.capacity.status}
-                      </Badge>
-                    </div>
-
-                    <p className="mt-1 text-xs text-pitstop-muted">
-                      {stop.address.area}, {stop.address.city}
-                    </p>
-
-                    <div className="mt-2.5 flex items-center gap-1.5 text-[11px] font-mono text-pitstop-muted bg-white px-2 py-1 rounded border border-pitstop-border">
-                      <Navigation className="h-3 w-3 text-pitstop-yellow-dark shrink-0" />
-                      <span>{lat.toFixed(4)}° N, {lng.toFixed(4)}° E</span>
-                    </div>
-                  </div>
-
-                  <div className="mt-4 pt-3 border-t border-pitstop-border/60 flex items-center justify-between gap-2">
-                    <Link
-                      href={`/rest-stops/${stop.slug}`}
-                      className="text-xs font-semibold text-pitstop-charcoal hover:underline"
-                    >
-                      View Details →
-                    </Link>
-                    <a
-                      href={directionsUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-xs font-bold text-pitstop-yellow-dark hover:underline"
-                    >
-                      <span>Directions</span>
-                      <ExternalLink className="h-3 w-3" />
-                    </a>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // 2. Error Loading Google Maps Script
+  // 1. Error Loading Google Maps Script
   if (loadError) {
     return (
       <Card className={`p-8 border border-red-200 bg-red-50/50 text-center ${className}`}>
@@ -609,4 +614,14 @@ export function RestStopMap({
       </GoogleMap>
     </div>
   );
+}
+
+export function RestStopMap(props: RestStopMapProps) {
+  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY || '';
+
+  if (!apiKey || apiKey.trim() === '') {
+    return <RestStopMapFallback stops={props.stops} className={props.className} />;
+  }
+
+  return <ActiveGoogleMap apiKey={apiKey} {...props} />;
 }

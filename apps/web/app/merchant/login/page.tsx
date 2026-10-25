@@ -34,9 +34,9 @@ function MerchantLoginFormContent() {
   // If already authenticated as a merchant, redirect immediately
   React.useEffect(() => {
     if (isAuthenticated && user?.role === UserRole.MERCHANT) {
-      window.location.href = returnUrl;
+      router.replace(returnUrl);
     }
-  }, [isAuthenticated, user, returnUrl]);
+  }, [isAuthenticated, user, returnUrl, router]);
 
   const handlePhoneChange = (val: string) => {
     let cleaned = val.replace(/\D/g, '');
@@ -79,7 +79,8 @@ function MerchantLoginFormContent() {
         return;
       }
 
-      window.location.href = returnUrl;
+      router.push(returnUrl);
+      router.refresh();
     } catch {
       setError('An unexpected error occurred. Please try again.');
       setIsSubmitting(false);

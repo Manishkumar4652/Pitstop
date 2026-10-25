@@ -6,7 +6,6 @@ import { usePathname } from 'next/navigation';
 import { 
   MapPin, 
   Briefcase, 
-  FileText,
   User, 
   Bike
 } from 'lucide-react';
@@ -33,13 +32,7 @@ export const RiderNav: React.FC<RiderNavProps> = ({ className = '' }) => {
       label: 'Explore',
       href: '/jobs',
       icon: <Briefcase className="h-4 w-4" aria-hidden="true" />,
-      active: pathname === '/jobs',
-    },
-    {
-      label: 'My Applications',
-      href: '/rider/applications',
-      icon: <FileText className="h-4 w-4" aria-hidden="true" />,
-      active: pathname === '/rider/applications',
+      active: pathname === '/jobs' || pathname.startsWith('/rider/applications'),
     },
     {
       label: 'Profile',

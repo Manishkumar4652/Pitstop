@@ -80,9 +80,9 @@ function MerchantRegisterFormContent() {
   // If already authenticated, redirect immediately
   React.useEffect(() => {
     if (isAuthenticated) {
-      window.location.href = returnUrl;
+      router.replace(returnUrl);
     }
-  }, [isAuthenticated, returnUrl]);
+  }, [isAuthenticated, returnUrl, router]);
 
   const toggleFacility = (facility: Facility) => {
     setSelectedFacilities((prev) =>
@@ -303,7 +303,8 @@ function MerchantRegisterFormContent() {
         return;
       }
 
-      window.location.href = returnUrl;
+      router.push(returnUrl);
+      router.refresh();
     } catch {
       setError('An unexpected error occurred. Please try again.');
       setIsSubmitting(false);

@@ -1,5 +1,6 @@
 import express, { Express, Request, Response } from 'express';
 import helmet from 'helmet';
+import compression from 'compression';
 import { config } from './config/env';
 import { createCorsMiddleware } from './middleware/cors';
 import { notFoundHandler } from './middleware/notFoundHandler';
@@ -13,6 +14,9 @@ export function createApp(customRouter?: express.Router): Express {
   //    so req.ip resolves to the real client IP instead of the load-balancer IP.
   //    Without this, per-IP rate limiting is ineffective behind a proxy.
   app.set('trust proxy', 1);
+
+  // Response compression (gzip/deflate) to dramatically decrease payload transfer size
+  app.use(compression());
 
   // 1. Basic Security Headers with Helmet
   app.use(

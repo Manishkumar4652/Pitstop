@@ -77,8 +77,13 @@ export const JobsContent: React.FC = () => {
     }
   }, [page, searchQuery, categoryFilter, payTypeFilter, sortOption]);
 
+  // Debounce loadJobs to prevent rapid network calls on keystroke/filter changes
   useEffect(() => {
-    loadJobs();
+    const timer = setTimeout(() => {
+      loadJobs();
+    }, 300);
+
+    return () => clearTimeout(timer);
   }, [loadJobs]);
 
   // Open initial job if query param present
@@ -102,7 +107,14 @@ export const JobsContent: React.FC = () => {
 
   const handleApplicationSubmitted = (job: JobPublicResponse) => {
     setFeedback(`Your application for "${job.title}" was submitted successfully!`);
-    loadJobs();
+    // Optimistic update to keep UI responsive without full re-fetch
+    setJobs((prev) =>
+      prev.map((j) =>
+        j.id === job.id
+          ? { ...j, acceptedRidersCount: (j.acceptedRidersCount || 0) + 1 }
+          : j
+      )
+    );
   };
 
   return (

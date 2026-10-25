@@ -30,9 +30,9 @@ function AdminLoginFormContent() {
   // If already authenticated as an admin, redirect immediately
   React.useEffect(() => {
     if (isAuthenticated && user?.role === UserRole.ADMIN) {
-      window.location.href = returnUrl;
+      router.replace(returnUrl);
     }
-  }, [isAuthenticated, user, returnUrl]);
+  }, [isAuthenticated, user, returnUrl, router]);
 
   const handlePhoneChange = (val: string) => {
     let cleaned = val.replace(/\D/g, '');
@@ -75,7 +75,8 @@ function AdminLoginFormContent() {
         return;
       }
 
-      window.location.href = returnUrl;
+      router.push(returnUrl);
+      router.refresh();
     } catch {
       setError('An unexpected error occurred during administrative login.');
       setIsSubmitting(false);
