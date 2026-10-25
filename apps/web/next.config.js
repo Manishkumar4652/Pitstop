@@ -25,7 +25,7 @@ const nextConfig = {
           // Limit referrer info sent to third parties
           { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
           // Disable browser features not needed by the app
-          { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=(self), payment=()' },
+          { key: 'Permissions-Policy', value: 'camera=(self), microphone=(), geolocation=(self), payment=()' },
           // Content Security Policy — restrict where scripts/styles/connections can come from
           {
             key: 'Content-Security-Policy',

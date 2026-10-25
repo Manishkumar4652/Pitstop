@@ -1977,4 +1977,23 @@ Transformed the entire PitStop SaaS platform into a 100% mobile-first, thumb-con
    - 112/112 Web BFF and frontend unit tests passed.
    - TypeScript compilation clean with 0 errors across workspaces.
 
+---
+
+## QR Scanner Camera Permissions & Rider Demo Auth Verification Milestone
+
+### Verification Date: 2026-10-25
+### Status: COMPLETED
+
+### Objectives & Deliverables
+1. **Camera Permissions-Policy Header Resolution (`next.config.js`)**:
+   - **Root Cause**: The Next.js security headers in `next.config.js` specified `Permissions-Policy: camera=()`, which instructed browsers to deny camera access unconditionally across all origins, overriding any user-granted browser permission.
+   - **Fix**: Updated `Permissions-Policy` to `camera=(self)` to permit same-origin camera stream initialization for QR code scanning.
+2. **Scanner Initialization & Camera Fallback Chain (`QrScannerModal.tsx`)**:
+   - Added container DOM element pre-mount verification before initializing `Html5Qrcode`.
+   - Enhanced camera start retry cascade: attempts environment-facing (back) camera first, falls back to enumerated device IDs, and finally to user-facing camera if needed.
+   - Wrapped callbacks with `useCallback` and added safe mount delay for stable lifecycle handling.
+3. **Demo Rider Account Authentication Verification**:
+   - Verified end-to-end authentication for Demo Rider (`9876543212` / `Password@123`) connecting Next.js BFF (`/api/auth/login`) with Express API backend (`/api/v1/auth/login`) and MongoDB database.
+   - Verified automated browser login and session redirection to `/explore`.
+
 

@@ -152,7 +152,7 @@ export function QrScannerModal({
    * Submits parsed QR credential to server-side verification API.
    * Deduplicates scan attempts to prevent concurrent repeated requests.
    */
-  const submitVerification = async (targetRestStopId: string, credential: string) => {
+  const submitVerification = useCallback(async (targetRestStopId: string, credential: string) => {
     if (!credential) {
       setStatus('error');
       setErrorMessage('No venue QR credential detected. Please scan a valid PitStop QR code.');
@@ -199,12 +199,12 @@ export function QrScannerModal({
     } finally {
       isProcessingRef.current = false;
     }
-  };
+  }, [initialRestStopId, onSuccess]);
 
   /**
    * Callback fired by html5-qrcode scanner when a barcode is detected.
    */
-  const handleScanSuccess = async (decodedText: string) => {
+  const handleScanSuccess = useCallback(async (decodedText: string) => {
     // Deduplication guard: ignore redundant scan callbacks while a request is active
     if (isProcessingRef.current) return;
     isProcessingRef.current = true;
@@ -221,12 +221,12 @@ export function QrScannerModal({
     }
 
     await submitVerification(parsed.targetRestStopId, parsed.qrCredential);
-  };
+  }, [stopCamera, submitVerification]);
 
   /**
    * Initializes and starts browser camera stream using html5-qrcode.
    */
-  const startCamera = async () => {
+  const startCamera = useCallback(async () => {
     if (typeof window === 'undefined') return;
 
     if (!navigator?.mediaDevices?.getUserMedia) {
@@ -245,6 +245,12 @@ export function QrScannerModal({
       // Teardown any prior instance before creating new one
       await stopCamera();
 
+      // Ensure DOM element is present before mounting
+      const container = document.getElementById(readerElementId);
+      if (!container) {
+        throw new Error('Scanner container element not found. Please try again.');
+      }
+
       const html5QrCode = new Html5Qrcode(readerElementId, {
         formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE],
         verbose: false,
@@ -253,28 +259,67 @@ export function QrScannerModal({
 
       const qrConfig = {
         fps: 10,
-        qrbox: { width: 250, height: 250 },
+        qrbox: (viewfinderWidth: number, viewfinderHeight: number) => {
+          const edgeSize = Math.floor(Math.min(viewfinderWidth, viewfinderHeight) * 0.7);
+          return { width: edgeSize, height: edgeSize };
+        },
         aspectRatio: 1.0,
       };
 
-      await html5QrCode.start(
-        { facingMode: 'environment' }, // Prefer back-facing camera on mobile devices
-        qrConfig,
-        (decodedText: string) => {
-          handleScanSuccess(decodedText);
-        },
-        () => {
-          // Frame scan failures are continuous while searching for a QR code; intentionally silent
+      try {
+        // Attempt 1: Try back/environment camera first
+        await html5QrCode.start(
+          { facingMode: 'environment' },
+          qrConfig,
+          (decodedText: string) => {
+            handleScanSuccess(decodedText);
+          },
+          () => {
+            // Frame scan failures are continuous while searching for a QR code; intentionally silent
+          }
+        );
+      } catch (firstErr) {
+        // Attempt 2: If back camera fails (e.g. laptop webcam or single camera device), fallback to any available camera
+        const devices = await Html5Qrcode.getCameras().catch(() => []);
+        if (devices && devices.length > 0) {
+          const preferredDeviceId = devices[devices.length - 1].id;
+          await html5QrCode.start(
+            preferredDeviceId,
+            qrConfig,
+            (decodedText: string) => {
+              handleScanSuccess(decodedText);
+            },
+            () => { }
+          );
+        } else {
+          // Attempt 3: Default user facing camera
+          await html5QrCode.start(
+            { facingMode: 'user' },
+            qrConfig,
+            (decodedText: string) => {
+              handleScanSuccess(decodedText);
+            },
+            () => { }
+          );
         }
-      );
+      }
 
       setStatus('scanning');
     } catch (err: any) {
       const errStr = (err?.name || err?.message || String(err)).toLowerCase();
 
-      if (errStr.includes('notallowederror') || errStr.includes('permission') || errStr.includes('denied')) {
+      if (
+        errStr.includes('notallowederror') ||
+        errStr.includes('permission') ||
+        errStr.includes('denied')
+      ) {
         setStatus('permission_denied');
-      } else if (errStr.includes('notfounderror') || errStr.includes('device') || errStr.includes('camera')) {
+      } else if (
+        errStr.includes('notfounderror') ||
+        errStr.includes('device') ||
+        errStr.includes('camera') ||
+        errStr.includes('no media')
+      ) {
         setStatus('camera_unavailable');
       } else {
         setStatus('error');
@@ -283,7 +328,21 @@ export function QrScannerModal({
         );
       }
     }
-  };
+  }, [handleScanSuccess, stopCamera]);
+
+  // Automatically request/start camera when modal opens
+  useEffect(() => {
+    let timeoutId: NodeJS.Timeout;
+    if (isOpen) {
+      // Delay slightly to let modal mount and readerElementId render into DOM
+      timeoutId = setTimeout(() => {
+        startCamera();
+      }, 300);
+    }
+    return () => {
+      clearTimeout(timeoutId);
+    };
+  }, [isOpen, startCamera]);
 
 
 
