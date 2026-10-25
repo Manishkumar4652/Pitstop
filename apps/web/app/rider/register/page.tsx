@@ -54,11 +54,15 @@ function RegisterFormContent() {
     ? rawReturnUrl
     : '/explore';
 
+  const hasRedirectedRef = React.useRef(false);
+
   React.useEffect(() => {
-    if (isAuthenticated) {
-      router.replace(returnUrl);
+    if (isAuthenticated && !hasRedirectedRef.current) {
+      hasRedirectedRef.current = true;
+      const target = returnUrl && returnUrl !== '/rider/register' ? returnUrl : '/explore';
+      window.location.href = target;
     }
-  }, [isAuthenticated, returnUrl, router]);
+  }, [isAuthenticated, returnUrl]);
 
   const handlePhoneChange = (val: string) => {
     let cleaned = val.replace(/\D/g, '');
@@ -117,8 +121,9 @@ function RegisterFormContent() {
         return;
       }
 
-      router.push(returnUrl);
-      router.refresh();
+      hasRedirectedRef.current = true;
+      const target = returnUrl && returnUrl !== '/rider/register' ? returnUrl : '/explore';
+      window.location.href = target;
     } catch {
       setError('An unexpected network error occurred. Please try again.');
       setIsSubmitting(false);

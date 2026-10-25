@@ -27,16 +27,19 @@ function MerchantLoginFormContent() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const hasRedirectedRef = React.useRef(false);
 
   // Sanitize returnUrl
   const returnUrl = sanitizeReturnUrl(searchParams.get('returnUrl'), '/merchant');
 
-  // If already authenticated as a merchant, redirect immediately
+  // If already authenticated as a merchant, redirect cleanly (guarded against loops)
   React.useEffect(() => {
-    if (isAuthenticated && user?.role === UserRole.MERCHANT) {
-      router.replace(returnUrl);
+    if (isAuthenticated && user?.role === UserRole.MERCHANT && !hasRedirectedRef.current) {
+      hasRedirectedRef.current = true;
+      const target = returnUrl && returnUrl !== '/merchant/login' ? returnUrl : '/merchant';
+      window.location.href = target;
     }
-  }, [isAuthenticated, user, returnUrl, router]);
+  }, [isAuthenticated, user, returnUrl]);
 
   const handlePhoneChange = (val: string) => {
     let cleaned = val.replace(/\D/g, '');
@@ -79,8 +82,9 @@ function MerchantLoginFormContent() {
         return;
       }
 
-      router.push(returnUrl);
-      router.refresh();
+      hasRedirectedRef.current = true;
+      const target = returnUrl && returnUrl !== '/merchant/login' ? returnUrl : '/merchant';
+      window.location.href = target;
     } catch {
       setError('An unexpected error occurred. Please try again.');
       setIsSubmitting(false);

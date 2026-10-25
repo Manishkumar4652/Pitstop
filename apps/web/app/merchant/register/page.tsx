@@ -73,16 +73,19 @@ function MerchantRegisterFormContent() {
   const [isCheckingPhone, setIsCheckingPhone] = useState(false);
   const [isDetectingLocation, setIsDetectingLocation] = useState(false);
   const [locationDetected, setLocationDetected] = useState(false);
+  const hasRedirectedRef = React.useRef(false);
 
   // Sanitize returnUrl
   const returnUrl = sanitizeReturnUrl(searchParams.get('returnUrl'), '/merchant');
 
-  // If already authenticated, redirect immediately
+  // If already authenticated, redirect cleanly (guarded against loops)
   React.useEffect(() => {
-    if (isAuthenticated) {
-      router.replace(returnUrl);
+    if (isAuthenticated && !hasRedirectedRef.current) {
+      hasRedirectedRef.current = true;
+      const target = returnUrl && returnUrl !== '/merchant/register' ? returnUrl : '/merchant';
+      window.location.href = target;
     }
-  }, [isAuthenticated, returnUrl, router]);
+  }, [isAuthenticated, returnUrl]);
 
   const toggleFacility = (facility: Facility) => {
     setSelectedFacilities((prev) =>
@@ -303,8 +306,9 @@ function MerchantRegisterFormContent() {
         return;
       }
 
-      router.push(returnUrl);
-      router.refresh();
+      hasRedirectedRef.current = true;
+      const target = returnUrl && returnUrl !== '/merchant/register' ? returnUrl : '/merchant';
+      window.location.href = target;
     } catch {
       setError('An unexpected error occurred. Please try again.');
       setIsSubmitting(false);

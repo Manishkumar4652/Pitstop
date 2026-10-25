@@ -30,5 +30,21 @@ export function sanitizeReturnUrl(rawUrl: string | null | undefined, fallback = 
     return fallback;
   }
 
+  // Prevent self-redirect or redirect loop back to login or registration pages
+  const lower = trimmed.toLowerCase();
+  if (
+    lower === '/login' ||
+    lower.startsWith('/login?') ||
+    lower === '/merchant/login' ||
+    lower.startsWith('/merchant/login?') ||
+    lower === '/rider/login' ||
+    lower.startsWith('/rider/login?') ||
+    lower === '/admin/login' ||
+    lower.startsWith('/admin/login?') ||
+    lower.includes('/register')
+  ) {
+    return fallback;
+  }
+
   return trimmed;
 }

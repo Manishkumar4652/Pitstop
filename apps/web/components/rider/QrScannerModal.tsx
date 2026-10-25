@@ -224,6 +224,19 @@ export function QrScannerModal({
   }, [stopCamera, submitVerification]);
 
   /**
+   * Asynchronously polls for the DOM mount container before starting scanner.
+   * Eliminates race conditions with React DOM rendering cycles on mobile browsers.
+   */
+  const waitForContainer = async (elementId: string, maxAttempts = 30, intervalMs = 50): Promise<HTMLElement | null> => {
+    for (let i = 0; i < maxAttempts; i++) {
+      const el = document.getElementById(elementId);
+      if (el) return el;
+      await new Promise((resolve) => setTimeout(resolve, intervalMs));
+    }
+    return null;
+  };
+
+  /**
    * Initializes and starts browser camera stream using html5-qrcode.
    */
   const startCamera = useCallback(async () => {
@@ -245,10 +258,10 @@ export function QrScannerModal({
       // Teardown any prior instance before creating new one
       await stopCamera();
 
-      // Ensure DOM element is present before mounting
-      const container = document.getElementById(readerElementId);
+      // Poll until the DOM container is rendered and mounted by React
+      const container = await waitForContainer(readerElementId, 30, 50);
       if (!container) {
-        throw new Error('Scanner container element not found. Please try again.');
+        throw new Error('Scanner container element is mounting. Please tap Retry Camera.');
       }
 
       const html5QrCode = new Html5Qrcode(readerElementId, {
@@ -332,16 +345,27 @@ export function QrScannerModal({
 
   // Automatically request/start camera when modal opens
   useEffect(() => {
-    let timeoutId: NodeJS.Timeout;
+    let isCancelled = false;
+
     if (isOpen) {
-      // Delay slightly to let modal mount and readerElementId render into DOM
-      timeoutId = setTimeout(() => {
-        startCamera();
-      }, 300);
+      setStatus('requesting');
+      setErrorMessage('');
+
+      const timer = setTimeout(() => {
+        if (!isCancelled) {
+          startCamera();
+        }
+      }, 100);
+
+      return () => {
+        isCancelled = true;
+        clearTimeout(timer);
+      };
+    } else {
+      setStatus('idle');
+      setErrorMessage('');
+      setVerifiedCheckIn(null);
     }
-    return () => {
-      clearTimeout(timeoutId);
-    };
   }, [isOpen, startCamera]);
 
 
@@ -457,7 +481,11 @@ export function QrScannerModal({
               </div>
               <div>
                 <h3 className="text-base font-bold text-pitstop-charcoal">
-                  Verification Failed
+                  {errorMessage?.toLowerCase().includes('verification') ||
+                  errorMessage?.toLowerCase().includes('qr') ||
+                  errorMessage?.toLowerCase().includes('venue')
+                    ? 'Verification Failed'
+                    : 'Scanner Issue'}
                 </h3>
                 <p className="text-xs text-red-600 mt-1 max-w-sm mx-auto leading-relaxed">
                   {errorMessage || 'The scanned QR code is invalid, expired, or does not belong to this venue.'}

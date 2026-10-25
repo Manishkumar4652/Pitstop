@@ -25,6 +25,7 @@ function LoginFormContent() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const hasRedirectedRef = React.useRef(false);
 
   // Sanitize returnUrl to prevent open-redirect vulnerabilities
   const rawReturnUrl = searchParams.get('returnUrl') || '/explore';
@@ -32,12 +33,14 @@ function LoginFormContent() {
     ? rawReturnUrl
     : '/explore';
 
-  // If already authenticated, redirect immediately
+  // If already authenticated, redirect cleanly (guarded against loops)
   React.useEffect(() => {
-    if (isAuthenticated) {
-      router.replace(returnUrl);
+    if (isAuthenticated && !hasRedirectedRef.current) {
+      hasRedirectedRef.current = true;
+      const target = returnUrl && returnUrl !== '/rider/login' ? returnUrl : '/explore';
+      window.location.href = target;
     }
-  }, [isAuthenticated, returnUrl, router]);
+  }, [isAuthenticated, returnUrl]);
 
   const handlePhoneChange = (val: string) => {
     let cleaned = val.replace(/\D/g, '');
@@ -77,8 +80,9 @@ function LoginFormContent() {
         return;
       }
 
-      router.push(returnUrl);
-      router.refresh();
+      hasRedirectedRef.current = true;
+      const target = returnUrl && returnUrl !== '/rider/login' ? returnUrl : '/explore';
+      window.location.href = target;
     } catch {
       setError('An unexpected error occurred. Please try again.');
       setIsSubmitting(false);

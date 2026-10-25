@@ -1996,4 +1996,22 @@ Transformed the entire PitStop SaaS platform into a 100% mobile-first, thumb-con
    - Verified end-to-end authentication for Demo Rider (`9876543212` / `Password@123`) connecting Next.js BFF (`/api/auth/login`) with Express API backend (`/api/v1/auth/login`) and MongoDB database.
    - Verified automated browser login and session redirection to `/explore`.
 
+---
+
+## Merchant Login Rapid Blinking & Redirect Loop Elimination Milestone
+
+### Verification Date: 2026-10-25
+### Status: COMPLETED (Verified with 112/112 passing Web tests, 0 TypeScript errors)
+
+### Objectives & Deliverables
+1. **Screen Blinking Root Cause Resolved (`return-url.ts`, `merchant/login/page.tsx`)**:
+   - **Root Cause**: When logging into the Merchant portal, multiple concurrent navigation triggers collided (`router.push` + `router.refresh` in `handleSubmit` and immediate `router.replace` in `useEffect`). If `returnUrl` was `/merchant/login` or if the client/server session synchronization lagged on mobile, an infinite redirect ping-pong loop occurred between `/merchant/login` and `/merchant`, causing rapid screen blinking/flickering.
+   - **Loop Guard (`sanitizeReturnUrl`)**: Hardened `sanitizeReturnUrl` to strictly reject any auth login and registration URLs (`/merchant/login`, `/rider/login`, `/admin/login`, etc.) so a user can never be redirected to a login page in a loop.
+   - **Single Navigation Guarantee (`hasRedirectedRef`)**: Added `hasRedirectedRef` to guard `useEffect` from re-triggering navigation loops.
+   - **Clean Full Navigation (`window.location.href`)**: Replaced concurrent client-side router calls with a clean browser navigation on successful login/registration so `HttpOnly` session cookies are immediately committed and SSR server components receive the fresh session on the first render.
+2. **Empirical Verification**:
+   - Full monorepo typecheck passed with 0 errors across all workspaces.
+   - 112/112 Web BFF and frontend test suites passed.
+
+
 
