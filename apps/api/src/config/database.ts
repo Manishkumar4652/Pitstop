@@ -39,6 +39,73 @@ export function isDatabaseConnected(): boolean {
   return mongoose.connection.readyState === 1;
 }
 
+import https from 'https';
+
+/**
+ * Fallback resolver using DNS over HTTPS (DoH) when local system UDP port 53 blocks SRV lookups.
+ */
+async function resolveMongoSrvViaDoH(srvUri: string): Promise<string> {
+  const match = srvUri.match(/^mongodb\+srv:\/\/([^/]+)\/([^?]*)(?:\?(.*))?$/);
+  if (!match) return srvUri;
+
+  const [, authAndHost, dbName, queryParams] = match;
+  let userPass = '';
+  let host = authAndHost;
+  if (authAndHost.includes('@')) {
+    const parts = authAndHost.split('@');
+    userPass = parts[0] + '@';
+    host = parts[1];
+  }
+
+  const fetchDns = (name: string, type: string): Promise<any> => {
+    return new Promise((resolve, reject) => {
+      https.get(`https://dns.google/resolve?name=${encodeURIComponent(name)}&type=${type}`, (res) => {
+        let data = '';
+        res.on('data', (chunk) => (data += chunk));
+        res.on('end', () => {
+          try {
+            resolve(JSON.parse(data));
+          } catch (e) {
+            reject(e);
+          }
+        });
+      }).on('error', reject);
+    });
+  };
+
+  try {
+    const srvRecord = await fetchDns(`_mongodb._tcp.${host}`, 'SRV');
+    if (!srvRecord.Answer || !Array.isArray(srvRecord.Answer) || srvRecord.Answer.length === 0) {
+      return srvUri;
+    }
+
+    const shardHosts = srvRecord.Answer.map((ans: any) => {
+      const parts = ans.data.trim().split(/\s+/);
+      const port = parts[2] || '27017';
+      const target = (parts[3] || '').replace(/\.$/, '');
+      return `${target}:${port}`;
+    }).join(',');
+
+    const txtRecord = await fetchDns(host, 'TXT');
+    let extraParams = '';
+    if (txtRecord.Answer && Array.isArray(txtRecord.Answer) && txtRecord.Answer.length > 0) {
+      extraParams = txtRecord.Answer[0].data.replace(/^"|"$/g, '');
+    }
+
+    const allParams = [
+      'ssl=true',
+      extraParams,
+      queryParams,
+    ]
+      .filter(Boolean)
+      .join('&');
+
+    return `mongodb://${userPass}${shardHosts}/${dbName}?${allParams}`;
+  } catch {
+    return srvUri;
+  }
+}
+
 /**
  * Connects to MongoDB Atlas / Local MongoDB instance using config.MONGODB_URI.
  * If MONGODB_URI is absent, safely bypasses connection without crashing (Phase 3A/3B local dev compatibility).
@@ -49,7 +116,7 @@ export async function connectDatabase(): Promise<boolean> {
     return true;
   }
 
-  const uri = config.MONGODB_URI;
+  let uri = config.MONGODB_URI;
 
   // If no URI is configured, report truthful status and continue without DB
   if (!uri || uri.trim() === '') {
@@ -73,17 +140,37 @@ export async function connectDatabase(): Promise<boolean> {
 
   try {
     console.log(`[Database] Attempting connection to MongoDB at ${safeLogUri}...`);
-    
-    // Connect to MongoDB
+
+    // Connect to MongoDB with generous 15s timeout for Atlas multi-region TLS handshakes
     await mongoose.connect(uri, {
-      autoIndex: config.NODE_ENV !== 'production', // Build indexes in development/test
-      serverSelectionTimeoutMS: 5000,              // 5 second connection timeout
+      autoIndex: config.NODE_ENV !== 'production',
+      serverSelectionTimeoutMS: 15000,
     });
 
     console.log(`[Database] ✅ Connected to MongoDB successfully [${safeLogUri}]`);
     return true;
   } catch (err: unknown) {
     const errorMsg = err instanceof Error ? err.message : String(err);
+
+    // If SRV DNS failure occurred on mongodb+srv://, attempt DoH fallback
+    if (uri.startsWith('mongodb+srv://') && (errorMsg.includes('querySrv') || errorMsg.includes('ETIMEOUT') || errorMsg.includes('ECONNREFUSED'))) {
+      console.warn('[Database] ⚠️ SRV DNS resolution failed. Attempting DNS-over-HTTPS (DoH) resolution fallback...');
+      try {
+        const fallbackUri = await resolveMongoSrvViaDoH(uri);
+        if (fallbackUri !== uri) {
+          console.log('[Database] Connecting via resolved standard replica set URI...');
+          await mongoose.connect(fallbackUri, {
+            autoIndex: config.NODE_ENV !== 'production',
+            serverSelectionTimeoutMS: 15000,
+          });
+          console.log(`[Database] ✅ Connected to MongoDB successfully via DoH fallback!`);
+          return true;
+        }
+      } catch (fallbackErr: any) {
+        console.error('[Database] DoH fallback failed:', fallbackErr?.message || fallbackErr);
+      }
+    }
+
     console.error(`[Database] ❌ Failed to connect to MongoDB [${safeLogUri}]:`, errorMsg);
     throw new Error(`MongoDB connection failed: ${errorMsg}`);
   }

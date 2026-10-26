@@ -2013,5 +2013,24 @@ Transformed the entire PitStop SaaS platform into a 100% mobile-first, thumb-con
    - Full monorepo typecheck passed with 0 errors across all workspaces.
    - 112/112 Web BFF and frontend test suites passed.
 
+---
 
+## MongoDB Disconnection & DNS SRV Resolution Milestone
 
+### Verification Date: 2026-10-26
+### Status: COMPLETED (Verified with live ping { ok: 1 } and /api/v1/health returning database: connected)
+
+### Root Cause & Resolution
+1. **SRV DNS Lookup Timeout Root Cause (`querySrv ECONNREFUSED` / `ETIMEOUT`)**:
+   - The local network/ISP and UDP port 53 DNS blocked SRV record lookups for `_mongodb._tcp.cluster0.vhex2jc.mongodb.net`, causing `mongodb+srv://` to hang and throw connection timeouts (`serverSelectionTimeoutMS`).
+   - Because the API server crashed on startup (`process.exit(1)`), port 5000 stopped listening, leaving the MongoDB database in a disconnected state.
+2. **Direct Replica Set Connection URI (`apps/api/.env`)**:
+   - Resolved the underlying shard hostnames (`ac-wetysd3-shard-00-00`, `01`, `02`) and replica set name (`atlas-79edj1-shard-0`) via DNS-over-HTTPS (DoH).
+   - Configured direct replica set connection URI with SSL in `apps/api/.env` to eliminate dependency on port 53 UDP SRV lookups.
+3. **DNS-over-HTTPS (DoH) Resilient Fallback (`database.ts`)**:
+   - Implemented `resolveMongoSrvViaDoH` in `apps/api/src/config/database.ts` using native HTTPS to automatically resolve SRV/TXT records via Google DoH if UDP SRV fails.
+   - Increased `serverSelectionTimeoutMS` from 5000ms to 15000ms to allow sufficient time for TLS handshakes across distributed multi-region shards.
+4. **Live Verification**:
+   - Verified direct ping to MongoDB Atlas: `{ ok: 1 }`.
+   - Verified collection enumeration: `['checkins', 'users', 'deals', 'reststops', 'pitstop', 'auditlogs', 'jobs', 'jobapplications']`.
+   - Verified API health endpoint `http://localhost:5000/api/v1/health`: `200 OK`, `{"status": "ok", "database": "connected"}`.

@@ -2,9 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { ArrowRight, Bike, Store, ShieldCheck } from 'lucide-react';
 import { HeroPhone } from './HeroPhone';
-import { RideStrip } from './RideStrip';
 
 export const LandingHero: React.FC = () => {
   const [mounted, setMounted] = useState(false);
@@ -14,38 +14,51 @@ export const LandingHero: React.FC = () => {
   }, []);
 
   return (
-    <section className="relative overflow-hidden bg-[#FAFAF7] pt-8 pb-14 sm:pt-16 sm:pb-20 lg:pt-20 lg:pb-24 text-[#0B0B0F]">
-      
+    <section className="relative overflow-hidden bg-[#FAFAF7] pt-[390px] pb-16 sm:pt-[490px] sm:pb-20 lg:pt-[570px] lg:pb-24 text-[#0B0B0F]">
+
+      {/* Upper Area Featured Image (Landing.jpg) fading softly downward */}
+      <div className="pointer-events-none absolute top-0 inset-x-0 h-[390px] sm:h-[490px] lg:h-[570px] overflow-hidden select-none">
+        <Image
+          src="/Landing.jpg"
+          alt="PitStop Rest Stop & Merchant Partner"
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover object-[center_20%] opacity-95"
+        />
+        {/* Smooth top-to-bottom fade into page background */}
+        <div
+          className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent via-65% to-[#FAFAF7]"
+          aria-hidden="true"
+        />
+      </div>
+
       {/* Soft yellow glow behind the hero that slowly breathes (opacity 0.6 to 0.9, 6s loop) */}
       <div
-        className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 h-80 w-full max-w-4xl rounded-full bg-[#FBBF24]/15 blur-3xl animate-hero-glow"
+        className="pointer-events-none absolute top-[420px] left-1/2 -translate-x-1/2 h-80 w-full max-w-4xl rounded-full bg-[#FBBF24]/15 blur-3xl animate-hero-glow"
         aria-hidden="true"
       />
 
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        
+
         {/* Desktop 2-column layout (1024px+) / Mobile stacked layout (<1024px) */}
         <div className="grid items-center gap-8 lg:grid-cols-12 lg:gap-10">
-          
+
           {/* Left Column: Headline, subtext, role buttons, stat line */}
           <div className="text-center lg:text-left lg:col-span-7 xl:col-span-7">
-            
+
             {/* Headline */}
             <h1
               style={{
                 transitionDuration: '500ms',
                 transitionTimingFunction: 'cubic-bezier(0.22, 1, 0.36, 1)',
               }}
-              className={`text-4xl sm:text-5xl lg:text-5xl xl:text-6xl font-black tracking-tight text-[#0B0B0F] leading-[1.1] transition-all ${
-                mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-              }`}
+              className={`text-4xl sm:text-5xl lg:text-5xl xl:text-6xl font-black tracking-tight text-[#0B0B0F] leading-[1.1] transition-all ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+                }`}
             >
               Every Rider Deserves <br />
               <span className="inline-block mt-1">a Place to Stop</span>
             </h1>
-
-            {/* Small Animated RideStrip directly below headline */}
-            <RideStrip />
 
             {/* 3. Subtext (stagger index 2: 180ms) */}
             <p
@@ -54,13 +67,10 @@ export const LandingHero: React.FC = () => {
                 transitionDuration: '500ms',
                 transitionTimingFunction: 'cubic-bezier(0.22, 1, 0.36, 1)',
               }}
-              className={`mt-4 sm:mt-5 text-base sm:text-lg text-[#0B0B0F]/70 max-w-2xl mx-auto lg:mx-0 leading-relaxed font-normal transition-all ${
-                mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-              }`}
+              className={`mt-4 sm:mt-5 text-base sm:text-lg text-[#0B0B0F]/70 max-w-2xl mx-auto lg:mx-0 leading-relaxed font-normal transition-all ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+                }`}
             >
-              Connecting India&apos;s food and parcel delivery riders with verified neighborhood rest stops: free clean RO water, fast phone charging, hygienic washrooms, and afternoon earnings.
             </p>
-
             {/* 4. Two Role Buttons (stagger index 3: 270ms) */}
             <div
               style={{
@@ -68,11 +78,10 @@ export const LandingHero: React.FC = () => {
                 transitionDuration: '500ms',
                 transitionTimingFunction: 'cubic-bezier(0.22, 1, 0.36, 1)',
               }}
-              className={`mt-6 sm:mt-8 flex flex-col sm:flex-row items-stretch sm:items-center justify-center lg:justify-start gap-3.5 sm:gap-4 max-w-xl mx-auto lg:mx-0 transition-all ${
-                mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-              }`}
+              className={`mt-6 sm:mt-8 flex flex-col sm:flex-row items-stretch sm:items-center justify-center lg:justify-start gap-3.5 sm:gap-4 max-w-xl mx-auto lg:mx-0 transition-all ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+                }`}
             >
-              
+
               {/* Button 1: Delivery Rider (Primary Yellow) */}
               <Link href="/explore" className="w-full sm:w-1/2">
                 <button className="min-h-[50px] sm:min-h-[52px] w-full group inline-flex items-center justify-between gap-3 rounded-2xl bg-[#FBBF24] px-4 sm:px-5 py-3 text-left text-sm font-extrabold text-[#0B0B0F] shadow-sm transition-all duration-200 hover:bg-amber-400 hover:-translate-y-1 hover:shadow-md active:scale-[0.97]">
@@ -126,9 +135,8 @@ export const LandingHero: React.FC = () => {
                 transitionDuration: '500ms',
                 transitionTimingFunction: 'cubic-bezier(0.22, 1, 0.36, 1)',
               }}
-              className={`mt-6 sm:mt-8 flex items-center justify-center lg:justify-start gap-2 text-xs font-semibold text-[#0B0B0F]/60 transition-all ${
-                mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-              }`}
+              className={`mt-6 sm:mt-8 flex items-center justify-center lg:justify-start gap-2 text-xs font-semibold text-[#0B0B0F]/60 transition-all ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+                }`}
             >
               <ShieldCheck className="h-4 w-4 text-emerald-600 shrink-0" />
               <span>Over 1,200+ active riders across 40+ verified stops in Bengaluru • 100% Free for riders</span>
