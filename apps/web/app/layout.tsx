@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { AuthProvider } from '@/lib/auth/AuthContext';
+import { LanguageProvider } from '@/lib/i18n';
 import { getServerSession } from '@/lib/auth/server-session';
 
 export const viewport: Viewport = {
@@ -36,9 +37,11 @@ export default async function RootLayout({
   return (
     <html lang="en" className="h-full">
       <body className="flex min-h-full flex-col bg-pitstop-bg text-pitstop-charcoal antialiased">
-        <AuthProvider initialUser={initialUser}>
-          {children}
-        </AuthProvider>
+        <LanguageProvider>
+          <AuthProvider initialUser={initialUser}>
+            {children}
+          </AuthProvider>
+        </LanguageProvider>
       </body>
     </html>
   );

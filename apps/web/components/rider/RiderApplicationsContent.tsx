@@ -21,12 +21,14 @@ import { PublicLayout, RiderNav } from '@/components/layout';
 import { Container, PageHeader, Card, Button, Badge, EmptyState } from '@/components/ui';
 import { RiderJobApplicationResponse, JobApplicationStatus, UserPublicProfile } from 'shared-types';
 import { fetchRiderApplications, withdrawRiderApplication } from '@/lib/api/rider-applications';
+import { useLanguage } from '@/lib/i18n';
 
 interface RiderApplicationsContentProps {
   user: UserPublicProfile;
 }
 
 export const RiderApplicationsContent: React.FC<RiderApplicationsContentProps> = ({ user }) => {
+  const { isHindi } = useLanguage();
   const [applications, setApplications] = useState<RiderJobApplicationResponse[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -87,13 +89,13 @@ export const RiderApplicationsContent: React.FC<RiderApplicationsContentProps> =
   const getStatusBadge = (status: JobApplicationStatus) => {
     switch (status) {
       case JobApplicationStatus.PENDING:
-        return <Badge variant="warning" size="sm">Pending Merchant Review</Badge>;
+        return <Badge variant="warning" size="sm">{isHindi ? 'समीक्षाधीन' : 'Pending Merchant Review'}</Badge>;
       case JobApplicationStatus.ACCEPTED:
-        return <Badge variant="success" size="sm">Accepted Shift</Badge>;
+        return <Badge variant="success" size="sm">{isHindi ? 'स्वीकृत शिफ्ट' : 'Accepted Shift'}</Badge>;
       case JobApplicationStatus.REJECTED:
-        return <Badge variant="danger" size="sm">Not Selected</Badge>;
+        return <Badge variant="danger" size="sm">{isHindi ? 'चयनित नहीं' : 'Not Selected'}</Badge>;
       case JobApplicationStatus.WITHDRAWN:
-        return <Badge variant="neutral" size="sm">Withdrawn</Badge>;
+        return <Badge variant="neutral" size="sm">{isHindi ? 'वापस लिया' : 'Withdrawn'}</Badge>;
     }
   };
 
@@ -134,16 +136,20 @@ export const RiderApplicationsContent: React.FC<RiderApplicationsContentProps> =
     <PublicLayout>
       <RiderNav />
 
-      <main id="main-content" className="pb-20 md:pb-12">
+      <main id="main-content" className="pb-24 md:pb-12">
         <PageHeader
-          title="My Micro-Job Applications"
-          description="Track status updates for helper tasks you have applied to, review accepted shift details, or withdraw pending applications."
-          badge="Rider Shifts"
+          title={isHindi ? 'मेरे माइक्रो-जॉब आवेदन' : 'My Micro-Job Applications'}
+          description={
+            isHindi
+              ? 'उन कार्यों के स्थिति अपडेट देखें जिनके लिए आपने आवेदन किया है, स्वीकृत शिफ्ट विवरण देखें या लंबित आवेदन वापस लें।'
+              : 'Track status updates for helper tasks you have applied to, review accepted shift details, or withdraw pending applications.'
+          }
+          badge={isHindi ? 'राइडर शिफ्ट्स' : 'Rider Shifts'}
           backHref="/jobs"
           action={
             <Link href="/jobs">
               <Button variant="primary" size="md" rightIcon={<ArrowRight className="h-4 w-4" />}>
-                Browse More Jobs
+                {isHindi ? 'अधिक जॉब्स खोजें' : 'Browse More Jobs'}
               </Button>
             </Link>
           }
@@ -154,36 +160,50 @@ export const RiderApplicationsContent: React.FC<RiderApplicationsContentProps> =
             {/* Status Metric Strip */}
             <div className="mb-8 grid grid-cols-2 md:grid-cols-4 gap-4">
               <Card className="p-4 bg-white border border-pitstop-border">
-                <span className="text-xs font-medium text-pitstop-muted block">Total Applications</span>
+                <span className="text-xs font-medium text-pitstop-muted block">
+                  {isHindi ? 'कुल आवेदन' : 'Total Applications'}
+                </span>
                 <span className="text-2xl font-extrabold text-pitstop-charcoal mt-1 block">
                   {totalApplications}
                 </span>
-                <span className="text-[11px] text-pitstop-muted mt-0.5 block">Lifetime submissions</span>
+                <span className="text-[11px] text-pitstop-muted mt-0.5 block">
+                  {isHindi ? 'कुल प्रस्तुतियां' : 'Lifetime submissions'}
+                </span>
               </Card>
 
               <Card className="p-4 bg-white border border-pitstop-border">
-                <span className="text-xs font-medium text-pitstop-muted block">Pending Review</span>
+                <span className="text-xs font-medium text-pitstop-muted block">
+                  {isHindi ? 'समीक्षा लंबित' : 'Pending Review'}
+                </span>
                 <span className="text-2xl font-extrabold text-amber-600 mt-1 block">
                   {pendingCount}
                 </span>
-                <span className="text-[11px] text-pitstop-muted mt-0.5 block">Awaiting merchant selection</span>
+                <span className="text-[11px] text-pitstop-muted mt-0.5 block">
+                  {isHindi ? 'मर्चेंट चयन की प्रतीक्षा' : 'Awaiting merchant selection'}
+                </span>
               </Card>
 
               <Card className="p-4 bg-white border border-pitstop-border">
-                <span className="text-xs font-medium text-pitstop-muted block">Accepted Shifts</span>
+                <span className="text-xs font-medium text-pitstop-muted block">
+                  {isHindi ? 'स्वीकृत शिफ्ट्स' : 'Accepted Shifts'}
+                </span>
                 <span className="text-2xl font-extrabold text-emerald-600 mt-1 block">
                   {acceptedCount}
                 </span>
-                <span className="text-[11px] text-pitstop-muted mt-0.5 block">Confirmed assignments</span>
+                <span className="text-[11px] text-pitstop-muted mt-0.5 block">
+                  {isHindi ? 'पुष्ट कार्य' : 'Confirmed assignments'}
+                </span>
               </Card>
 
               <Card className="p-4 bg-white border border-pitstop-border">
-                <span className="text-xs font-medium text-pitstop-muted block">Partner Profile</span>
+                <span className="text-xs font-medium text-pitstop-muted block">
+                  {isHindi ? 'पार्टनर प्रोफाइल' : 'Partner Profile'}
+                </span>
                 <span className="text-base font-bold text-pitstop-charcoal mt-1 block truncate">
                   {user.name}
                 </span>
                 <span className="text-[11px] text-pitstop-muted mt-0.5 block truncate">
-                  {user.riderProfile?.platform || 'Delivery Partner'}
+                  {user.riderProfile?.platform || (isHindi ? 'डिलीवरी पार्टनर' : 'Delivery Partner')}
                 </span>
               </Card>
             </div>
@@ -225,11 +245,11 @@ export const RiderApplicationsContent: React.FC<RiderApplicationsContentProps> =
             <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-pitstop-border pb-3">
               <div className="flex items-center gap-1 overflow-x-auto w-full sm:w-auto">
                 {[
-                  { value: 'all', label: 'All Applications' },
-                  { value: JobApplicationStatus.PENDING, label: 'Pending Review' },
-                  { value: JobApplicationStatus.ACCEPTED, label: 'Accepted Shifts' },
-                  { value: JobApplicationStatus.REJECTED, label: 'Not Selected' },
-                  { value: JobApplicationStatus.WITHDRAWN, label: 'Withdrawn' },
+                  { value: 'all', label: isHindi ? 'सभी आवेदन' : 'All Applications' },
+                  { value: JobApplicationStatus.PENDING, label: isHindi ? 'समीक्षा लंबित' : 'Pending Review' },
+                  { value: JobApplicationStatus.ACCEPTED, label: isHindi ? 'स्वीकृत शिफ्ट्स' : 'Accepted Shifts' },
+                  { value: JobApplicationStatus.REJECTED, label: isHindi ? 'चयनित नहीं' : 'Not Selected' },
+                  { value: JobApplicationStatus.WITHDRAWN, label: isHindi ? 'वापस लिया गया' : 'Withdrawn' },
                 ].map((tab) => (
                   <button
                     key={tab.value}
@@ -256,7 +276,7 @@ export const RiderApplicationsContent: React.FC<RiderApplicationsContentProps> =
                 disabled={isLoading}
                 leftIcon={<RefreshCw className={`h-3.5 w-3.5 ${isLoading ? 'animate-spin' : ''}`} />}
               >
-                Refresh
+                {isHindi ? 'रिफ्रेश' : 'Refresh'}
               </Button>
             </div>
 
@@ -407,16 +427,20 @@ export const RiderApplicationsContent: React.FC<RiderApplicationsContentProps> =
             ) : (
               <EmptyState
                 icon={<Briefcase className="h-8 w-8 text-pitstop-muted" />}
-                title="No Applications Found"
+                title={isHindi ? 'कोई आवेदन नहीं मिला' : 'No Applications Found'}
                 description={
                   statusFilter !== 'all'
-                    ? `You don’t have any applications under status "${statusFilter}".`
+                    ? isHindi
+                      ? `इस श्रेणी में आपका कोई आवेदन नहीं है।`
+                      : `You don’t have any applications under status "${statusFilter}".`
+                    : isHindi
+                    ? 'आपने अभी तक किसी माइक्रो-जॉब के लिए आवेदन नहीं किया है। खाली समय में अतिरिक्त कमाई के लिए उपलब्ध कार्य देखें।'
                     : 'You haven’t applied for any micro-jobs yet. Browse available tasks to earn extra income during off-peak hours.'
                 }
                 action={
                   <Link href="/jobs">
                     <Button variant="primary" size="md" rightIcon={<ArrowRight className="h-4 w-4" />}>
-                      Browse Available Micro-Jobs
+                      {isHindi ? 'उपलब्ध माइक्रो-जॉब्स देखें' : 'Browse Available Micro-Jobs'}
                     </Button>
                   </Link>
                 }

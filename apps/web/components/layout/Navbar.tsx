@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { Navigation, Menu, X, Store, User, Bike, ArrowRight } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { useAuth } from '@/lib/auth/AuthContext';
+import { useLanguage } from '@/lib/i18n';
+import { LanguageToggle } from '@/components/common/LanguageToggle';
 import { LogoutButton } from '@/components/auth/LogoutButton';
 import { UserRole } from 'shared-types';
 
@@ -15,6 +17,7 @@ export interface NavbarProps {
 export const Navbar: React.FC<NavbarProps> = ({ theme = 'light' }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { user, isAuthenticated } = useAuth();
+  const { t, isHindi } = useLanguage();
   const isDark = theme === 'dark';
 
   return (
@@ -33,14 +36,9 @@ export const Navbar: React.FC<NavbarProps> = ({ theme = 'light' }) => {
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-pitstop-yellow text-pitstop-charcoal font-bold shadow-subtle">
             <Navigation className="h-6 w-6 fill-pitstop-charcoal stroke-pitstop-charcoal" />
           </div>
-          <div className="flex flex-col">
-            <span className={`text-xl font-bold tracking-tight ${isDark ? 'text-white' : 'text-pitstop-charcoal'}`}>
-              PitStop
-            </span>
-            <span className={`hidden text-xs font-medium sm:inline-block ${isDark ? 'text-gray-400' : 'text-pitstop-muted'}`}>
-              For Delivery &amp; Ride Gig Workers
-            </span>
-          </div>
+          <span className={`text-xl font-bold tracking-tight ${isDark ? 'text-white' : 'text-pitstop-charcoal'}`}>
+            PitStop
+          </span>
         </Link>
 
         {/* Desktop Navigation Links */}
@@ -50,38 +48,41 @@ export const Navbar: React.FC<NavbarProps> = ({ theme = 'light' }) => {
             className={`text-xs uppercase font-bold tracking-wider transition-colors focus:outline-none focus:ring-2 focus:ring-pitstop-yellow rounded px-1.5 py-1 ${isDark ? 'text-gray-300 hover:text-pitstop-yellow' : 'text-pitstop-charcoal hover:text-pitstop-yellow-dark'
               }`}
           >
-            Explore Rest Stops
+            {t('nav.explore')}
           </Link>
           <Link
             href="/jobs"
             className={`text-xs uppercase font-bold tracking-wider transition-colors focus:outline-none focus:ring-2 focus:ring-pitstop-yellow rounded px-1.5 py-1 ${isDark ? 'text-gray-300 hover:text-pitstop-yellow' : 'text-pitstop-charcoal hover:text-pitstop-yellow-dark'
               }`}
           >
-            Micro-Jobs
+            {t('nav.jobs')}
           </Link>
           <Link
             href="/how-it-works"
             className={`text-xs uppercase font-bold tracking-wider transition-colors focus:outline-none focus:ring-2 focus:ring-pitstop-yellow rounded px-1.5 py-1 ${isDark ? 'text-gray-400 hover:text-white' : 'text-pitstop-muted hover:text-pitstop-charcoal'
               }`}
           >
-            How It Works
+            {t('nav.howItWorks')}
           </Link>
           <Link
             href="/for-merchants"
             className={`text-xs uppercase font-bold tracking-wider transition-colors focus:outline-none focus:ring-2 focus:ring-pitstop-yellow rounded px-1.5 py-1 ${isDark ? 'text-gray-400 hover:text-white' : 'text-pitstop-muted hover:text-pitstop-charcoal'
               }`}
           >
-            For Merchants
+            {t('nav.forMerchants')}
           </Link>
         </nav>
 
         {/* Desktop Right Action Buttons */}
         <div className="hidden items-center gap-3 md:flex">
+          {/* Language Switcher Pill */}
+          <LanguageToggle isDark={isDark} />
+
           {isAuthenticated && user?.role === UserRole.MERCHANT ? (
             <div className="flex items-center gap-2">
               <Link href="/merchant">
                 <Button variant="primary" size="sm" leftIcon={<Store className="h-4 w-4" />}>
-                  {user.name.split(' ')[0]} (Merchant)
+                  {user.name.split(' ')[0]} ({t('nav.merchantPortal')})
                 </Button>
               </Link>
               <LogoutButton variant="ghost" size="sm" />
@@ -103,20 +104,20 @@ export const Navbar: React.FC<NavbarProps> = ({ theme = 'light' }) => {
                     : 'border border-pitstop-border bg-white text-pitstop-charcoal hover:bg-pitstop-bg'
                   }`}>
                   <Store className="h-3.5 w-3.5" />
-                  <span>Merchant Portal</span>
+                  <span>{t('nav.merchantPortal')}</span>
                 </button>
               </Link>
 
               <Link href="/rider/login">
                 <button className={`px-3 py-2 text-xs font-semibold transition-colors ${isDark ? 'text-gray-300 hover:text-white' : 'text-pitstop-charcoal hover:text-black'
                   }`}>
-                  Log In
+                  {t('nav.login')}
                 </button>
               </Link>
 
               <Link href="/rider/register">
                 <button className="inline-flex items-center gap-1.5 rounded-full bg-pitstop-yellow px-5 py-2 text-xs font-extrabold text-pitstop-charcoal shadow-md transition-all hover:bg-pitstop-yellow-dark active:scale-[0.98]">
-                  <span>Join as Rider</span>
+                  <span>{t('nav.joinRider')}</span>
                   <ArrowRight className="h-3.5 w-3.5" />
                 </button>
               </Link>
@@ -124,7 +125,7 @@ export const Navbar: React.FC<NavbarProps> = ({ theme = 'light' }) => {
           )}
         </div>
 
-        {/* Mobile Hamburger Menu Button */}
+        {/* Mobile Header Actions (User / Hamburger) */}
         <div className="flex items-center gap-2 md:hidden">
           {isAuthenticated && user ? (
             <Link href={user.role === UserRole.MERCHANT ? '/merchant' : '/explore'}>
@@ -135,7 +136,7 @@ export const Navbar: React.FC<NavbarProps> = ({ theme = 'light' }) => {
           ) : (
             <Link href="/rider/login">
               <Button variant="primary" size="sm">
-                Log In
+                {t('nav.login')}
               </Button>
             </Link>
           )}
@@ -158,6 +159,14 @@ export const Navbar: React.FC<NavbarProps> = ({ theme = 'light' }) => {
       {mobileMenuOpen && (
         <div className={`border-t px-4 pt-4 pb-8 md:hidden shadow-elevation animate-in slide-in-from-top-2 max-h-[calc(100vh-64px)] overflow-y-auto ${isDark ? 'border-white/10 bg-[#161726]' : 'border-pitstop-border bg-white'
           }`}>
+          {/* Language Switcher inside Mobile Menu */}
+          <div className={`mb-3 flex items-center justify-between p-3 rounded-xl border ${isDark ? 'border-white/10 bg-white/5' : 'border-pitstop-border bg-pitstop-bg'}`}>
+            <span className={`text-xs font-bold ${isDark ? 'text-gray-300' : 'text-pitstop-charcoal'}`}>
+              {isHindi ? 'भाषा चुनें:' : 'Language:'}
+            </span>
+            <LanguageToggle isDark={isDark} />
+          </div>
+
           <nav className="flex flex-col gap-2.5" aria-label="Mobile Navigation">
             <Link
               href="/explore"
@@ -165,7 +174,7 @@ export const Navbar: React.FC<NavbarProps> = ({ theme = 'light' }) => {
               className={`flex items-center min-h-[44px] rounded-xl px-3.5 py-2.5 text-sm font-semibold transition-colors ${isDark ? 'text-white hover:bg-white/5 active:bg-white/10' : 'text-pitstop-charcoal hover:bg-pitstop-bg active:bg-slate-100'
                 }`}
             >
-              📍 Explore Rest Stops
+              📍 {t('nav.explore')}
             </Link>
             <Link
               href="/jobs"
@@ -173,7 +182,7 @@ export const Navbar: React.FC<NavbarProps> = ({ theme = 'light' }) => {
               className={`flex items-center min-h-[44px] rounded-xl px-3.5 py-2.5 text-sm font-semibold transition-colors ${isDark ? 'text-white hover:bg-white/5 active:bg-white/10' : 'text-pitstop-charcoal hover:bg-pitstop-bg active:bg-slate-100'
                 }`}
             >
-              💼 Micro-Jobs Board
+              💼 {t('nav.jobs')}
             </Link>
             <Link
               href="/how-it-works"
@@ -181,7 +190,7 @@ export const Navbar: React.FC<NavbarProps> = ({ theme = 'light' }) => {
               className={`rounded-lg px-3 py-2.5 text-sm font-medium ${isDark ? 'text-gray-400 hover:bg-white/5 hover:text-white' : 'text-pitstop-muted hover:bg-pitstop-bg hover:text-pitstop-charcoal'
                 }`}
             >
-              💡 How It Works
+              💡 {t('nav.howItWorks')}
             </Link>
             <Link
               href="/for-merchants"
@@ -189,13 +198,13 @@ export const Navbar: React.FC<NavbarProps> = ({ theme = 'light' }) => {
               className={`rounded-lg px-3 py-2.5 text-sm font-medium ${isDark ? 'text-gray-400 hover:bg-white/5 hover:text-white' : 'text-pitstop-muted hover:bg-pitstop-bg hover:text-pitstop-charcoal'
                 }`}
             >
-              🏪 Merchant Partner Info
+              🏪 {t('nav.forMerchants')}
             </Link>
 
             <div className={`mt-3 flex flex-col gap-2 border-t pt-4 ${isDark ? 'border-white/10' : 'border-pitstop-border'}`}>
               <Link href={isAuthenticated && user?.role === UserRole.MERCHANT ? '/merchant' : '/merchant/login'} onClick={() => setMobileMenuOpen(false)}>
                 <Button variant="outline" fullWidth leftIcon={<Store className="h-4 w-4" />}>
-                  Merchant Portal
+                  {t('nav.merchantPortal')}
                 </Button>
               </Link>
               {isAuthenticated && user ? (
@@ -205,7 +214,7 @@ export const Navbar: React.FC<NavbarProps> = ({ theme = 'light' }) => {
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     <Button variant="primary" fullWidth leftIcon={user.role === UserRole.MERCHANT ? <Store className="h-4 w-4" /> : <Bike className="h-4 w-4" />}>
-                      {user.role === UserRole.MERCHANT ? `Dashboard (${user.name.split(' ')[0]})` : `Explore Stops (${user.name.split(' ')[0]})`}
+                      {user.role === UserRole.MERCHANT ? `${t('nav.dashboard')} (${user.name.split(' ')[0]})` : `${t('nav.explore')} (${user.name.split(' ')[0]})`}
                     </Button>
                   </Link>
                   <LogoutButton fullWidth variant="outline" />
@@ -214,12 +223,12 @@ export const Navbar: React.FC<NavbarProps> = ({ theme = 'light' }) => {
                 <>
                   <Link href="/rider/login" onClick={() => setMobileMenuOpen(false)}>
                     <Button variant="outline" fullWidth leftIcon={<User className="h-4 w-4" />}>
-                      Rider Log In
+                      {t('nav.login')}
                     </Button>
                   </Link>
                   <Link href="/rider/register" onClick={() => setMobileMenuOpen(false)}>
                     <Button variant="primary" fullWidth>
-                      Create Rider Account
+                      {t('nav.joinRider')}
                     </Button>
                   </Link>
                 </>

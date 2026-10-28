@@ -12,6 +12,7 @@ import { AuthCardLayout } from '@/components/auth';
 import { useAuth } from '@/lib/auth/AuthContext';
 import { UserRole } from 'shared-types';
 import { sanitizeReturnUrl } from '@/lib/auth/return-url';
+import { allowOnlyDigitsKeyDown, sanitizePhoneNumber } from '@/lib/utils/input-validators';
 
 function AdminLoginFormContent() {
   const router = useRouter();
@@ -38,13 +39,7 @@ function AdminLoginFormContent() {
   }, [isAuthenticated, user, returnUrl]);
 
   const handlePhoneChange = (val: string) => {
-    let cleaned = val.replace(/\D/g, '');
-    if (cleaned.startsWith('91') && cleaned.length > 10) {
-      cleaned = cleaned.slice(2);
-    } else if (cleaned.startsWith('0') && cleaned.length > 10) {
-      cleaned = cleaned.slice(1);
-    }
-    setPhone(cleaned.slice(0, 10));
+    setPhone(sanitizePhoneNumber(val));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -118,6 +113,7 @@ function AdminLoginFormContent() {
               placeholder="9876543210"
               value={phone}
               onChange={(e) => handlePhoneChange(e.target.value)}
+              onKeyDown={allowOnlyDigitsKeyDown}
               required
               disabled={isSubmitting}
               autoComplete="tel"

@@ -9,7 +9,7 @@ export interface IRiderProfile {
 
 export interface IMerchantProfile {
   businessName: string;
-  businessType: 'restaurant' | 'tea_stall' | 'garage' | 'supermarket' | 'service_center' | 'other';
+  businessType: 'restaurant' | 'tea_stall' | 'hotel' | 'garage' | 'supermarket' | 'service_center' | 'other';
   gstNumber?: string;
   address?: string;
   verificationStatus?: 'pending_review' | 'verified' | 'rejected' | 'suspended';
@@ -60,7 +60,7 @@ const MerchantProfileSchema = new Schema<IMerchantProfile>(
     },
     businessType: {
       type: String,
-      enum: ['restaurant', 'tea_stall', 'garage', 'supermarket', 'service_center', 'other'],
+      enum: ['restaurant', 'tea_stall', 'hotel', 'garage', 'supermarket', 'service_center', 'other'],
       required: true,
     },
     gstNumber: {

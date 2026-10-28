@@ -51,12 +51,14 @@ import { fetchMerchantRestStops } from '@/lib/api/merchant-rest-stops';
 import { CreateJobModal } from './CreateJobModal';
 import { EditJobModal } from './EditJobModal';
 import { JobApplicantsModal } from './JobApplicantsModal';
+import { useLanguage } from '@/lib/i18n';
 
 interface MerchantJobsContentProps {
   user: UserPublicProfile;
 }
 
 export const MerchantJobsContent: React.FC<MerchantJobsContentProps> = ({ user }) => {
+  const { isHindi } = useLanguage();
   const [jobs, setJobs] = useState<JobMerchantResponse[]>([]);
   const [restStops, setRestStops] = useState<RestStopMerchantResponse[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -153,17 +155,17 @@ export const MerchantJobsContent: React.FC<MerchantJobsContentProps> = ({ user }
   const formatCategory = (cat: JobCategory) => {
     switch (cat) {
       case JobCategory.PARCEL_SORTING:
-        return 'Parcel Sorting & Dispatch';
+        return isHindi ? 'पार्सल सॉर्टिंग व डिस्पैच' : 'Parcel Sorting & Dispatch';
       case JobCategory.LOADING_UNLOADING:
-        return 'Loading & Unloading';
+        return isHindi ? 'लोडिंग व अनलोडिंग' : 'Loading & Unloading';
       case JobCategory.FLYER_DISTRIBUTION:
-        return 'Flyer Distribution';
+        return isHindi ? 'पैम्फलेट वितरण' : 'Flyer Distribution';
       case JobCategory.CLEANING_PREP:
-        return 'Cleaning & Prep Support';
+        return isHindi ? 'सफाई व तैयारी सहायता' : 'Cleaning & Prep Support';
       case JobCategory.STORE_ASSISTANT:
-        return 'Store Counter Assistant';
+        return isHindi ? 'स्टोर काउंटर सहायक' : 'Store Counter Assistant';
       case JobCategory.OTHER:
-        return 'General Task';
+        return isHindi ? 'सामान्य कार्य' : 'General Task';
     }
   };
 
@@ -187,13 +189,13 @@ export const MerchantJobsContent: React.FC<MerchantJobsContentProps> = ({ user }
   const getStatusBadge = (status: JobStatus) => {
     switch (status) {
       case JobStatus.OPEN:
-        return <Badge variant="success" size="sm">Open for Riders</Badge>;
+        return <Badge variant="success" size="sm">{isHindi ? 'राइडर्स के लिए खुला' : 'Open for Riders'}</Badge>;
       case JobStatus.IN_PROGRESS:
-        return <Badge variant="warning" size="sm">In Progress</Badge>;
+        return <Badge variant="warning" size="sm">{isHindi ? 'प्रगति में' : 'In Progress'}</Badge>;
       case JobStatus.COMPLETED:
-        return <Badge variant="neutral" size="sm">Completed</Badge>;
+        return <Badge variant="neutral" size="sm">{isHindi ? 'पूर्ण' : 'Completed'}</Badge>;
       case JobStatus.CANCELLED:
-        return <Badge variant="danger" size="sm">Cancelled</Badge>;
+        return <Badge variant="danger" size="sm">{isHindi ? 'रद्द' : 'Cancelled'}</Badge>;
     }
   };
 
@@ -204,7 +206,7 @@ export const MerchantJobsContent: React.FC<MerchantJobsContentProps> = ({ user }
       if (isNaN(start.getTime()) || isNaN(end.getTime())) return '';
       const timeOpts: Intl.DateTimeFormatOptions = { hour: '2-digit', minute: '2-digit' };
       const dateOpts: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short' };
-      return `${start.toLocaleDateString('en-IN', dateOpts)}, ${start.toLocaleTimeString('en-IN', timeOpts)} – ${end.toLocaleTimeString('en-IN', timeOpts)}`;
+      return `${start.toLocaleDateString(isHindi ? 'hi-IN' : 'en-IN', dateOpts)}, ${start.toLocaleTimeString(isHindi ? 'hi-IN' : 'en-IN', timeOpts)} – ${end.toLocaleTimeString(isHindi ? 'hi-IN' : 'en-IN', timeOpts)}`;
     } catch {
       return '';
     }
@@ -214,7 +216,7 @@ export const MerchantJobsContent: React.FC<MerchantJobsContentProps> = ({ user }
   const getVenueName = (job: JobMerchantResponse) => {
     if (job.restStopName) return job.restStopName;
     const match = restStops.find((rs) => rs.id === job.restStopId);
-    return match ? match.name : 'Rest Stop Venue';
+    return match ? match.name : (isHindi ? 'रेस्ट स्टॉप वेन्यू' : 'Rest Stop Venue');
   };
 
   return (
@@ -223,9 +225,13 @@ export const MerchantJobsContent: React.FC<MerchantJobsContentProps> = ({ user }
 
       <main id="main-content" className="pb-20 md:pb-12">
         <PageHeader
-          title="Merchant Micro-Jobs Portal"
-          description="Publish quick on-demand tasks during quiet hours to help delivery riders earn extra income while resting."
-          badge="Live Station"
+          title={isHindi ? 'मर्चेंट माइक्रो-जॉब्स पोर्टल' : 'Merchant Micro-Jobs Portal'}
+          description={
+            isHindi
+              ? 'दोपहर के खाली समय में त्वरित टास्क पोस्ट करें ताकि डिलीवरी राइडर्स आराम करते हुए अतिरिक्त कमाई कर सकें।'
+              : 'Publish quick on-demand tasks during quiet hours to help delivery riders earn extra income while resting.'
+          }
+          badge={isHindi ? 'लाइव स्टेशन' : 'Live Station'}
           backHref="/merchant"
           action={
             <Button
@@ -234,7 +240,7 @@ export const MerchantJobsContent: React.FC<MerchantJobsContentProps> = ({ user }
               onClick={() => setIsCreateOpen(true)}
               leftIcon={<Plus className="h-4 w-4" />}
             >
-              Post Micro-Job
+              {isHindi ? 'नया माइक्रो-जॉब पोस्ट करें' : 'Post Micro-Job'}
             </Button>
           }
         />
@@ -244,35 +250,51 @@ export const MerchantJobsContent: React.FC<MerchantJobsContentProps> = ({ user }
             {/* Live Metrics Cards */}
             <div className="mb-8 grid grid-cols-2 md:grid-cols-4 gap-4">
               <Card className="p-4 bg-white border border-pitstop-border">
-                <span className="text-xs font-medium text-pitstop-muted block">Total Micro-Jobs</span>
+                <span className="text-xs font-medium text-pitstop-muted block">
+                  {isHindi ? 'कुल माइक्रो-जॉब्स' : 'Total Micro-Jobs'}
+                </span>
                 <span className="text-2xl font-extrabold text-pitstop-charcoal mt-1 block">
                   {totalJobs}
                 </span>
-                <span className="text-[11px] text-pitstop-muted mt-0.5 block">Managed in your account</span>
+                <span className="text-[11px] text-pitstop-muted mt-0.5 block">
+                  {isHindi ? 'आपके खाते में प्रबंधित' : 'Managed in your account'}
+                </span>
               </Card>
 
               <Card className="p-4 bg-white border border-pitstop-border">
-                <span className="text-xs font-medium text-pitstop-muted block">Open / Active Tasks</span>
+                <span className="text-xs font-medium text-pitstop-muted block">
+                  {isHindi ? 'खुले / सक्रिय कार्य' : 'Open / Active Tasks'}
+                </span>
                 <span className="text-2xl font-extrabold text-emerald-600 mt-1 block">
                   {jobs.filter((j) => j.status === JobStatus.OPEN).length}
                 </span>
-                <span className="text-[11px] text-pitstop-muted mt-0.5 block">Accepting rider applicants</span>
+                <span className="text-[11px] text-pitstop-muted mt-0.5 block">
+                  {isHindi ? 'राइडर्स के आवेदन स्वीकार्य' : 'Accepting rider applicants'}
+                </span>
               </Card>
 
               <Card className="p-4 bg-white border border-pitstop-border">
-                <span className="text-xs font-medium text-pitstop-muted block">Accepted Riders</span>
+                <span className="text-xs font-medium text-pitstop-muted block">
+                  {isHindi ? 'स्वीकृत राइडर्स' : 'Accepted Riders'}
+                </span>
                 <span className="text-2xl font-extrabold text-pitstop-charcoal mt-1 block">
                   {jobs.reduce((acc, j) => acc + (j.acceptedRidersCount || 0), 0)}
                 </span>
-                <span className="text-[11px] text-pitstop-muted mt-0.5 block">Confirmed capacity filled</span>
+                <span className="text-[11px] text-pitstop-muted mt-0.5 block">
+                  {isHindi ? 'पुष्टि क्षमता भरी गई' : 'Confirmed capacity filled'}
+                </span>
               </Card>
 
               <Card className="p-4 bg-white border border-pitstop-border">
-                <span className="text-xs font-medium text-pitstop-muted block">Pending Applicants</span>
+                <span className="text-xs font-medium text-pitstop-muted block">
+                  {isHindi ? 'लंबित आवेदक' : 'Pending Applicants'}
+                </span>
                 <span className="text-2xl font-extrabold text-amber-600 mt-1 block">
                   {jobs.reduce((acc, j) => acc + (j.pendingApplicationsCount || 0), 0)}
                 </span>
-                <span className="text-[11px] text-pitstop-muted mt-0.5 block">Awaiting merchant review</span>
+                <span className="text-[11px] text-pitstop-muted mt-0.5 block">
+                  {isHindi ? 'मर्चेंट समीक्षा प्रतीक्षित' : 'Awaiting merchant review'}
+                </span>
               </Card>
             </div>
 

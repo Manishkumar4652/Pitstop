@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import { Navbar } from './Navbar';
 import { Footer } from './Footer';
@@ -13,7 +15,7 @@ export const PublicLayout: React.FC<PublicLayoutProps> = ({ children, theme = 'l
     <div className={`flex min-h-screen flex-col ${isDark ? 'bg-[#12131C] text-white' : 'bg-pitstop-bg text-pitstop-charcoal'} antialiased`}>
       <Navbar theme={theme} />
       <main className="flex-1">{children}</main>
-      <Footer />
+      <Footer theme={theme} />
     </div>
   );
 };

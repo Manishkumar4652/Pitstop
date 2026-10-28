@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { Badge, Button } from '@/components/ui';
 import { useAuth } from '@/lib/auth/AuthContext';
+import { useLanguage } from '@/lib/i18n';
 import { LogoutButton } from '@/components/auth/LogoutButton';
 import { UserRole } from 'shared-types';
 
@@ -23,28 +24,29 @@ export interface MerchantNavProps {
 export const MerchantNav: React.FC<MerchantNavProps> = ({ className = '' }) => {
   const pathname = usePathname();
   const { user, isAuthenticated } = useAuth();
+  const { isHindi } = useLanguage();
 
   const navItems = [
     {
-      label: 'Dashboard',
-      href: '/merchant',
-      icon: <Store className="h-4 w-4" aria-hidden="true" />,
-      active: pathname === '/merchant' || pathname === '/merchant/dashboard',
-    },
-    {
-      label: 'My Rest Stops',
+      label: isHindi ? 'माई हब' : 'My Hub',
       href: '/merchant/rest-stops',
       icon: <MapPin className="h-4 w-4" aria-hidden="true" />,
       active: pathname.startsWith('/merchant/rest-stops'),
     },
     {
-      label: 'Rider Deals',
+      label: isHindi ? 'राइडर डील्स' : 'Rider Deals',
       href: '/merchant/deals',
       icon: <Tag className="h-4 w-4" aria-hidden="true" />,
       active: pathname === '/merchant/deals',
     },
     {
-      label: 'Micro-Jobs',
+      label: isHindi ? 'डैशबोर्ड' : 'Dashboard',
+      href: '/merchant',
+      icon: <Store className="h-4 w-4" aria-hidden="true" />,
+      active: pathname === '/merchant' || pathname === '/merchant/dashboard',
+    },
+    {
+      label: isHindi ? 'माइक्रो-जॉब्स' : 'Micro-Jobs',
       href: '/merchant/jobs',
       icon: <Briefcase className="h-4 w-4" aria-hidden="true" />,
       active: pathname === '/merchant/jobs',
@@ -99,7 +101,7 @@ export const MerchantNav: React.FC<MerchantNavProps> = ({ className = '' }) => {
             ) : (
               <Link href="/merchant/login">
                 <Button variant="outline" size="sm">
-                  Log In
+                  {isHindi ? 'लॉग इन' : 'Log In'}
                 </Button>
               </Link>
             )}

@@ -23,11 +23,14 @@ import { Input, Select, Badge } from '@/components/ui';
 import { useAuth } from '@/lib/auth/AuthContext';
 import { UserRole, RegisterRequest, Facility } from 'shared-types';
 import { sanitizeReturnUrl } from '@/lib/auth/return-url';
+import { allowOnlyDigitsKeyDown, sanitizePhoneNumber, sanitizePincode } from '@/lib/utils/input-validators';
+import { useLanguage } from '@/lib/i18n';
 
 function MerchantRegisterFormContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { register, isAuthenticated } = useAuth();
+  const { isHindi } = useLanguage();
 
   // Wizard Step (1: Owner Credentials, 2: Shop Details, 3: Address & GPS, 4: Amenities & Capacity)
   const [currentStep, setCurrentStep] = useState<number>(1);
@@ -98,18 +101,18 @@ function MerchantRegisterFormContent() {
   ) => {
     const { name, value } = e.target;
     if (name === 'phone') {
-      let cleaned = value.replace(/\D/g, '');
-      if (cleaned.startsWith('91') && cleaned.length > 10) {
-        cleaned = cleaned.slice(2);
-      } else if (cleaned.startsWith('0') && cleaned.length > 10) {
-        cleaned = cleaned.slice(1);
-      }
-      setFormData((prev) => ({ ...prev, phone: cleaned.slice(0, 10) }));
+      const cleaned = sanitizePhoneNumber(value);
+      setFormData((prev) => ({ ...prev, phone: cleaned }));
       return;
     }
     if (name === 'pincode') {
-      const cleaned = value.replace(/\D/g, '').slice(0, 6);
+      const cleaned = sanitizePincode(value);
       setFormData((prev) => ({ ...prev, pincode: cleaned }));
+      return;
+    }
+    if (name === 'maxRiders') {
+      const cleaned = value.replace(/\D/g, '').slice(0, 3);
+      setFormData((prev) => ({ ...prev, maxRiders: cleaned }));
       return;
     }
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -319,14 +322,14 @@ function MerchantRegisterFormContent() {
   const registerUrl = `/merchant/register${returnUrl !== '/merchant' ? `?returnUrl=${encodeURIComponent(returnUrl)}` : ''}`;
 
   const allFacilities = [
-    { id: Facility.DRINKING_WATER, label: 'Drinking Water', icon: '💧' },
-    { id: Facility.SEATING, label: 'Seating Area', icon: '🪑' },
-    { id: Facility.CHARGING, label: 'Phone Charging', icon: '⚡' },
-    { id: Facility.RESTROOM, label: 'Clean Restroom', icon: '🚻' },
-    { id: Facility.WIFI, label: 'High-Speed Wi-Fi', icon: '📶' },
-    { id: Facility.PARKING, label: 'Two-Wheeler Parking', icon: '🅿️' },
-    { id: Facility.AIR_CONDITIONING, label: 'AC Lounge', icon: '❄️' },
-    { id: Facility.FIRST_AID, label: 'First Aid Kit', icon: '🩹' },
+    { id: Facility.DRINKING_WATER, label: isHindi ? 'पीने का पानी' : 'Drinking Water', icon: '💧' },
+    { id: Facility.SEATING, label: isHindi ? 'बैठने की जगह' : 'Seating Area', icon: '🪑' },
+    { id: Facility.CHARGING, label: isHindi ? 'फोन चार्जिंग' : 'Phone Charging', icon: '⚡' },
+    { id: Facility.RESTROOM, label: isHindi ? 'स्वच्छ शौचालय' : 'Clean Restroom', icon: '🚻' },
+    { id: Facility.WIFI, label: isHindi ? 'हाई-स्पीड वाई-फ़ाई' : 'High-Speed Wi-Fi', icon: '📶' },
+    { id: Facility.PARKING, label: isHindi ? 'दोपहिया पार्किंग' : 'Two-Wheeler Parking', icon: '🅿️' },
+    { id: Facility.AIR_CONDITIONING, label: isHindi ? 'एसी लाउंज' : 'AC Lounge', icon: '❄️' },
+    { id: Facility.FIRST_AID, label: isHindi ? 'प्राथमिक चिकित्सा (फर्स्ट एड)' : 'First Aid Kit', icon: '🩹' },
   ];
 
   return (
@@ -335,27 +338,31 @@ function MerchantRegisterFormContent() {
       role="merchant"
       loginUrl={loginUrl}
       registerUrl={registerUrl}
-      title="Merchant & Shop Registration"
-      subtitle="One unified account for you and your shop. Register once to immediately list your rest stop and welcome delivery riders."
+      title={isHindi ? 'मर्चेंट पार्टनर पंजीकरण' : 'Merchant & Shop Registration'}
+      subtitle={
+        isHindi
+          ? 'अपनी दुकान को रेस्ट स्टॉप के रूप में लिस्ट करें और डिलीवरी राइडर्स का स्वागत करें।'
+          : 'One unified account for you and your shop. Register once to immediately list your rest stop and welcome delivery riders.'
+      }
       error={error}
       footerContent={
         <div className="space-y-3">
           <p className="text-xs text-pitstop-muted">
-            Already registered as a merchant partner?{' '}
+            {isHindi ? 'पहले से मर्चेंट पार्टनर हैं?' : 'Already registered as a merchant partner?'}{' '}
             <Link
               href={loginUrl}
               className="font-bold text-pitstop-charcoal hover:underline hover:text-pitstop-yellow-dark"
             >
-              Log in to your account
+              {isHindi ? 'अपने खाते में लॉग इन करें' : 'Log in to your account'}
             </Link>
           </p>
           <p className="text-xs text-pitstop-muted flex items-center justify-center gap-1">
-            Looking for the rider portal?{' '}
+            {isHindi ? 'राइडर पोर्टल खोज रहे हैं?' : 'Looking for the rider portal?'}{' '}
             <Link
               href="/rider/register"
               className="font-semibold text-pitstop-charcoal hover:underline inline-flex items-center gap-1"
             >
-              <Bike className="h-3 w-3" /> Register as a Delivery Rider
+              <Bike className="h-3 w-3" /> {isHindi ? 'डिलीवरी राइडर के रूप में रजिस्टर करें' : 'Register as a Delivery Rider'}
             </Link>
           </p>
         </div>
@@ -370,13 +377,15 @@ function MerchantRegisterFormContent() {
                 {currentStep}
               </span>
               <span>
-                {currentStep === 1 && 'Step 1: Owner & Login Credentials'}
-                {currentStep === 2 && 'Step 2: Shop Details'}
-                {currentStep === 3 && 'Step 3: Shop Address & Location'}
-                {currentStep === 4 && 'Step 4: Amenities & Capacity'}
+                {currentStep === 1 && (isHindi ? 'चरण 1: मालिक और लॉगिन विवरण' : 'Step 1: Owner & Login Credentials')}
+                {currentStep === 2 && (isHindi ? 'चरण 2: दुकान का विवरण' : 'Step 2: Shop Details')}
+                {currentStep === 3 && (isHindi ? 'चरण 3: दुकान का पता और स्थान' : 'Step 3: Shop Address & Location')}
+                {currentStep === 4 && (isHindi ? 'चरण 4: सुविधाएं और क्षमता' : 'Step 4: Amenities & Capacity')}
               </span>
             </span>
-            <span className="text-pitstop-muted font-semibold">{currentStep} of 4</span>
+            <span className="text-pitstop-muted font-semibold">
+              {currentStep} {isHindi ? 'कुल' : 'of'} 4
+            </span>
           </div>
           {/* Progress Bar */}
           <div className="h-1.5 w-full rounded-full bg-pitstop-bg overflow-hidden">
@@ -392,13 +401,13 @@ function MerchantRegisterFormContent() {
           <div className="space-y-3 animate-fadeIn">
             <div>
               <label htmlFor="name" className="block text-xs font-bold text-pitstop-charcoal mb-1">
-                Owner / Contact Person Name <span className="text-red-500">*</span>
+                {isHindi ? 'मालिक / संपर्क व्यक्ति का नाम' : 'Owner / Contact Person Name'} <span className="text-red-500">*</span>
               </label>
               <Input
                 id="name"
                 name="name"
                 type="text"
-                placeholder="e.g. Ramesh Sharma"
+                placeholder={isHindi ? 'उदा. रमेश शर्मा' : 'e.g. Ramesh Sharma'}
                 value={formData.name}
                 onChange={handleChange}
                 required
@@ -408,7 +417,7 @@ function MerchantRegisterFormContent() {
 
             <div>
               <label htmlFor="phone" className="block text-xs font-bold text-pitstop-charcoal mb-1">
-                Primary Mobile Number <span className="text-red-500">*</span>
+                {isHindi ? 'प्राथमिक मोबाइल नंबर' : 'Primary Mobile Number'} <span className="text-red-500">*</span>
               </label>
               <div className="flex rounded-xl shadow-xs">
                 <span className="inline-flex items-center px-3.5 rounded-l-xl border border-r-0 border-pitstop-border bg-pitstop-bg text-xs font-semibold text-pitstop-muted select-none">
@@ -423,17 +432,20 @@ function MerchantRegisterFormContent() {
                   placeholder="9876543210"
                   value={formData.phone}
                   onChange={handleChange}
+                  onKeyDown={allowOnlyDigitsKeyDown}
                   required
                   autoComplete="tel"
                   className="block w-full min-h-[44px] rounded-r-xl border border-pitstop-border bg-white px-3.5 py-2 text-sm text-pitstop-charcoal placeholder:text-pitstop-muted/60 transition-colors focus:border-pitstop-yellow focus:outline-none focus:ring-2 focus:ring-pitstop-yellow"
                 />
               </div>
-              <p className="mt-1 text-[11px] text-pitstop-muted">Used for login and SMS alerts.</p>
+              <p className="mt-1 text-[11px] text-pitstop-muted">
+                {isHindi ? 'लॉगिन और एसएमएस अलर्ट के लिए उपयोग किया जाता है।' : 'Used for login and SMS alerts.'}
+              </p>
             </div>
 
             <div>
               <label htmlFor="email" className="block text-xs font-bold text-pitstop-charcoal mb-1">
-                Business Email <span className="text-pitstop-muted font-normal">(Optional)</span>
+                {isHindi ? 'व्यावसायिक ईमेल' : 'Business Email'} <span className="text-pitstop-muted font-normal">({isHindi ? 'वैकल्पिक' : 'Optional'})</span>
               </label>
               <Input
                 id="email"
@@ -447,14 +459,14 @@ function MerchantRegisterFormContent() {
 
             <div>
               <label htmlFor="password" className="block text-xs font-bold text-pitstop-charcoal mb-1">
-                Account Password <span className="text-red-500">*</span>
+                {isHindi ? 'खाता पासवर्ड' : 'Account Password'} <span className="text-red-500">*</span>
               </label>
               <div className="relative">
                 <input
                   id="password"
                   name="password"
                   type={showPassword ? 'text' : 'password'}
-                  placeholder="Minimum 6 characters"
+                  placeholder={isHindi ? 'न्यूनतम 6 अक्षर' : 'Minimum 6 characters'}
                   value={formData.password}
                   onChange={handleChange}
                   required
@@ -478,27 +490,29 @@ function MerchantRegisterFormContent() {
           <div className="space-y-3 animate-fadeIn">
             <div>
               <label htmlFor="businessName" className="block text-xs font-bold text-pitstop-charcoal mb-1">
-                Shop / Venue Name <span className="text-red-500">*</span>
+                {isHindi ? 'दुकान / प्रतिष्ठान का नाम' : 'Shop / Venue Name'} <span className="text-red-500">*</span>
               </label>
               <Input
                 id="businessName"
                 name="businessName"
                 type="text"
-                placeholder="e.g. Chai Sutta Bar & Rest Hub"
+                placeholder={isHindi ? 'उदा. चाय सुट्टा बार और रेस्ट हब' : 'e.g. Chai Sutta Bar & Rest Hub'}
                 value={formData.businessName}
                 onChange={handleChange}
                 required
                 autoFocus
               />
               <p className="mt-1 text-[11px] text-pitstop-muted">
-                This name will be displayed to riders as your verified PitStop location.
+                {isHindi
+                  ? 'यह नाम राइडर्स को आपके सत्यापित पिटस्टॉप स्थान के रूप में दिखाया जाएगा।'
+                  : 'This name will be displayed to riders as your verified PitStop location.'}
               </p>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label htmlFor="businessType" className="block text-xs font-bold text-pitstop-charcoal mb-1">
-                  Business Category <span className="text-red-500">*</span>
+                  {isHindi ? 'व्यापार श्रेणी' : 'Business Category'} <span className="text-red-500">*</span>
                 </label>
                 <Select
                   id="businessType"
@@ -506,12 +520,12 @@ function MerchantRegisterFormContent() {
                   value={formData.businessType}
                   onChange={handleChange}
                   options={[
-                    { value: 'restaurant', label: 'Restaurant / Cafe' },
-                    { value: 'tea_stall', label: 'Tea Stall / Snack Bar' },
-                    { value: 'garage', label: 'Garage / Service Workshop' },
-                    { value: 'supermarket', label: 'Supermarket / Kirana' },
-                    { value: 'service_center', label: 'EV Charging / Service Station' },
-                    { value: 'other', label: 'Other Commercial Venue' },
+                    { value: 'restaurant', label: isHindi ? 'रेस्टोरेंट / कैफे' : 'Restaurant / Cafe' },
+                    { value: 'tea_stall', label: isHindi ? 'चाय स्टॉल / स्नैक बार' : 'Tea Stall / Snack Bar' },
+                    { value: 'hotel', label: isHindi ? 'होटल' : 'Hotel' },
+                    { value: 'supermarket', label: isHindi ? 'सुपरमार्केट / किराना' : 'Supermarket / Kirana' },
+                    { value: 'service_center', label: isHindi ? 'ईवी चार्जिंग / सर्विस स्टेशन' : 'EV Charging / Service Station' },
+                    { value: 'other', label: isHindi ? 'अन्य व्यावसायिक स्थल' : 'Other Commercial Venue' },
                   ]}
                   required
                 />
@@ -519,7 +533,7 @@ function MerchantRegisterFormContent() {
 
               <div>
                 <label htmlFor="gstNumber" className="block text-xs font-bold text-pitstop-charcoal mb-1">
-                  GSTIN <span className="text-pitstop-muted font-normal">(Optional)</span>
+                  GSTIN <span className="text-pitstop-muted font-normal">({isHindi ? 'वैकल्पिक' : 'Optional'})</span>
                 </label>
                 <Input
                   id="gstNumber"
@@ -535,13 +549,17 @@ function MerchantRegisterFormContent() {
 
             <div>
               <label htmlFor="description" className="block text-xs font-bold text-pitstop-charcoal mb-1">
-                Welcome Note / Description for Delivery Riders
+                {isHindi ? 'डिलीवरी राइडर्स के लिए स्वागत संदेश / विवरण' : 'Welcome Note / Description for Delivery Riders'}
               </label>
               <textarea
                 id="description"
                 name="description"
                 rows={3}
-                placeholder="e.g. Clean seating, filtered drinking water, and high-speed phone charging available for all delivery partners."
+                placeholder={
+                  isHindi
+                    ? 'उदा. सभी डिलीवरी पार्टनर्स के लिए साफ बैठने की व्यवस्था, पीने का पानी और फोन चार्जिंग की सुविधा।'
+                    : 'e.g. Clean seating, filtered drinking water, and high-speed phone charging available for all delivery partners.'
+                }
                 value={formData.description}
                 onChange={handleChange}
                 className="block w-full rounded-xl border border-pitstop-border bg-white px-3.5 py-2 text-sm text-pitstop-charcoal placeholder:text-pitstop-muted/60 transition-colors focus:border-pitstop-yellow focus:outline-none focus:ring-2 focus:ring-pitstop-yellow"
@@ -555,13 +573,13 @@ function MerchantRegisterFormContent() {
           <div className="space-y-3 animate-fadeIn">
             <div>
               <label htmlFor="street" className="block text-xs font-bold text-pitstop-charcoal mb-1">
-                Shop No. / Street Address <span className="text-red-500">*</span>
+                {isHindi ? 'दुकान संख्या / सड़क का पता' : 'Shop No. / Street Address'} <span className="text-red-500">*</span>
               </label>
               <Input
                 id="street"
                 name="street"
                 type="text"
-                placeholder="Shop 14, Ground Floor, Main Market"
+                placeholder={isHindi ? 'दुकान 14, भूतल, मुख्य बाजार' : 'Shop 14, Ground Floor, Main Market'}
                 value={formData.street}
                 onChange={handleChange}
                 required
@@ -572,13 +590,13 @@ function MerchantRegisterFormContent() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label htmlFor="area" className="block text-xs font-bold text-pitstop-charcoal mb-1">
-                  Area / Locality <span className="text-red-500">*</span>
+                  {isHindi ? 'क्षेत्र / इलाका' : 'Area / Locality'} <span className="text-red-500">*</span>
                 </label>
                 <Input
                   id="area"
                   name="area"
                   type="text"
-                  placeholder="e.g. Malviya Nagar"
+                  placeholder={isHindi ? 'उदा. मालवीय नगर' : 'e.g. Malviya Nagar'}
                   value={formData.area}
                   onChange={handleChange}
                   required
@@ -587,12 +605,13 @@ function MerchantRegisterFormContent() {
 
               <div>
                 <label htmlFor="pincode" className="block text-xs font-bold text-pitstop-charcoal mb-1">
-                  Pincode <span className="text-red-500">*</span>
+                  {isHindi ? 'पिनकोड' : 'Pincode'} <span className="text-red-500">*</span>
                 </label>
                 <Input
                   id="pincode"
                   name="pincode"
-                  type="text"
+                  type="tel"
+                  inputMode="numeric"
                   placeholder="302017"
                   value={formData.pincode}
                   onChange={handleChange}
@@ -605,13 +624,13 @@ function MerchantRegisterFormContent() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label htmlFor="city" className="block text-xs font-bold text-pitstop-charcoal mb-1">
-                  City <span className="text-red-500">*</span>
+                  {isHindi ? 'शहर' : 'City'} <span className="text-red-500">*</span>
                 </label>
                 <Input
                   id="city"
                   name="city"
                   type="text"
-                  placeholder="Jaipur"
+                  placeholder={isHindi ? 'जयपुर' : 'Jaipur'}
                   value={formData.city}
                   onChange={handleChange}
                   required
@@ -620,13 +639,13 @@ function MerchantRegisterFormContent() {
 
               <div>
                 <label htmlFor="state" className="block text-xs font-bold text-pitstop-charcoal mb-1">
-                  State <span className="text-red-500">*</span>
+                  {isHindi ? 'राज्य' : 'State'} <span className="text-red-500">*</span>
                 </label>
                 <Input
                   id="state"
                   name="state"
                   type="text"
-                  placeholder="Rajasthan"
+                  placeholder={isHindi ? 'राजस्थान' : 'Rajasthan'}
                   value={formData.state}
                   onChange={handleChange}
                   required
@@ -636,13 +655,13 @@ function MerchantRegisterFormContent() {
 
             <div>
               <label htmlFor="landmark" className="block text-xs font-bold text-pitstop-charcoal mb-1">
-                Landmark <span className="text-pitstop-muted font-normal">(Optional)</span>
+                {isHindi ? 'लैंडमार्क / पहचान चिह्न' : 'Landmark'} <span className="text-pitstop-muted font-normal">({isHindi ? 'वैकल्पिक' : 'Optional'})</span>
               </label>
               <Input
                 id="landmark"
                 name="landmark"
                 type="text"
-                placeholder="e.g. Opposite Metro Pillar 42"
+                placeholder={isHindi ? 'उदा. मेट्रो पिलर 42 के सामने' : 'e.g. Opposite Metro Pillar 42'}
                 value={formData.landmark}
                 onChange={handleChange}
               />
@@ -654,10 +673,10 @@ function MerchantRegisterFormContent() {
                 <div>
                   <div className="flex items-center gap-1.5 text-xs font-bold text-pitstop-charcoal">
                     <Navigation className="h-3.5 w-3.5 text-pitstop-yellow-dark" />
-                    <span>GPS Coordinates</span>
+                    <span>{isHindi ? 'जीपीएस निर्देशांक' : 'GPS Coordinates'}</span>
                     {locationDetected && (
                       <Badge variant="success" size="sm" className="gap-1">
-                        <CheckCircle2 className="h-3 w-3" /> Detected
+                        <CheckCircle2 className="h-3 w-3" /> {isHindi ? 'पहचान लिया गया' : 'Detected'}
                       </Badge>
                     )}
                   </div>
@@ -675,12 +694,12 @@ function MerchantRegisterFormContent() {
                   {isDetectingLocation ? (
                     <>
                       <span className="h-3 w-3 animate-spin rounded-full border-2 border-pitstop-charcoal border-t-transparent" />
-                      <span>Detecting...</span>
+                      <span>{isHindi ? 'पहचान हो रही है...' : 'Detecting...'}</span>
                     </>
                   ) : (
                     <>
                       <MapPin className="h-3.5 w-3.5 text-pitstop-yellow-dark" />
-                      <span>Auto-Detect GPS</span>
+                      <span>{isHindi ? 'स्थान का पता लगाएं' : 'Auto-Detect GPS'}</span>
                     </>
                   )}
                 </button>
@@ -695,10 +714,12 @@ function MerchantRegisterFormContent() {
             {/* Facilities Selection */}
             <div>
               <label className="block text-xs font-bold text-pitstop-charcoal mb-1">
-                Amenities Provided for Delivery Riders <span className="text-red-500">*</span>
+                {isHindi ? 'डिलीवरी राइडर्स के लिए सुविधाएं' : 'Amenities Provided for Delivery Riders'} <span className="text-red-500">*</span>
               </label>
               <p className="text-[11px] text-pitstop-muted mb-2.5">
-                Select amenities available for gig riders at your shop venue.
+                {isHindi
+                  ? 'अपनी दुकान पर उपलब्ध सुविधाओं का चयन करें।'
+                  : 'Select amenities available for gig riders at your shop venue.'}
               </p>
 
               <div className="grid grid-cols-2 gap-2">
@@ -729,7 +750,7 @@ function MerchantRegisterFormContent() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
               <div>
                 <label htmlFor="maxRiders" className="block text-xs font-bold text-pitstop-charcoal mb-1">
-                  Seating Capacity <span className="text-red-500">*</span>
+                  {isHindi ? 'बैठने की क्षमता' : 'Seating Capacity'} <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
                   <Input
@@ -744,12 +765,14 @@ function MerchantRegisterFormContent() {
                   />
                   <Users className="h-4 w-4 text-pitstop-muted absolute right-3 top-3 pointer-events-none" />
                 </div>
-                <p className="mt-0.5 text-[10px] text-pitstop-muted">Max riders at once</p>
+                <p className="mt-0.5 text-[10px] text-pitstop-muted">
+                  {isHindi ? 'एक समय में अधिकतम राइडर्स' : 'Max riders at once'}
+                </p>
               </div>
 
               <div>
                 <label htmlFor="openTime" className="block text-xs font-bold text-pitstop-charcoal mb-1">
-                  Opening Time
+                  {isHindi ? 'खुलने का समय' : 'Opening Time'}
                 </label>
                 <Input
                   id="openTime"
@@ -763,7 +786,7 @@ function MerchantRegisterFormContent() {
 
               <div>
                 <label htmlFor="closeTime" className="block text-xs font-bold text-pitstop-charcoal mb-1">
-                  Closing Time
+                  {isHindi ? 'बंद होने का समय' : 'Closing Time'}
                 </label>
                 <Input
                   id="closeTime"
@@ -781,10 +804,12 @@ function MerchantRegisterFormContent() {
               <Sparkles className="h-4 w-4 text-pitstop-yellow-dark shrink-0 mt-0.5" />
               <div className="space-y-0.5 text-[11px]">
                 <p className="font-bold text-pitstop-charcoal">
-                  Ready to launch: {formData.businessName || 'Your Shop'}
+                  {isHindi ? 'शुरू करने के लिए तैयार:' : 'Ready to launch:'} {formData.businessName || (isHindi ? 'आपकी दुकान' : 'Your Shop')}
                 </p>
                 <p className="text-pitstop-muted">
-                  Your merchant login and shop rest stop will be created simultaneously. You can immediately access your desk QR code poster on the dashboard!
+                  {isHindi
+                    ? 'आपका मर्चेंट खाता और रेस्ट स्टॉप तुरंत सक्रिय हो जाएगा। डैशबोर्ड से आप अपना क्यूआर कोड पोस्टर भी डाउनलोड कर सकेंगे!'
+                    : 'Your merchant login and shop rest stop will be created simultaneously. You can immediately access your desk QR code poster on the dashboard!'}
                 </p>
               </div>
             </div>
@@ -801,7 +826,7 @@ function MerchantRegisterFormContent() {
               className="flex-1 min-h-[46px] rounded-full border border-pitstop-border bg-white hover:bg-pitstop-bg text-pitstop-charcoal font-bold text-xs tracking-wide transition-colors flex items-center justify-center gap-1.5 disabled:opacity-50"
             >
               <ArrowLeft className="h-3.5 w-3.5" />
-              <span>Back</span>
+              <span>{isHindi ? 'पीछे' : 'Back'}</span>
             </button>
           )}
 
@@ -815,11 +840,11 @@ function MerchantRegisterFormContent() {
               {isCheckingPhone ? (
                 <span className="flex items-center gap-2">
                   <span className="h-4 w-4 animate-spin rounded-full border-2 border-pitstop-charcoal border-t-transparent" />
-                  <span>Checking Phone...</span>
+                  <span>{isHindi ? 'फोन की जांच हो रही है...' : 'Checking Phone...'}</span>
                 </span>
               ) : (
                 <>
-                  <span>Continue</span>
+                  <span>{isHindi ? 'आगे बढ़ें' : 'Continue'}</span>
                   <ArrowRight className="h-4 w-4" aria-hidden="true" />
                 </>
               )}
@@ -833,12 +858,12 @@ function MerchantRegisterFormContent() {
               {isSubmitting ? (
                 <span className="flex items-center gap-2">
                   <span className="h-4 w-4 animate-spin rounded-full border-2 border-pitstop-charcoal border-t-transparent" />
-                  <span>Launching Account &amp; Shop...</span>
+                  <span>{isHindi ? 'खाता और दुकान शुरू हो रही है...' : 'Launching Account & Shop...'}</span>
                 </span>
               ) : (
                 <span className="flex items-center justify-center gap-1.5">
                   <CheckCircle2 className="h-4 w-4" />
-                  <span>Complete &amp; Launch Shop</span>
+                  <span>{isHindi ? 'पूरा करें और दुकान शुरू करें' : 'Complete & Launch Shop'}</span>
                 </span>
               )}
             </button>

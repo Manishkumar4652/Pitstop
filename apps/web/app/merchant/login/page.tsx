@@ -16,11 +16,14 @@ import { LogoutButton } from '@/components/auth/LogoutButton';
 import { useAuth } from '@/lib/auth/AuthContext';
 import { UserRole } from 'shared-types';
 import { sanitizeReturnUrl } from '@/lib/auth/return-url';
+import { useLanguage } from '@/lib/i18n';
+import { allowOnlyDigitsKeyDown, sanitizePhoneNumber } from '@/lib/utils/input-validators';
 
 function MerchantLoginFormContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { login, user, isAuthenticated } = useAuth();
+  const { isHindi } = useLanguage();
 
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
@@ -42,13 +45,7 @@ function MerchantLoginFormContent() {
   }, [isAuthenticated, user, returnUrl]);
 
   const handlePhoneChange = (val: string) => {
-    let cleaned = val.replace(/\D/g, '');
-    if (cleaned.startsWith('91') && cleaned.length > 10) {
-      cleaned = cleaned.slice(2);
-    } else if (cleaned.startsWith('0') && cleaned.length > 10) {
-      cleaned = cleaned.slice(1);
-    }
-    setPhone(cleaned.slice(0, 10));
+    setPhone(sanitizePhoneNumber(val));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -57,12 +54,16 @@ function MerchantLoginFormContent() {
 
     const cleanPhone = phone.trim();
     if (!/^[6-9]\d{9}$/.test(cleanPhone)) {
-      setError('Please enter a valid 10-digit Indian mobile number (e.g. 9876543211).');
+      setError(
+        isHindi
+          ? 'कृपया एक वैध 10-अंकों का भारतीय मोबाइल नंबर दर्ज करें (उदा. 9876543211)।'
+          : 'Please enter a valid 10-digit Indian mobile number (e.g. 9876543211).'
+      );
       return;
     }
 
     if (!password) {
-      setError('Please enter your password.');
+      setError(isHindi ? 'कृपया अपना पासवर्ड दर्ज करें।' : 'Please enter your password.');
       return;
     }
 
@@ -77,7 +78,9 @@ function MerchantLoginFormContent() {
       );
 
       if (!result.success) {
-        setError(result.error || 'Invalid credentials. Please try again.');
+        setError(
+          result.error || (isHindi ? 'अमान्य क्रेडेंशियल्स। कृपया पुनः प्रयास करें।' : 'Invalid credentials. Please try again.')
+        );
         setIsSubmitting(false);
         return;
       }
@@ -86,7 +89,9 @@ function MerchantLoginFormContent() {
       const target = returnUrl && returnUrl !== '/merchant/login' ? returnUrl : '/merchant';
       window.location.href = target;
     } catch {
-      setError('An unexpected error occurred. Please try again.');
+      setError(
+        isHindi ? 'एक अप्रत्याशित त्रुटि हुई। कृपया पुनः प्रयास करें।' : 'An unexpected error occurred. Please try again.'
+      );
       setIsSubmitting(false);
     }
   };
@@ -100,27 +105,31 @@ function MerchantLoginFormContent() {
       role="merchant"
       loginUrl={loginUrl}
       registerUrl={registerUrl}
-      title="Merchant Partner Login"
-      subtitle="Log in with your registered phone number to manage rest stops, deals, and helper tasks."
+      title={isHindi ? 'मर्चेंट पार्टनर लॉगिन' : 'Merchant Partner Login'}
+      subtitle={
+        isHindi
+          ? 'रेस्ट स्टॉप्स, डील्स और हेल्पर टास्क प्रबंधित करने के लिए अपने पंजीकृत फोन नंबर से लॉग इन करें।'
+          : 'Log in with your registered phone number to manage rest stops, deals, and helper tasks.'
+      }
       error={error}
       footerContent={
         <div className="space-y-3">
           <p className="text-xs text-pitstop-muted">
-            New merchant partner?{' '}
+            {isHindi ? 'नए मर्चेंट पार्टनर? ' : 'New merchant partner? '}
             <Link
               href={registerUrl}
               className="font-bold text-pitstop-charcoal hover:underline hover:text-pitstop-yellow-dark"
             >
-              Register your business
+              {isHindi ? 'अपना व्यवसाय पंजीकृत करें' : 'Register your business'}
             </Link>
           </p>
           <p className="text-xs text-pitstop-muted flex items-center justify-center gap-1">
-            Looking for the rider portal?{' '}
+            {isHindi ? 'क्या आप राइडर हैं? ' : 'Looking for the rider portal? '}
             <Link
               href="/rider/login"
               className="font-semibold text-pitstop-charcoal hover:underline inline-flex items-center gap-1"
             >
-              <Bike className="h-3 w-3" /> Sign in as a Rider
+              <Bike className="h-3 w-3" /> {isHindi ? 'राइडर के रूप में लॉगिन करें' : 'Sign in as a Rider'}
             </Link>
           </p>
         </div>
@@ -135,15 +144,17 @@ function MerchantLoginFormContent() {
         >
           <div className="flex items-center gap-2 font-semibold">
             <AlertCircle className="h-4 w-4 text-amber-700 shrink-0" aria-hidden="true" />
-            <span>Currently Signed In as a Rider</span>
+            <span>{isHindi ? 'वर्तमान में राइडर के रूप में लॉग इन हैं' : 'Currently Signed In as a Rider'}</span>
           </div>
           <p>
-            You are signed in as <strong>{user.name}</strong> ({user.phone}). Merchant portal access requires a registered merchant partner account.
+            {isHindi
+              ? `आप ${user.name} (${user.phone}) के रूप में लॉग इन हैं। मर्चेंट पोर्टल के लिए पंजीकृत मर्चेंट पार्टनर खाता आवश्यक है।`
+              : `You are signed in as ${user.name} (${user.phone}). Merchant portal access requires a registered merchant partner account.`}
           </p>
           <div className="pt-2 flex flex-wrap gap-2">
             <Link href="/rider/dashboard">
               <Button variant="outline" size="sm" leftIcon={<Bike className="h-3.5 w-3.5" />}>
-                Go to Rider Dashboard
+                {isHindi ? 'राइडर डैशबोर्ड पर जाएं' : 'Go to Rider Dashboard'}
               </Button>
             </Link>
             <LogoutButton variant="ghost" size="sm" />
@@ -155,7 +166,7 @@ function MerchantLoginFormContent() {
         {/* Phone Input with clean prefix addon */}
         <div>
           <label htmlFor="merchant-phone" className="block text-xs font-bold text-pitstop-charcoal uppercase tracking-wider mb-1.5">
-            Registered Mobile Number <span className="text-red-500">*</span>
+            {isHindi ? 'पंजीकृत मोबाइल नंबर' : 'Registered Mobile Number'} <span className="text-red-500">*</span>
           </label>
           <div className="flex rounded-xl shadow-xs">
             <span className="inline-flex items-center px-3.5 rounded-l-xl border border-r-0 border-pitstop-border bg-pitstop-bg text-xs font-semibold text-pitstop-muted select-none">
@@ -163,21 +174,23 @@ function MerchantLoginFormContent() {
             </span>
             <input
               id="merchant-phone"
-              name="phone"
               type="tel"
               inputMode="numeric"
               maxLength={10}
-              placeholder="9876543211"
+              autoComplete="tel-national"
+              required
               value={phone}
               onChange={(e) => handlePhoneChange(e.target.value)}
-              required
-              autoComplete="tel"
+              onKeyDown={allowOnlyDigitsKeyDown}
+              placeholder="9876543211"
               disabled={isSubmitting}
-              className="block w-full min-h-[44px] rounded-r-xl border border-pitstop-border bg-white px-3.5 py-2 text-sm text-pitstop-charcoal placeholder:text-pitstop-muted/60 transition-colors focus:border-pitstop-yellow focus:outline-none focus:ring-2 focus:ring-pitstop-yellow disabled:bg-pitstop-bg disabled:opacity-50"
+              className="block w-full min-h-[44px] rounded-r-xl border border-pitstop-border bg-white px-3.5 py-2.5 text-sm text-pitstop-charcoal placeholder:text-pitstop-muted/60 focus:border-pitstop-yellow focus:outline-none focus:ring-2 focus:ring-pitstop-yellow disabled:bg-pitstop-bg"
             />
           </div>
           <p className="mt-1 text-[11px] text-pitstop-muted">
-            10-digit Indian phone number used during merchant registration
+            {isHindi
+              ? 'आपके मर्चेंट प्रतिष्ठान के साथ पंजीकृत 10-अंकों का फ़ोन नंबर।'
+              : '10-digit primary contact number registered with your venue.'}
           </p>
         </div>
 
@@ -185,26 +198,31 @@ function MerchantLoginFormContent() {
         <div>
           <div className="flex items-center justify-between mb-1.5">
             <label htmlFor="merchant-password" className="block text-xs font-bold text-pitstop-charcoal uppercase tracking-wider">
-              Password <span className="text-red-500">*</span>
+              {isHindi ? 'पासवर्ड' : 'Password'} <span className="text-red-500">*</span>
             </label>
+            <Link
+              href="/forgot-password"
+              className="text-xs text-pitstop-muted hover:text-pitstop-charcoal hover:underline"
+            >
+              {isHindi ? 'भूल गए?' : 'Forgot?'}
+            </Link>
           </div>
-          <div className="relative">
+          <div className="relative rounded-xl shadow-xs">
             <input
               id="merchant-password"
-              name="password"
               type={showPassword ? 'text' : 'password'}
-              placeholder="Enter your password"
+              autoComplete="current-password"
+              required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              required
+              placeholder="••••••••"
               disabled={isSubmitting}
-              autoComplete="current-password"
-              className="block w-full min-h-[44px] rounded-xl border border-pitstop-border bg-white pl-3.5 pr-10 py-2.5 text-sm text-pitstop-charcoal placeholder:text-pitstop-muted/60 focus:border-pitstop-yellow focus:outline-none focus:ring-2 focus:ring-pitstop-yellow disabled:bg-pitstop-bg"
+              className="block w-full min-h-[44px] rounded-xl border border-pitstop-border bg-white px-3.5 pr-10 py-2.5 text-sm text-pitstop-charcoal placeholder:text-pitstop-muted/60 focus:border-pitstop-yellow focus:outline-none focus:ring-2 focus:ring-pitstop-yellow disabled:bg-pitstop-bg"
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-pitstop-muted hover:text-pitstop-charcoal focus:outline-none"
+              className="absolute inset-y-0 right-0 flex items-center pr-3.5 text-pitstop-muted hover:text-pitstop-charcoal"
               aria-label={showPassword ? 'Hide password' : 'Show password'}
             >
               {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -215,8 +233,10 @@ function MerchantLoginFormContent() {
         {/* Quick Demo Credentials Autofill Helper */}
         <div className="rounded-2xl border border-amber-200/80 bg-amber-50/70 p-3 text-xs text-amber-900 flex items-center justify-between gap-2 shadow-2xs">
           <div className="text-[11px] leading-tight">
-            <span className="font-bold text-pitstop-charcoal">Demo Merchant:</span>{' '}
-            <span className="font-mono">9876543211</span> / <span className="font-mono">Password@123</span>
+            <span className="font-bold text-pitstop-charcoal">
+              {isHindi ? 'डेमो मर्चेंट:' : 'Demo Merchant:'}
+            </span>{' '}
+            <span className="font-mono font-semibold">9876543211</span> / <span className="font-mono font-semibold">Password@123</span>
           </div>
           <button
             type="button"
@@ -225,30 +245,27 @@ function MerchantLoginFormContent() {
               setPassword('Password@123');
               setError(null);
             }}
-            className="shrink-0 text-[10px] font-black uppercase tracking-wider text-amber-950 bg-pitstop-yellow hover:bg-pitstop-yellow-dark px-2.5 py-1 rounded-full shadow-2xs transition-transform active:scale-95"
+            className="shrink-0 text-[10px] font-black uppercase tracking-wider text-amber-950 bg-pitstop-yellow hover:bg-amber-400 px-3 py-1.5 rounded-full shadow-2xs transition-transform active:scale-95 cursor-pointer"
           >
-            Auto Fill
+            {isHindi ? 'ऑटो भरें' : 'Auto Fill'}
           </button>
         </div>
 
-        {/* Submit Button (Pill button matching Loginpage.png) */}
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="w-full mt-4 min-h-[46px] rounded-full bg-pitstop-yellow hover:bg-pitstop-yellow-dark text-pitstop-charcoal font-black text-sm tracking-wide shadow-md shadow-pitstop-yellow/30 transition-all hover:scale-[1.01] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-2"
-        >
-          {isSubmitting ? (
-            <span className="flex items-center gap-2">
-              <span className="h-4 w-4 animate-spin rounded-full border-2 border-pitstop-charcoal border-t-transparent" />
-              <span>Verifying Credentials...</span>
-            </span>
-          ) : (
-            <span className="flex items-center justify-center gap-1.5">
-              <span>Sign In as Merchant</span>
-              <ArrowRight className="h-4 w-4" aria-hidden="true" />
-            </span>
-          )}
-        </button>
+        {/* Submit Button */}
+        <div className="pt-2">
+          <Button
+            type="submit"
+            variant="primary"
+            size="lg"
+            fullWidth
+            isLoading={isSubmitting}
+            rightIcon={!isSubmitting ? <ArrowRight className="h-4 w-4" /> : undefined}
+          >
+            {isSubmitting
+              ? (isHindi ? 'सत्यापन हो रहा है...' : 'Authenticating...')
+              : (isHindi ? 'मर्चेंट हब में लॉग इन करें' : 'Log In to Merchant Hub')}
+          </Button>
+        </div>
       </form>
     </AuthCardLayout>
   );
@@ -256,13 +273,11 @@ function MerchantLoginFormContent() {
 
 export default function MerchantLoginPage() {
   return (
-    <Suspense
-      fallback={
-        <div className="min-h-screen bg-[#F7B928] p-8 text-center text-xs text-white">
-          Loading merchant login...
-        </div>
-      }
-    >
+    <Suspense fallback={
+      <div className="min-h-screen bg-pitstop-bg flex items-center justify-center p-4">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-pitstop-yellow border-t-transparent" />
+      </div>
+    }>
       <MerchantLoginFormContent />
     </Suspense>
   );

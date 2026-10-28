@@ -5,9 +5,11 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowRight, Bike, Store, ShieldCheck } from 'lucide-react';
 import { HeroPhone } from './HeroPhone';
+import { useLanguage } from '@/lib/i18n';
 
 export const LandingHero: React.FC = () => {
   const [mounted, setMounted] = useState(false);
+  const { t, isHindi } = useLanguage();
 
   useEffect(() => {
     setMounted(true);
@@ -53,11 +55,20 @@ export const LandingHero: React.FC = () => {
                 transitionDuration: '500ms',
                 transitionTimingFunction: 'cubic-bezier(0.22, 1, 0.36, 1)',
               }}
-              className={`text-4xl sm:text-5xl lg:text-5xl xl:text-6xl font-black tracking-tight text-[#0B0B0F] leading-[1.1] transition-all ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+              className={`text-4xl sm:text-5xl lg:text-5xl xl:text-6xl font-black tracking-tight text-[#0B0B0F] leading-[1.15] transition-all ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
                 }`}
             >
-              Every Rider Deserves <br />
-              <span className="inline-block mt-1">a Place to Stop</span>
+              {isHindi ? (
+                <>
+                  हर डिलीवरी राइडर का हक है <br />
+                  <span className="inline-block mt-1 text-pitstop-charcoal">एक सुरक्षित विश्राम स्थल</span>
+                </>
+              ) : (
+                <>
+                  Every Rider Deserves <br />
+                  <span className="inline-block mt-1">a Place to Stop</span>
+                </>
+              )}
             </h1>
 
             {/* 3. Subtext (stagger index 2: 180ms) */}
@@ -67,9 +78,11 @@ export const LandingHero: React.FC = () => {
                 transitionDuration: '500ms',
                 transitionTimingFunction: 'cubic-bezier(0.22, 1, 0.36, 1)',
               }}
-              className={`mt-4 sm:mt-5 text-base sm:text-lg text-[#0B0B0F]/70 max-w-2xl mx-auto lg:mx-0 leading-relaxed font-normal transition-all ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-                }`}
+              className={`mt-4 sm:mt-5 text-base sm:text-lg text-[#0B0B0F]/70 max-w-2xl mx-auto lg:mx-0 leading-relaxed font-normal transition-all ${
+                mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+              }`}
             >
+              {t('hero.description')}
             </p>
             {/* 4. Two Role Buttons (stagger index 3: 270ms) */}
             <div
@@ -91,10 +104,10 @@ export const LandingHero: React.FC = () => {
                     </div>
                     <div>
                       <div className="text-[10px] font-black uppercase tracking-wider text-black/60">
-                        FOR RIDERS
+                        {isHindi ? 'राइडर्स के लिए' : 'FOR RIDERS'}
                       </div>
                       <div className="text-sm font-black text-black leading-tight">
-                        I am a Delivery Rider
+                        {isHindi ? 'मैं डिलीवरी राइडर हूँ' : 'I am a Delivery Rider'}
                       </div>
                     </div>
                   </div>
@@ -113,10 +126,10 @@ export const LandingHero: React.FC = () => {
                     </div>
                     <div>
                       <div className="text-[10px] font-black uppercase tracking-wider text-[#0B0B0F]/50">
-                        FOR HOSTS
+                        {isHindi ? 'पार्टनर्स के लिए' : 'FOR HOSTS'}
                       </div>
                       <div className="text-sm font-black text-[#0B0B0F] leading-tight">
-                        I am a Merchant Host
+                        {isHindi ? 'मैं मर्चेंट पार्टनर हूँ' : 'I am a Merchant Host'}
                       </div>
                     </div>
                   </div>
@@ -139,7 +152,11 @@ export const LandingHero: React.FC = () => {
                 }`}
             >
               <ShieldCheck className="h-4 w-4 text-emerald-600 shrink-0" />
-              <span>Over 1,200+ active riders across 40+ verified stops in Bengaluru • 100% Free for riders</span>
+              <span>
+                {isHindi
+                  ? 'बेंगलुरु में 1,200+ एक्टिव राइडर्स और 40+ वेरिफाइड स्टॉप्स • गिग वर्कर्स के लिए 100% मुफ्त'
+                  : 'Over 1,200+ active riders across 40+ verified stops in Bengaluru • 100% Free for riders'}
+              </span>
             </div>
 
             {/* Mobile (under 1024px): Phone sits below role buttons and stat line, centered */}

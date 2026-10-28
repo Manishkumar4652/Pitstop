@@ -12,10 +12,12 @@ import {
   ShieldCheck,
   ChevronRight,
   CameraOff,
+  KeyRound,
 } from 'lucide-react';
 import { Button, Badge } from '@/components/ui';
 import { verifyVenueCheckIn, CheckInApiError } from '@/lib/api/check-ins';
 import { CheckInRiderResponse } from 'shared-types';
+import { useLanguage } from '@/lib/i18n';
 
 export interface QrScannerModalProps {
   isOpen: boolean;
@@ -48,9 +50,12 @@ export function QrScannerModal({
   restStopName: initialRestStopName,
   onSuccess,
 }: QrScannerModalProps) {
+  const { isHindi } = useLanguage();
   const [status, setStatus] = useState<ScannerStatus>('idle');
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [verifiedCheckIn, setVerifiedCheckIn] = useState<CheckInRiderResponse | null>(null);
+  const [manualCode, setManualCode] = useState<string>('');
+  const [showManualInput, setShowManualInput] = useState<boolean>(false);
   const scannerRef = useRef<any>(null);
   const isProcessingRef = useRef<boolean>(false);
   const readerElementId = 'pitstop-qr-reader-viewport';
@@ -78,6 +83,8 @@ export function QrScannerModal({
     setStatus('idle');
     setErrorMessage('');
     setVerifiedCheckIn(null);
+    setManualCode('');
+    setShowManualInput(false);
     onClose();
   }, [onClose, stopCamera]);
 
@@ -106,7 +113,7 @@ export function QrScannerModal({
    * Safely parse decoded QR text into target restStopId and qrCredential.
    * Supports raw tokens, JSON payloads, and pitstop verification URLs.
    */
-  const parseScannedQrText = (decodedText: string): { targetRestStopId: string; qrCredential: string } | null => {
+  const parseScannedQrText = useCallback((decodedText: string): { targetRestStopId: string; qrCredential: string } | null => {
     const raw = decodedText.trim();
     if (!raw) return null;
 
@@ -146,7 +153,7 @@ export function QrScannerModal({
       targetRestStopId: initialRestStopId || '',
       qrCredential: raw,
     };
-  };
+  }, [initialRestStopId]);
 
   /**
    * Submits parsed QR credential to server-side verification API.
@@ -202,6 +209,20 @@ export function QrScannerModal({
   }, [initialRestStopId, onSuccess]);
 
   /**
+   * Handles manual 6-character desk verification code submission
+   */
+  const handleManualSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const code = manualCode.trim().toUpperCase();
+    if (!code) {
+      setErrorMessage('Please enter the 6-character desk verification code.');
+      return;
+    }
+    await stopCamera();
+    await submitVerification(initialRestStopId || '', code);
+  };
+
+  /**
    * Callback fired by html5-qrcode scanner when a barcode is detected.
    */
   const handleScanSuccess = useCallback(async (decodedText: string) => {
@@ -221,7 +242,7 @@ export function QrScannerModal({
     }
 
     await submitVerification(parsed.targetRestStopId, parsed.qrCredential);
-  }, [stopCamera, submitVerification]);
+  }, [stopCamera, parseScannedQrText, submitVerification]);
 
   /**
    * Asynchronously polls for the DOM mount container before starting scanner.
@@ -388,10 +409,16 @@ export function QrScannerModal({
             </div>
             <div>
               <h2 id="scanner-modal-title" className="text-base font-bold text-pitstop-charcoal">
-                Scan Venue QR Code
+                {isHindi ? 'वेन्यू QR कोड स्कैन करें' : 'Scan Venue QR Code'}
               </h2>
               <p className="text-xs text-pitstop-muted line-clamp-1">
-                {initialRestStopName ? `Check in at ${initialRestStopName}` : 'Verify physical arrival at rest stop'}
+                {initialRestStopName
+                  ? isHindi
+                    ? `${initialRestStopName} पर चेक-इन करें`
+                    : `Check in at ${initialRestStopName}`
+                  : isHindi
+                  ? 'रेस्ट स्टॉप पर आगमन सत्यापित करें'
+                  : 'Verify physical arrival at rest stop'}
               </p>
             </div>
           </div>
@@ -525,6 +552,27 @@ export function QrScannerModal({
                 <p>3. Tap &quot;Retry Camera&quot; below.</p>
               </div>
 
+              {/* Manual Desk Code Fallback Form */}
+              <form onSubmit={handleManualSubmit} className="mt-4 pt-3 border-t border-pitstop-border/60 text-left max-w-sm mx-auto">
+                <label htmlFor="manual-desk-code-denied" className="block text-xs font-semibold text-pitstop-charcoal mb-1">
+                  Or enter Counter Desk Code:
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    id="manual-desk-code-denied"
+                    type="text"
+                    maxLength={10}
+                    value={manualCode}
+                    onChange={(e) => setManualCode(e.target.value.toUpperCase())}
+                    placeholder="e.g. 4B2A89"
+                    className="flex-1 rounded-xl border border-pitstop-border px-3 py-2 text-sm font-mono tracking-wider uppercase text-pitstop-charcoal focus:outline-none focus:ring-2 focus:ring-pitstop-yellow"
+                  />
+                  <Button type="submit" variant="primary" size="md">
+                    Verify Code
+                  </Button>
+                </div>
+              </form>
+
               <div className="pt-2 flex gap-2 max-w-sm mx-auto">
                 <Button variant="outline" fullWidth onClick={handleModalClose}>
                   Cancel
@@ -539,7 +587,7 @@ export function QrScannerModal({
           {/* STATE: CAMERA UNAVAILABLE OR UNSUPPORTED */}
           {(status === 'camera_unavailable' || status === 'unsupported') && (
             <div className="text-center py-6 space-y-4" role="alert">
-              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-red-100 text-red-600">
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-amber-100 text-amber-700">
                 <CameraOff className="h-8 w-8" aria-hidden="true" />
               </div>
               <div>
@@ -547,9 +595,30 @@ export function QrScannerModal({
                   {status === 'unsupported' ? 'Camera API Not Supported' : 'Camera Unavailable'}
                 </h3>
                 <p className="text-xs text-pitstop-muted mt-1.5 max-w-sm mx-auto leading-relaxed">
-                  No compatible camera was detected on this device. A camera is required to scan the venue QR code.
+                  No active camera detected. You can enter the 6-character Counter Desk Code displayed at the venue counter.
                 </p>
               </div>
+
+              {/* Manual Desk Code Fallback Form */}
+              <form onSubmit={handleManualSubmit} className="mt-4 pt-3 border-t border-pitstop-border/60 text-left max-w-sm mx-auto">
+                <label htmlFor="manual-desk-code-unavail" className="block text-xs font-semibold text-pitstop-charcoal mb-1">
+                  Enter Counter Desk Code:
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    id="manual-desk-code-unavail"
+                    type="text"
+                    maxLength={10}
+                    value={manualCode}
+                    onChange={(e) => setManualCode(e.target.value.toUpperCase())}
+                    placeholder="e.g. 4B2A89"
+                    className="flex-1 rounded-xl border border-pitstop-border px-3 py-2 text-sm font-mono tracking-wider uppercase text-pitstop-charcoal focus:outline-none focus:ring-2 focus:ring-pitstop-yellow"
+                  />
+                  <Button type="submit" variant="primary" size="md">
+                    Verify Code
+                  </Button>
+                </div>
+              </form>
 
               <div className="pt-2 flex justify-center max-w-xs mx-auto">
                 <Button variant="outline" fullWidth onClick={handleModalClose}>
@@ -619,14 +688,63 @@ export function QrScannerModal({
                 )}
               </div>
 
-              {/* Camera Scanner Controls */}
-              {status === 'scanning' && (
-                <div className="text-center">
-                  <Button variant="ghost" size="sm" onClick={stopCamera}>
-                    Pause Scanner
-                  </Button>
+              {/* Camera Scanner Controls & Manual Toggle */}
+              <div className="space-y-3">
+                {status === 'scanning' && (
+                  <div className="text-center">
+                    <Button variant="ghost" size="sm" onClick={stopCamera}>
+                      Pause Scanner
+                    </Button>
+                  </div>
+                )}
+
+                {/* Manual Code Option */}
+                <div className="pt-2 border-t border-pitstop-border text-center">
+                  {!showManualInput ? (
+                    <button
+                      type="button"
+                      onClick={() => setShowManualInput(true)}
+                      className="text-xs text-pitstop-muted hover:text-pitstop-charcoal font-medium inline-flex items-center gap-1.5 transition-colors py-1"
+                    >
+                      <KeyRound className="h-3.5 w-3.5" />
+                      <span>Can&apos;t scan? Enter counter desk code</span>
+                    </button>
+                  ) : (
+                    <form onSubmit={handleManualSubmit} className="space-y-2 text-left bg-pitstop-bg/60 p-3.5 rounded-xl border border-pitstop-border">
+                      <div className="flex items-center justify-between">
+                        <label htmlFor="manual-desk-code-input" className="text-xs font-semibold text-pitstop-charcoal flex items-center gap-1.5">
+                          <KeyRound className="h-3.5 w-3.5 text-pitstop-charcoal" />
+                          Enter Counter Desk Code
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() => setShowManualInput(false)}
+                          className="text-[11px] text-pitstop-muted hover:text-pitstop-charcoal"
+                        >
+                          Hide
+                        </button>
+                      </div>
+                      <div className="flex gap-2">
+                        <input
+                          id="manual-desk-code-input"
+                          type="text"
+                          maxLength={10}
+                          value={manualCode}
+                          onChange={(e) => setManualCode(e.target.value.toUpperCase())}
+                          placeholder="e.g. 4B2A89"
+                          className="flex-1 rounded-xl border border-pitstop-border bg-white px-3 py-2 text-sm font-mono tracking-wider uppercase text-pitstop-charcoal focus:outline-none focus:ring-2 focus:ring-pitstop-yellow"
+                        />
+                        <Button type="submit" variant="primary" size="md">
+                          Verify
+                        </Button>
+                      </div>
+                      <p className="text-[11px] text-pitstop-muted">
+                        Ask counter staff for the 6-character code printed on the desk stand.
+                      </p>
+                    </form>
+                  )}
                 </div>
-              )}
+              </div>
             </div>
           )}
 

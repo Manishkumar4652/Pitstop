@@ -35,6 +35,7 @@
 | **Phase 8** | **End-to-End Integration Audit & Release Readiness** | **COMPLETED** | 2026-10-12 |
 | **Phase 9** | **Admin Dashboard & Moderation** | **COMPLETED** | 2026-10-12 |
 | **Phase 10**| **Production Readiness & Deployment Audit** | **COMPLETED** | 2026-10-12 |
+| **Milestone**| **Bilingual Localization (Hindi/EN) & Form Validation Hardening** | **COMPLETED** | 2026-10-28 |
 
 
 ---
@@ -2034,3 +2035,71 @@ Transformed the entire PitStop SaaS platform into a 100% mobile-first, thumb-con
    - Verified direct ping to MongoDB Atlas: `{ ok: 1 }`.
    - Verified collection enumeration: `['checkins', 'users', 'deals', 'reststops', 'pitstop', 'auditlogs', 'jobs', 'jobapplications']`.
    - Verified API health endpoint `http://localhost:5000/api/v1/health`: `200 OK`, `{"status": "ok", "database": "connected"}`.
+
+---
+
+## Full-Flow Production Audit, Bilingual Localization & Demo Accounts Milestone
+
+### Verification Date: 2026-10-27
+### Status: COMPLETED (Verified with 328/328 passing API tests, 112/112 passing Web tests, 0 TypeScript errors)
+
+### Objectives & Deliverables
+1. **Rider Station Dashboard Live Implementation**:
+   - Rebuilt the live Rider Station Dashboard with personalized rider greeting, Zomato active badge, quick amenity shortcut filters (RO Water, Charging, Restroom, Seating, Wi-Fi, Parking), live nearby rest stops, and RiderCheckInSection.
+2. **Mobile Bottom Navigation Optimization**:
+   - Streamlined mobile bottom bar to 4 core actions (Dashboard, Rest Stops, Micro-Jobs, Profile), maintaining full access to Applications via desktop and dashboard stations.
+3. **Comprehensive Bilingual (Hindi & English) Architecture**:
+   - Created dynamic i18n infrastructure with `LanguageProvider` and persistent storage.
+   - Localized entire landing page, rider station, discovery flow, micro-jobs marketplace, and authentication portals.
+   - Exclusive placement of language switcher on navbar right-side (desktop top-right and mobile sliding drawer menu).
+4. **Demo Account Helper Restoration**:
+   - Restored the 1-click Demo Account credentials autofill helper cards on `/rider/login` (`Demo Rider: 9876543212 / Password@123`) and `/merchant/login` (`Demo Merchant: 9876543211 / Password@123`) with bilingual guidance.
+5. **Merchant Portal Full Hindi Localization**:
+   - Converted Merchant Dashboard to reactive client component `MerchantDashboardContent` supporting dynamic bilingual switching.
+   - Localized `MerchantNav.tsx`, `MerchantRestStopsContent.tsx`, `MerchantDealsContent.tsx`, `MerchantJobsContent.tsx`, `VenueQrModal.tsx`, and `MerchantAccessDenied.tsx`.
+
+### Verification Results
+- **Monorepo Typecheck**: Passed with 0 errors across all workspaces.
+- **Unit & Integration Tests**: 112/112 Web tests passed, 328/328 API tests passed.
+- **Production Lint**: Passed with 0 warnings/errors.
+
+
+
+---
+
+## Rider Profile & Portal Footer Bilingual Localization Fix
+
+### Verification Date: 2026-10-28
+### Status: COMPLETED (Verified with 0 TypeScript errors and clean Next.js production build)
+
+### Root Cause Analysis & Fixes
+1. **Rider Profile Section Bilingual Localization**:
+   - **Root Cause**: `apps/web/app/rider/profile/page.tsx` was a static server component rendering hardcoded English JSX. When riders switched language in the navbar, the profile page never re-rendered or responded to client context updates.
+   - **Fix**: Extracted UI into a reactive client component [`apps/web/components/rider/RiderProfileContent.tsx`](file:///c:/Users/Manish/Desktop/Pitstop1/apps/web/components/rider/RiderProfileContent.tsx), connected to `useLanguage()`.
+   - **Added Feature**: Added a dedicated, prominent **Language Preference (भाषा प्राथमिकता)** card directly inside the Rider Profile so delivery partners can easily switch between English and Hindi right from their account settings.
+   - **Subcomponents**: Upgraded [`apps/web/components/rider/RiderCheckInSection.tsx`](file:///c:/Users/Manish/Desktop/Pitstop1/apps/web/components/rider/RiderCheckInSection.tsx), [`apps/web/components/rider/QrScannerModal.tsx`](file:///c:/Users/Manish/Desktop/Pitstop1/apps/web/components/rider/QrScannerModal.tsx), and [`apps/web/components/auth/LogoutButton.tsx`](file:///c:/Users/Manish/Desktop/Pitstop1/apps/web/components/auth/LogoutButton.tsx) to be 100% reactive to language switches.
+
+2. **Merchant & Rider Portal Footer Bilingual Localization**:
+   - **Root Cause**: [`apps/web/components/layout/Footer.tsx`](file:///c:/Users/Manish/Desktop/Pitstop1/apps/web/components/layout/Footer.tsx) was a static component without `'use client'` or `useLanguage()`.
+   - **Fix**: Converted `Footer.tsx` to a client component using `useLanguage()`, mapped all Brand, Platform, Merchant, and Legal links to localized dictionary strings, and added a compact language switcher in the bottom bar.
+   - Added corresponding keys in `apps/web/lib/i18n/types.ts`, `apps/web/lib/i18n/translations/en.ts`, and `apps/web/lib/i18n/translations/hi.ts`.
+
+
+3. **Merchant Category Options & Navigation Refinement**:
+   - Updated merchant business category dropdown options: removed `Garage / Service Center` and added `Hotel` in [`apps/web/app/for-merchants/page.tsx`](file:///c:/Users/Manish/Desktop/Pitstop1/apps/web/app/for-merchants/page.tsx) and [`apps/web/app/merchant/register/page.tsx`](file:///c:/Users/Manish/Desktop/Pitstop1/apps/web/app/merchant/register/page.tsx).
+   - Extended `businessType` schema and model enums in [`packages/shared-types/src/schemas/auth.schema.ts`](file:///c:/Users/Manish/Desktop/Pitstop1/packages/shared-types/src/schemas/auth.schema.ts) and [`apps/api/src/models/User.ts`](file:///c:/Users/Manish/Desktop/Pitstop1/apps/api/src/models/User.ts) to support `'hotel'`.
+   - Re-ordered Merchant navigation items: 1. My Hub (formerly My Rest Stops), 2. Rider Deals, 3. Dashboard, 4. Micro-Jobs.
+   - Cleaned up tagline below PitStop logo in navbar and removed Applications tab from RiderNav as requested.
+- Updated [`apps/web/app/for-merchants/page.tsx`](file:///c:/Users/Manish/Desktop/Pitstop1/apps/web/app/for-merchants/page.tsx) to convert the static prototype form into a high-converting "Register as Merchant Partner" onboarding card with 4-step wizard preview and direct CTA linking to `/merchant/register`.
+- Updated [`apps/web/app/for-merchants/page.tsx`](file:///c:/Users/Manish/Desktop/Pitstop1/apps/web/app/for-merchants/page.tsx) to convert the static prototype form into a high-converting "Register as Merchant Partner" onboarding card with 4-step wizard preview and direct CTA linking to `/merchant/register`.
+
+- Implemented strict input restrictions and sanitizers across all forms in [`apps/web/lib/utils/input-validators.ts`](file:///c:/Users/Manish/Desktop/Pitstop1/apps/web/lib/utils/input-validators.ts) and [`apps/web/components/ui/Input.tsx`](file:///c:/Users/Manish/Desktop/Pitstop1/apps/web/components/ui/Input.tsx):
+  - Numeric, phone, and pincode fields now reject all alphabetic characters and symbols on `onKeyDown` and sanitize pasted input to strictly valid digits.
+  - Applied across Merchant Registration, Rider Registration, Merchant Login, Rider Login, Admin Login, Contact Form, Create/Edit Rest Stop modals, and deal/job numeric inputs.
+- Implemented strict input restrictions and sanitizers across all forms in [`apps/web/lib/utils/input-validators.ts`](file:///c:/Users/Manish/Desktop/Pitstop1/apps/web/lib/utils/input-validators.ts) and [`apps/web/components/ui/Input.tsx`](file:///c:/Users/Manish/Desktop/Pitstop1/apps/web/components/ui/Input.tsx):
+  - Numeric, phone, and pincode fields now reject all alphabetic characters and symbols on `onKeyDown` and sanitize pasted input to strictly valid digits.
+  - Applied across Merchant Registration, Rider Registration, Merchant Login, Rider Login, Admin Login, Contact Form, Create/Edit Rest Stop modals, and deal/job numeric inputs.
+
+- Fully localized [`/for-merchants`](file:///c:/Users/Manish/Desktop/Pitstop1/apps/web/app/for-merchants/page.tsx) page with reactive client component [`ForMerchantsContent.tsx`](file:///c:/Users/Manish/Desktop/Pitstop1/apps/web/app/for-merchants/ForMerchantsContent.tsx) and centralized dictionary keys in `types.ts`, `translations/en.ts`, and `translations/hi.ts`.
+- Fully localized [`/for-merchants`](file:///c:/Users/Manish/Desktop/Pitstop1/apps/web/app/for-merchants/page.tsx) page with reactive client component [`ForMerchantsContent.tsx`](file:///c:/Users/Manish/Desktop/Pitstop1/apps/web/app/for-merchants/ForMerchantsContent.tsx) and centralized dictionary keys in `types.ts`, `translations/en.ts`, and `translations/hi.ts`.
+

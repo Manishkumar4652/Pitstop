@@ -25,6 +25,8 @@ import {
   VenueQrCredentialResponse 
 } from '@/lib/api/merchant-rest-stops';
 
+import { useLanguage } from '@/lib/i18n';
+
 interface VenueQrModalProps {
   restStop: RestStopMerchantResponse;
   isOpen: boolean;
@@ -38,6 +40,7 @@ export const VenueQrModal: React.FC<VenueQrModalProps> = ({
   onClose,
   onRestStopUpdated,
 }) => {
+  const { isHindi } = useLanguage();
   const [credentialData, setCredentialData] = useState<VenueQrCredentialResponse | null>(null);
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -193,22 +196,49 @@ export const VenueQrModal: React.FC<VenueQrModalProps> = ({
             )}
           </div>
 
-
+          {credentialData?.verificationCode && (
+            <div className="text-center my-4 py-2 px-4 bg-pitstop-bg border border-dashed border-pitstop-charcoal/30 rounded-xl">
+              <span className="text-xs text-pitstop-muted uppercase tracking-wider block">
+                {isHindi ? 'काउंटर डेस्क कोड' : 'Counter Desk Code'}
+              </span>
+              <span className="font-mono text-2xl font-bold tracking-widest text-pitstop-charcoal">
+                {credentialData.verificationCode}
+              </span>
+            </div>
+          )}
 
           <div className="bg-pitstop-bg border border-pitstop-border rounded-xl p-4 mb-6 text-left text-xs space-y-2">
             <p className="font-semibold text-pitstop-charcoal">
-              📱 Instructions for Delivery Riders:
+              {isHindi ? '📱 डिलीवरी राइडर्स के लिए निर्देश:' : '📱 Instructions for Delivery Riders:'}
             </p>
             <ol className="list-decimal list-inside text-pitstop-muted space-y-1">
-              <li>Open the <strong>PitStop App</strong> on your mobile device.</li>
-              <li>Tap <strong>Check-In</strong> and point your camera at this QR code.</li>
-              <li>Enjoy complimentary drinking water, seating, and phone charging while you rest.</li>
+              <li>
+                {isHindi ? (
+                  <>अपने फोन पर <strong>PitStop</strong> खोलें।</>
+                ) : (
+                  <>Open the <strong>PitStop App</strong> on your mobile device.</>
+                )}
+              </li>
+              <li>
+                {isHindi ? (
+                  <><strong>चेक-इन</strong> पर टैप करें और कैमरे से यह QR स्कैन करें।</>
+                ) : (
+                  <>Tap <strong>Check-In</strong> and point your camera at this QR code.</>
+                )}
+              </li>
+              <li>
+                {isHindi ? (
+                  <>आराम करते हुए मुफ्त RO पीने का पानी, बैठने की जगह और चार्जिंग का लाभ लें।</>
+                ) : (
+                  <>Enjoy complimentary drinking water, seating, and phone charging while you rest.</>
+                )}
+              </li>
             </ol>
           </div>
 
           <div className="text-[10px] text-pitstop-muted border-t border-pitstop-border pt-4 flex justify-between items-center">
-            <span>Credential Version {credentialData?.version || 1}</span>
-            <span>Valid through {formattedExpiry}</span>
+            <span>{isHindi ? `क्रेडेंशियल वर्शन ${credentialData?.version || 1}` : `Credential Version ${credentialData?.version || 1}`}</span>
+            <span>{isHindi ? `वैधता: ${formattedExpiry}` : `Valid through ${formattedExpiry}`}</span>
             <span>pitstop.app</span>
           </div>
         </div>
@@ -224,7 +254,7 @@ export const VenueQrModal: React.FC<VenueQrModalProps> = ({
             </div>
             <div>
               <h2 id="venue-qr-modal-title" className="text-base font-bold text-pitstop-charcoal">
-                Venue QR Credential
+                {isHindi ? 'वेन्यू QR क्रेडेंशियल' : 'Venue QR Credential'}
               </h2>
               <p className="text-xs text-pitstop-muted">
                 {restStop.name}
@@ -234,7 +264,7 @@ export const VenueQrModal: React.FC<VenueQrModalProps> = ({
           <button
             onClick={onClose}
             className="p-1.5 rounded-lg text-pitstop-muted hover:text-pitstop-charcoal hover:bg-white transition-colors"
-            aria-label="Close dialog"
+            aria-label={isHindi ? 'डायलॉग बंद करें' : 'Close dialog'}
           >
             <X className="h-5 w-5" />
           </button>
@@ -300,7 +330,14 @@ export const VenueQrModal: React.FC<VenueQrModalProps> = ({
                   </Badge>
                 </div>
 
-
+                {credentialData?.verificationCode && (
+                  <div className="mt-4 text-center bg-white border border-dashed border-pitstop-charcoal/20 rounded-xl py-2 px-4">
+                    <p className="text-[11px] font-medium text-pitstop-muted">Counter Desk Verification Code</p>
+                    <p className="font-mono text-lg font-bold tracking-widest text-pitstop-charcoal mt-0.5">
+                      {credentialData.verificationCode}
+                    </p>
+                  </div>
+                )}
               </div>
 
               {/* Protocol Security Notice */}

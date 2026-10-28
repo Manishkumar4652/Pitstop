@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Droplet, Search } from 'lucide-react';
+import { useLanguage } from '@/lib/i18n';
 
 interface HeroPhoneProps {
   className?: string;
@@ -10,6 +11,7 @@ interface HeroPhoneProps {
 export const HeroPhone: React.FC<HeroPhoneProps> = ({ className = '' }) => {
   const [mounted, setMounted] = useState(false);
   const [animationStage, setAnimationStage] = useState(0);
+  const { isHindi } = useLanguage();
 
   useEffect(() => {
     setMounted(true);
@@ -65,10 +67,10 @@ export const HeroPhone: React.FC<HeroPhoneProps> = ({ className = '' }) => {
           <div className="relative z-20 pt-6 px-3.5 pb-2 bg-gradient-to-b from-[#F4F5F2] via-[#F4F5F2]/90 to-transparent">
             <div className="flex items-center justify-between mt-1 mb-1.5">
               <span className="text-[11px] font-black tracking-tight text-[#0B0B0F]">
-                Nearby PitStops
+                {isHindi ? 'नजदीकी पिटस्टॉप्स' : 'Nearby PitStops'}
               </span>
               <span className="text-[9px] font-bold text-[#0B0B0F]/50">
-                Bengaluru
+                {isHindi ? 'बेंगलुरु' : 'Bengaluru'}
               </span>
             </div>
 
@@ -76,7 +78,7 @@ export const HeroPhone: React.FC<HeroPhoneProps> = ({ className = '' }) => {
             <div className="flex items-center gap-1.5 rounded-full bg-white px-2.5 py-1 shadow-2xs border border-black/5 text-[#0B0B0F]/60">
               <Search className="h-3 w-3 shrink-0 text-[#0B0B0F]/40" />
               <span className="text-[10px] font-medium truncate">
-                Koramangala, 4th Block
+                {isHindi ? 'कोरमंगला, ब्लॉक 4' : 'Koramangala, 4th Block'}
               </span>
             </div>
           </div>
@@ -231,10 +233,10 @@ export const HeroPhone: React.FC<HeroPhoneProps> = ({ className = '' }) => {
                   </div>
                   <div className="text-left">
                     <div className="text-[11px] sm:text-xs font-black text-[#0B0B0F] leading-tight">
-                      Cold RO Water
+                      {isHindi ? 'ठंडा RO पीने का पानी' : 'Cold RO Water'}
                     </div>
                     <div className="text-[9px] sm:text-[10px] text-[#0B0B0F]/60 font-medium">
-                      200m away • 4 min
+                      {isHindi ? '200मी दूर • 4 मिनट' : '200m away • 4 min'}
                     </div>
                   </div>
                 </div>
@@ -242,7 +244,7 @@ export const HeroPhone: React.FC<HeroPhoneProps> = ({ className = '' }) => {
                 {/* Tiny "Open" Chip */}
                 <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[9px] font-bold text-emerald-700 border border-emerald-200 shrink-0">
                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  Open
+                  {isHindi ? 'खुला है' : 'Open'}
                 </span>
               </div>
             </div>

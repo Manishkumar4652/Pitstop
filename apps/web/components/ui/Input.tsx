@@ -1,4 +1,5 @@
 import React from 'react';
+import { allowOnlyDigitsKeyDown, allowNumberKeyDown } from '@/lib/utils/input-validators';
 
 export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
@@ -6,6 +7,8 @@ export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> 
   helperText?: string;
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
+  numericOnly?: boolean;
+  allowDecimal?: boolean;
 }
 
 export const Input = React.forwardRef<HTMLInputElement, InputProps>(
@@ -20,11 +23,40 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
       id,
       disabled,
       required,
+      numericOnly,
+      allowDecimal = false,
+      type,
+      inputMode,
+      maxLength,
+      onKeyDown,
+      onChange,
       ...props
     },
     ref
   ) => {
     const inputId = id || (label ? label.toLowerCase().replace(/\s+/g, '-') : undefined);
+    const isStrictNumeric = numericOnly || type === 'tel' || inputMode === 'numeric';
+    const isNumberType = type === 'number';
+
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (isStrictNumeric) {
+        allowOnlyDigitsKeyDown(e);
+      } else if (isNumberType) {
+        allowNumberKeyDown(e, allowDecimal);
+      }
+      onKeyDown?.(e);
+    };
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (isStrictNumeric) {
+        let val = e.target.value.replace(/\D/g, '');
+        if (maxLength && maxLength > 0) {
+          val = val.slice(0, maxLength);
+        }
+        e.target.value = val;
+      }
+      onChange?.(e);
+    };
 
     return (
       <div className="w-full flex flex-col gap-1.5">
@@ -48,6 +80,11 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             id={inputId}
             disabled={disabled}
             required={required}
+            type={type}
+            inputMode={inputMode}
+            maxLength={maxLength}
+            onKeyDown={handleKeyDown}
+            onChange={handleChange}
             className={`w-full min-h-[46px] rounded-lg border bg-white px-3.5 py-2.5 text-base sm:text-sm text-pitstop-charcoal placeholder:text-pitstop-muted/60 transition-colors focus:outline-none focus:ring-2 focus:ring-pitstop-yellow focus:ring-offset-1 disabled:opacity-50 disabled:bg-pitstop-bg ${
               leftIcon ? 'pl-10' : ''
             } ${rightIcon ? 'pr-10' : ''} ${

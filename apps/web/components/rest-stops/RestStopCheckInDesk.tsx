@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { QrCode, CheckCircle2, ShieldCheck, Sparkles, UserCheck, Navigation } from 'lucide-react';
 import { Button, Card, Badge } from '@/components/ui';
 import { useAuth } from '@/lib/auth/AuthContext';
+import { useLanguage } from '@/lib/i18n';
 import { QrScannerModal } from '@/components/rider/QrScannerModal';
 import { CheckInRiderResponse, UserRole } from 'shared-types';
 
@@ -22,10 +23,52 @@ export function RestStopCheckInDesk({
   coordinates,
 }: RestStopCheckInDeskProps) {
   const { user, isAuthenticated } = useAuth();
+  const { isHindi } = useLanguage();
   const [isScannerOpen, setIsScannerOpen] = useState<boolean>(false);
   const [verifiedStay, setVerifiedStay] = useState<CheckInRiderResponse | null>(null);
 
   const isRider = isAuthenticated && user?.role === UserRole.RIDER;
+
+  // Pre-load active stay if rider checked in recently (within 2 hours)
+  useEffect(() => {
+    if (!isRider) return;
+    let isCancelled = false;
+
+    async function checkExistingStay() {
+      try {
+        const response = await fetch('/api/check-ins/me?limit=10');
+        if (!response.ok) return;
+        const json = await response.json();
+        if (json?.success && Array.isArray(json.data?.items)) {
+          const now = Date.now();
+          const active = json.data.items.find((item: any) => {
+            const matchesVenue = item.restStopId === restStopId || item.restStop?._id === restStopId;
+            const isRecent = now - new Date(item.checkInTime).getTime() < 2 * 60 * 60 * 1000;
+            return matchesVenue && item.status === 'verified' && isRecent;
+          });
+
+          if (active && !isCancelled) {
+            setVerifiedStay({
+              id: active.id || active._id,
+              restStopId: active.restStopId || restStopId,
+              restStopName: active.restStopName || restStopName,
+              method: active.method || 'qr_code',
+              checkInTime: active.checkInTime,
+              status: active.status,
+              verifiedAt: active.verifiedAt || active.checkInTime,
+            });
+          }
+        }
+      } catch {
+        // Silently ignore background lookup failures
+      }
+    }
+
+    checkExistingStay();
+    return () => {
+      isCancelled = true;
+    };
+  }, [isRider, restStopId, restStopName]);
 
   return (
     <>
@@ -37,16 +80,16 @@ export function RestStopCheckInDesk({
             </div>
             <div>
               <h3 className="text-sm font-bold text-pitstop-charcoal">
-                Rest-Stop Check-in Desk
+                {isHindi ? 'रेस्ट-स्टॉप चेक-इन डेस्क' : 'Rest-Stop Check-in Desk'}
               </h3>
               <p className="text-[11px] text-pitstop-muted">
-                Physical arrival verification
+                {isHindi ? 'स्थान आगमन सत्यापन' : 'Physical arrival verification'}
               </p>
             </div>
           </div>
           {verifiedStay && (
             <Badge variant="success" size="sm" icon={<ShieldCheck className="h-3 w-3" />}>
-              Active Stay
+              {isHindi ? 'सक्रिय ठहराव' : 'Active Stay'}
             </Badge>
           )}
         </div>
@@ -55,10 +98,12 @@ export function RestStopCheckInDesk({
           <div className="rounded-xl border border-emerald-200 bg-emerald-50/70 p-4 space-y-2 animate-fade-in">
             <div className="flex items-center gap-2 text-xs font-bold text-emerald-900">
               <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
-              <span>You are checked in!</span>
+              <span>{isHindi ? 'आप चेक-इन हो चुके हैं!' : 'You are checked in!'}</span>
             </div>
             <p className="text-xs text-emerald-800 leading-relaxed">
-              Stay verified at {new Date(verifiedStay.checkInTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}. Show your active profile at the desk for partner food perks.
+              {isHindi
+                ? `आगमन समय: ${new Date(verifiedStay.checkInTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}। पार्टनर डिस्काउंट और भोजन लाभ के लिए काउंटर पर अपनी प्रोफाइल दिखाएं।`
+                : `Stay verified at ${new Date(verifiedStay.checkInTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}. Show your active profile at the desk for partner food perks.`}
             </p>
             <div className="pt-1 flex gap-2">
               <Button
@@ -67,14 +112,16 @@ export function RestStopCheckInDesk({
                 fullWidth
                 onClick={() => setIsScannerOpen(true)}
               >
-                Scan Again
+                {isHindi ? 'पुनः स्कैन करें' : 'Scan Again'}
               </Button>
             </div>
           </div>
         ) : (
           <>
             <p className="text-xs text-pitstop-muted leading-relaxed mb-4">
-              Scan the physical venue QR poster at this stop to verify rest hours, unlock exclusive meal deals, and build platform trust.
+              {isHindi
+                ? 'आराम का समय दर्ज करने, विशेष भोजन छूट पाने और सुरक्षित ठहराव प्रमाणित करने के लिए काउंटर पर लगे क्यूआर पोस्टर को स्कैन करें।'
+                : 'Scan the physical venue QR poster at this stop to verify rest hours, unlock exclusive meal deals, and build platform trust.'}
             </p>
 
             {isRider ? (
@@ -86,18 +133,22 @@ export function RestStopCheckInDesk({
                   onClick={() => setIsScannerOpen(true)}
                   aria-label={`Open QR scanner to check in at ${restStopName}`}
                 >
-                  Check In via Venue QR
+                  {isHindi ? 'क्यूआर कोड से चेक-इन करें' : 'Check In via Venue QR'}
                 </Button>
                 <p className="text-[11px] text-pitstop-muted text-center flex items-center justify-center gap-1">
                   <Sparkles className="h-3 w-3 text-pitstop-yellow-dark" />
-                  <span>Unlocks partner discounts and logs safe break</span>
+                  <span>
+                    {isHindi ? 'पार्टनर छूट अनलॉक करता है और सुरक्षित विश्राम दर्ज करता है' : 'Unlocks partner discounts and logs safe break'}
+                  </span>
                 </p>
               </div>
             ) : isAuthenticated ? (
               <div className="rounded-xl bg-pitstop-bg p-3.5 text-center text-xs text-pitstop-muted">
-                <p className="font-semibold text-pitstop-charcoal">Rider Account Required</p>
+                <p className="font-semibold text-pitstop-charcoal">
+                  {isHindi ? 'केवल डिलीवरी राइडर्स के लिए' : 'Rider Account Required'}
+                </p>
                 <p className="text-[11px] mt-1">
-                  Only registered delivery partners can record check-in rest stops.
+                  {isHindi ? 'केवल पंजीकृत डिलीवरी राइडर ही रेस्ट स्टॉप पर चेक-इन दर्ज कर सकते हैं।' : 'Only registered delivery partners can record check-in rest stops.'}
                 </p>
               </div>
             ) : (
@@ -108,11 +159,11 @@ export function RestStopCheckInDesk({
                     fullWidth
                     leftIcon={<UserCheck className="h-4 w-4" aria-hidden="true" />}
                   >
-                    Log In as Rider to Check In
+                    {isHindi ? 'चेक-इन के लिए राइडर लॉगिन करें' : 'Log In as Rider to Check In'}
                   </Button>
                 </Link>
                 <p className="text-[11px] text-pitstop-muted text-center">
-                  Sign in with your mobile number to unlock verified rest stops.
+                  {isHindi ? 'सत्यापित रेस्ट स्टॉप अनलॉक करने के लिए अपने मोबाइल से लॉगिन करें।' : 'Sign in with your mobile number to unlock verified rest stops.'}
                 </p>
               </div>
             )}
@@ -143,10 +194,10 @@ export function RestStopCheckInDesk({
           <div className="text-[11px] text-pitstop-muted flex items-center gap-1">
             {verifiedStay ? (
               <span className="text-emerald-700 font-semibold flex items-center gap-1">
-                <CheckCircle2 className="h-3 w-3" /> Checked In
+                <CheckCircle2 className="h-3 w-3" /> {isHindi ? 'चेक-इन पूर्ण' : 'Checked In'}
               </span>
             ) : (
-              <span>Physical Arrival Desk</span>
+              <span>{isHindi ? 'आगमन डेस्क' : 'Physical Arrival Desk'}</span>
             )}
           </div>
         </div>
@@ -172,16 +223,16 @@ export function RestStopCheckInDesk({
               onClick={() => setIsScannerOpen(true)}
               className="font-bold min-h-[42px] px-4"
             >
-              {verifiedStay ? 'Scan Again' : 'Check In'}
+              {verifiedStay ? (isHindi ? 'पुनः स्कैन' : 'Scan Again') : (isHindi ? 'चेक-इन' : 'Check In')}
             </Button>
           ) : isAuthenticated ? (
             <span className="text-[11px] text-pitstop-muted font-medium px-2 py-1 bg-slate-100 rounded-md">
-              Rider Only
+              {isHindi ? 'केवल राइडर' : 'Rider Only'}
             </span>
           ) : (
             <Link href={`/rider/login?returnUrl=/rest-stops/${restStopSlug}`}>
               <Button variant="primary" size="sm" className="font-bold min-h-[42px] px-4">
-                Log In
+                {isHindi ? 'लॉग इन' : 'Log In'}
               </Button>
             </Link>
           )}

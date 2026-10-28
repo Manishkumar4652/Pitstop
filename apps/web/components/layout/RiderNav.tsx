@@ -4,6 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { 
+  LayoutDashboard,
   MapPin, 
   Briefcase, 
   User, 
@@ -11,6 +12,7 @@ import {
 } from 'lucide-react';
 import { Badge, Button } from '@/components/ui';
 import { useAuth } from '@/lib/auth/AuthContext';
+import { useLanguage } from '@/lib/i18n';
 import { LogoutButton } from '@/components/auth/LogoutButton';
 
 export interface RiderNavProps {
@@ -20,27 +22,36 @@ export interface RiderNavProps {
 export const RiderNav: React.FC<RiderNavProps> = ({ className = '' }) => {
   const pathname = usePathname();
   const { user, isAuthenticated } = useAuth();
+  const { t } = useLanguage();
 
   const navItems = [
     {
-      label: 'Map',
+      label: t('nav.dashboard'),
+      href: '/rider/dashboard',
+      icon: <LayoutDashboard className="h-4 w-4" aria-hidden="true" />,
+      active: pathname === '/rider' || pathname === '/rider/dashboard',
+    },
+    {
+      label: t('nav.restStops'),
       href: '/explore',
       icon: <MapPin className="h-4 w-4" aria-hidden="true" />,
       active: pathname === '/explore' || pathname.startsWith('/rest-stops/'),
     },
     {
-      label: 'Explore',
+      label: t('nav.jobs'),
       href: '/jobs',
       icon: <Briefcase className="h-4 w-4" aria-hidden="true" />,
-      active: pathname === '/jobs' || pathname.startsWith('/rider/applications'),
+      active: pathname === '/jobs',
     },
     {
-      label: 'Profile',
+      label: t('nav.profile'),
       href: '/rider/profile',
       icon: <User className="h-4 w-4" aria-hidden="true" />,
       active: pathname === '/rider/profile',
     },
   ];
+
+  const mobileNavItems = navItems;
 
   return (
     <>
@@ -83,7 +94,7 @@ export const RiderNav: React.FC<RiderNavProps> = ({ className = '' }) => {
             ) : (
               <Link href="/rider/login">
                 <Button variant="outline" size="sm">
-                  Log In
+                  {t('nav.login')}
                 </Button>
               </Link>
             )}
@@ -96,7 +107,7 @@ export const RiderNav: React.FC<RiderNavProps> = ({ className = '' }) => {
         className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-pitstop-border px-1 py-1 pb-[max(4px,env(safe-area-inset-bottom))] shadow-elevation flex items-center justify-around"
         aria-label="Mobile Rider Navigation"
       >
-        {navItems.map((item) => (
+        {mobileNavItems.map((item) => (
           <Link
             key={item.href}
             href={item.href}

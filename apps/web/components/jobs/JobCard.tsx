@@ -13,11 +13,11 @@ import {
   Clock, 
   IndianRupee, 
   Users, 
-  ArrowRight,
-  Briefcase
+  ArrowRight
 } from 'lucide-react';
 import { Card, Button, Badge } from '@/components/ui';
-import { JobPublicResponse, JobCategory, JobStatus } from 'shared-types';
+import { JobPublicResponse, JobCategory } from 'shared-types';
+import { useLanguage } from '@/lib/i18n';
 
 interface JobCardProps {
   job: JobPublicResponse;
@@ -28,22 +28,23 @@ interface JobCardProps {
 export const JobCard: React.FC<JobCardProps> = ({
   job,
   onViewDetails,
-  onApplyClick,
 }) => {
+  const { isHindi } = useLanguage();
+
   const formatCategory = (cat: JobCategory) => {
     switch (cat) {
       case JobCategory.PARCEL_SORTING:
-        return 'Parcel Sorting';
+        return isHindi ? 'पार्सल सॉर्टिंग' : 'Parcel Sorting';
       case JobCategory.LOADING_UNLOADING:
-        return 'Loading & Unloading';
+        return isHindi ? 'लोडिंग व अनलोडिंग' : 'Loading & Unloading';
       case JobCategory.FLYER_DISTRIBUTION:
-        return 'Flyer Distribution';
+        return isHindi ? 'पर्चे वितरण' : 'Flyer Distribution';
       case JobCategory.CLEANING_PREP:
-        return 'Cleaning & Prep';
+        return isHindi ? 'सफाई व तैयारी' : 'Cleaning & Prep';
       case JobCategory.STORE_ASSISTANT:
-        return 'Store Assistant';
+        return isHindi ? 'दुकान सहायक' : 'Store Assistant';
       case JobCategory.OTHER:
-        return 'General Task';
+        return isHindi ? 'सामान्य कार्य' : 'General Task';
     }
   };
 
@@ -71,7 +72,7 @@ export const JobCard: React.FC<JobCardProps> = ({
       if (isNaN(s.getTime()) || isNaN(e.getTime())) return '';
       const timeOpts: Intl.DateTimeFormatOptions = { hour: '2-digit', minute: '2-digit' };
       const dateOpts: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short' };
-      return `${s.toLocaleDateString('en-IN', dateOpts)}, ${s.toLocaleTimeString('en-IN', timeOpts)} – ${e.toLocaleTimeString('en-IN', timeOpts)}`;
+      return `${s.toLocaleDateString(isHindi ? 'hi-IN' : 'en-IN', dateOpts)}, ${s.toLocaleTimeString('en-IN', timeOpts)} – ${e.toLocaleTimeString('en-IN', timeOpts)}`;
     } catch {
       return '';
     }
@@ -91,7 +92,7 @@ export const JobCard: React.FC<JobCardProps> = ({
           </span>
 
           <Badge variant="success" size="sm">
-            Open for Riders
+            {isHindi ? 'राइडर्स के लिए खुला' : 'Open for Riders'}
           </Badge>
         </div>
 
@@ -103,17 +104,21 @@ export const JobCard: React.FC<JobCardProps> = ({
           <div className="mt-1 flex items-center gap-2 text-xs text-pitstop-muted flex-wrap">
             <span className="flex items-center gap-1 font-medium text-pitstop-charcoal">
               <MapPin className="h-3.5 w-3.5 text-pitstop-yellow-dark shrink-0" />
-              <span>{job.restStopName || 'Partner Rest Stop'}</span>
+              <span>{job.restStopName || (isHindi ? 'पार्टनर रेस्ट स्टॉप' : 'Partner Rest Stop')}</span>
             </span>
             <span>•</span>
             <span className="flex items-center gap-1">
               <Clock className="h-3.5 w-3.5 text-pitstop-muted shrink-0" />
-              <span>{job.durationMinutes} mins</span>
+              <span>{job.durationMinutes} {isHindi ? 'मिनट' : 'mins'}</span>
             </span>
             <span>•</span>
             <span className="flex items-center gap-1 text-emerald-700 font-semibold">
               <Users className="h-3.5 w-3.5 shrink-0" />
-              <span>{remainingSlots} of {job.requiredRiders} {remainingSlots === 1 ? 'slot' : 'slots'} open</span>
+              <span>
+                {isHindi
+                  ? `${job.requiredRiders} में से ${remainingSlots} स्थान खाली`
+                  : `${remainingSlots} of ${job.requiredRiders} ${remainingSlots === 1 ? 'slot' : 'slots'} open`}
+              </span>
             </span>
           </div>
         </div>
@@ -122,7 +127,7 @@ export const JobCard: React.FC<JobCardProps> = ({
         {formattedTime && (
           <p className="text-xs text-pitstop-muted bg-slate-50 p-2 rounded-lg border border-slate-100 flex items-center gap-1.5">
             <Clock className="h-3.5 w-3.5 text-pitstop-yellow-dark shrink-0" />
-            <span>Shift: {formattedTime}</span>
+            <span>{isHindi ? 'शिफ्ट' : 'Shift'}: {formattedTime}</span>
           </p>
         )}
 
@@ -140,7 +145,9 @@ export const JobCard: React.FC<JobCardProps> = ({
             <span>{job.payAmount}</span>
           </div>
           <span className="text-[11px] text-pitstop-muted capitalize block">
-            {job.payType === 'hourly' ? 'Per Hour Rate' : 'Fixed Task Payout'}
+            {job.payType === 'hourly'
+              ? (isHindi ? 'प्रति घंटा दर' : 'Per Hour Rate')
+              : (isHindi ? 'निश्चित कार्य भुगतान' : 'Fixed Task Payout')}
           </span>
         </div>
 
@@ -152,7 +159,7 @@ export const JobCard: React.FC<JobCardProps> = ({
             onClick={() => onViewDetails(job)}
             rightIcon={<ArrowRight className="h-3.5 w-3.5" />}
           >
-            View & Apply
+            {isHindi ? 'देखें व आवेदन करें' : 'View & Apply'}
           </Button>
         </div>
       </div>

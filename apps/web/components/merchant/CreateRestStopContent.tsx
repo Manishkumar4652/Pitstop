@@ -27,6 +27,7 @@ import {
 } from '@/components/ui';
 import { Facility, CapacityStatus, UserPublicProfile } from 'shared-types';
 import { createMerchantRestStop } from '@/lib/api/merchant-rest-stops';
+import { sanitizePincode } from '@/lib/utils/input-validators';
 
 interface CreateRestStopContentProps {
   user: UserPublicProfile;
@@ -71,7 +72,13 @@ export const CreateRestStopContent: React.FC<CreateRestStopContentProps> = ({ us
   };
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+    let sanitized = value;
+    if (field === 'pincode') {
+      sanitized = sanitizePincode(value);
+    } else if (field === 'maxRiders') {
+      sanitized = value.replace(/\D/g, '').slice(0, 3);
+    }
+    setFormData((prev) => ({ ...prev, [field]: sanitized }));
     if (errors[field]) {
       setErrors((prev) => {
         const next = { ...prev };
@@ -380,6 +387,8 @@ export const CreateRestStopContent: React.FC<CreateRestStopContentProps> = ({ us
                       label="6-Digit Pincode"
                       placeholder="302001"
                       required
+                      type="tel"
+                      inputMode="numeric"
                       maxLength={6}
                       value={formData.pincode}
                       onChange={(e) => handleInputChange('pincode', e.target.value)}

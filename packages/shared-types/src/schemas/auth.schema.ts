@@ -27,7 +27,7 @@ export const RegisterRequestSchema = z.object({
   merchantProfile: z
     .object({
       businessName: z.string().trim().min(2, 'Business or shop name is required'),
-      businessType: z.enum(['restaurant', 'tea_stall', 'garage', 'supermarket', 'service_center', 'other']),
+      businessType: z.enum(['restaurant', 'tea_stall', 'hotel', 'garage', 'supermarket', 'service_center', 'other']),
       gstNumber: z.string().trim().optional(),
       address: z.string().trim().optional(),
       description: z.string().trim().optional(),
@@ -95,7 +95,7 @@ export const UserPublicProfileSchema = z.object({
   merchantProfile: z
     .object({
       businessName: z.string(),
-      businessType: z.enum(['restaurant', 'tea_stall', 'garage', 'supermarket', 'service_center', 'other']),
+      businessType: z.enum(['restaurant', 'tea_stall', 'hotel', 'garage', 'supermarket', 'service_center', 'other']),
       gstNumber: z.string().optional(),
       address: z.string().optional(),
     })

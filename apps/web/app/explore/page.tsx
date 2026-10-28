@@ -41,11 +41,6 @@ export default async function ExplorePage() {
     <PublicLayout>
       <RiderNav />
       <main id="main-content" className="pb-20 md:pb-0">
-        <PageHeader
-          title="Find your next pit stop"
-          description="Browse rest stop locations in Bengaluru designed for delivery partners to drink water, sit down, charge phones, and use restrooms between shifts."
-          badge={badgeText}
-        />
         <Suspense fallback={<LoadingState text="Loading rest stop catalog..." />}>
           <ExploreContent initialData={initialData} initialError={initialError} />
         </Suspense>

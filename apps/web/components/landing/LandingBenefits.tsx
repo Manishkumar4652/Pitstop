@@ -4,9 +4,11 @@ import React from 'react';
 import Link from 'next/link';
 import { Droplet, Zap, ShieldCheck, Briefcase, Clock, ArrowRight } from 'lucide-react';
 import { useScrollReveal } from './useScrollReveal';
+import { useLanguage } from '@/lib/i18n';
 
 export const LandingBenefits: React.FC = () => {
   const [sectionRef, isRevealed] = useScrollReveal();
+  const { isHindi } = useLanguage();
 
   return (
     <section
@@ -27,13 +29,15 @@ export const LandingBenefits: React.FC = () => {
           }`}
         >
           <span className="text-xs font-black uppercase tracking-widest text-[#FBBF24]">
-            BENEFITS FOR RIDERS
+            {isHindi ? 'राइडर्स के लिए सुविधाएं' : 'BENEFITS FOR RIDERS'}
           </span>
           <h2 className="mt-2 text-3xl sm:text-4xl font-black tracking-tight text-[#0B0B0F]">
-            Everything You Need on the Road
+            {isHindi ? 'सड़क पर आपकी हर जरूरत का समाधान' : 'Everything You Need on the Road'}
           </h2>
           <p className="mt-2 text-sm sm:text-base text-[#0B0B0F]/70">
-            Dignified, clean facilities verified by our field team across Bengaluru.
+            {isHindi
+              ? 'बेंगलुरु भर में हमारी टीम द्वारा वेरिफाइड सम्मानजनक और स्वच्छ सुविधाएं।'
+              : 'Dignified, clean facilities verified by our field team across Bengaluru.'}
           </p>
         </div>
 
@@ -56,23 +60,22 @@ export const LandingBenefits: React.FC = () => {
                 <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-50 text-blue-600 border border-blue-100 transition-transform duration-200 group-hover:scale-105">
                   <Droplet className="h-5 w-5" />
                 </div>
-                <span className="rounded-full bg-blue-50 px-2.5 py-1 text-[11px] font-bold text-blue-700">
-                  100% Free
-                </span>
               </div>
 
               <h3 className="mt-5 text-xl font-bold text-[#0B0B0F]">
-                Clean RO Drinking Water
+                {isHindi ? 'साफ RO पीने का पानी' : 'Clean RO Drinking Water'}
               </h3>
 
               <p className="mt-2 text-sm text-[#0B0B0F]/70 leading-relaxed font-normal">
-                Pure, cold RO drinking water to keep you refreshed and hydrated throughout long shifts without spending money on disposable plastic bottles.
+                {isHindi
+                  ? 'लंबी शिफ्ट के दौरान आपको तरोताजा और हाइड्रेटेड रखने के लिए ठंडा RO पानी, बिना किसी खर्च के।'
+                  : 'Pure, cold RO drinking water to keep you refreshed and hydrated throughout long shifts without spending money on disposable plastic bottles.'}
               </p>
             </div>
 
             <div className="mt-6 pt-4 border-t border-black/[0.06] flex items-center gap-1.5 text-xs text-[#0B0B0F]/60 font-semibold">
               <span className="h-2 w-2 rounded-full bg-blue-500" />
-              <span>Chilled &amp; Filtered • Refill Anytime</span>
+              <span>{isHindi ? 'ठंडा व शुद्ध • कभी भी रिफिल करें' : 'Chilled & Filtered • Refill Anytime'}</span>
             </div>
           </div>
 
@@ -92,23 +95,22 @@ export const LandingBenefits: React.FC = () => {
                 <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-amber-50 text-amber-600 border border-amber-100 transition-transform duration-200 group-hover:scale-105">
                   <Zap className="h-5 w-5" />
                 </div>
-                <span className="rounded-full bg-amber-50 px-2.5 py-1 text-[11px] font-bold text-amber-700">
-                  Fast Ports
-                </span>
               </div>
 
               <h3 className="mt-5 text-xl font-bold text-[#0B0B0F]">
-                Fast Charging (Phones &amp; EV)
+                {isHindi ? 'फास्ट चार्जिंग (फोन और ईवी)' : 'Fast Charging (Phones & EV)'}
               </h3>
 
               <p className="mt-2 text-sm text-[#0B0B0F]/70 leading-relaxed font-normal">
-                Dedicated 65W fast-charging sockets for smartphones, power banks, and electric two-wheeler battery top-ups so you never miss surge hours.
+                {isHindi
+                  ? 'स्मार्टफोन, पावर बैंक और इलेक्ट्रिक टू-व्हीलर के लिए 65W फास्ट चार्जिंग सॉकेट्स ताकि आप पीक आवर्स मिस न करें।'
+                  : 'Dedicated 65W fast-charging sockets for smartphones, power banks, and electric two-wheeler battery top-ups so you never miss surge hours.'}
               </p>
             </div>
 
             <div className="mt-6 pt-4 border-t border-black/[0.06] flex items-center gap-1.5 text-xs text-[#0B0B0F]/60 font-semibold">
               <span className="h-2 w-2 rounded-full bg-amber-500" />
-              <span>Type-C &amp; Multi-Pin Sockets</span>
+              <span>{isHindi ? 'टाइप-सी व मल्टी-पिन सॉकेट्स' : 'Type-C & Multi-Pin Sockets'}</span>
             </div>
           </div>
 
@@ -128,23 +130,22 @@ export const LandingBenefits: React.FC = () => {
                 <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600 border border-emerald-100 transition-transform duration-200 group-hover:scale-105">
                   <ShieldCheck className="h-5 w-5" />
                 </div>
-                <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-bold text-emerald-700">
-                  Hygienic
-                </span>
               </div>
 
               <h3 className="mt-5 text-xl font-bold text-[#0B0B0F]">
-                Clean Washroom
+                {isHindi ? 'साफ वॉशरूम' : 'Clean Washroom'}
               </h3>
 
               <p className="mt-2 text-sm text-[#0B0B0F]/70 leading-relaxed font-normal">
-                Hygienic, well-maintained restrooms with soap and running water. Accessible to on-duty delivery partners with dignity and respect.
+                {isHindi
+                  ? 'साबुन और बहते पानी के साथ स्वच्छ, सुव्यवस्थित शौचालय। डिलीवरी पार्टनर्स के लिए सम्मान और गरिमा के साथ उपलब्ध।'
+                  : 'Hygienic, well-maintained restrooms with soap and running water. Accessible to on-duty delivery partners with dignity and respect.'}
               </p>
             </div>
 
             <div className="mt-6 pt-4 border-t border-black/[0.06] flex items-center gap-1.5 text-xs text-[#0B0B0F]/60 font-semibold">
               <span className="h-2 w-2 rounded-full bg-emerald-500" />
-              <span>Regularly Sanitized &amp; Audited</span>
+              <span>{isHindi ? 'नियमित रूप से सैनिटाइज्ड व जाँचा गया' : 'Regularly Sanitized & Audited'}</span>
             </div>
           </div>
 
@@ -166,23 +167,17 @@ export const LandingBenefits: React.FC = () => {
                 <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#FBBF24]/15 text-[#FBBF24] border border-[#FBBF24]/30 transition-transform duration-200 group-hover:scale-105">
                   <Briefcase className="h-5 w-5" />
                 </div>
-                <div className="inline-flex items-center gap-1 rounded-full bg-[#FBBF24]/15 px-2.5 py-1 text-[11px] font-bold text-[#FBBF24] border border-[#FBBF24]/30">
-                  <Clock className="h-3 w-3" />
-                  <span>2 PM – 5 PM</span>
-                </div>
               </div>
 
               <h3 className="mt-5 text-xl font-bold text-white">
-                Off-Peak Micro-Jobs
+                {isHindi ? 'ऑफ-पीक माइक्रो-जॉब्स' : 'Off-Peak Micro-Jobs'}
               </h3>
 
-              {/* Exact Line Requested */}
-              <div className="mt-2 inline-block rounded-xl bg-white/10 px-3 py-1 text-xs font-black text-[#FBBF24] border border-white/10">
-                Earn ₹150 to ₹350 in 2 to 5 PM lull hours
-              </div>
 
               <p className="mt-3 text-sm text-gray-400 leading-relaxed font-normal">
-                Turn quiet afternoon delivery hours into guaranteed extra income by assisting neighborhood merchants with package sorting, packing, or express local drops.
+                {isHindi
+                  ? 'स्थानीय व्यापारियों की पैकेज छँटाई, पैकिंग या तत्काल स्थानीय डिलीवरी में सहायता करके दोपहर के शांत घंटों को निश्चित अतिरिक्त आय में बदलें।'
+                  : 'Turn quiet afternoon delivery hours into guaranteed extra income by assisting neighborhood merchants with package sorting, packing, or express local drops.'}
               </p>
             </div>
 
@@ -191,10 +186,9 @@ export const LandingBenefits: React.FC = () => {
                 href="/jobs"
                 className="group/btn min-h-[44px] inline-flex items-center gap-2 text-xs font-extrabold text-[#FBBF24] hover:underline active:scale-[0.97] transition-all duration-200"
               >
-                <span>Browse Afternoon Jobs</span>
+                <span>{isHindi ? 'दोपहर के काम देखें' : 'Browse Afternoon Jobs'}</span>
                 <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover/btn:translate-x-1" />
               </Link>
-              <span className="text-[10px] text-gray-500 font-semibold">Instant payout</span>
             </div>
           </div>
 

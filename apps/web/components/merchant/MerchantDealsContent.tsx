@@ -49,12 +49,14 @@ import {
 import { fetchMerchantRestStops } from '@/lib/api/merchant-rest-stops';
 import { CreateDealModal } from './CreateDealModal';
 import { EditDealModal } from './EditDealModal';
+import { useLanguage } from '@/lib/i18n';
 
 interface MerchantDealsContentProps {
   user: UserPublicProfile;
 }
 
 export const MerchantDealsContent: React.FC<MerchantDealsContentProps> = ({ user }) => {
+  const { isHindi } = useLanguage();
   const [deals, setDeals] = useState<DealMerchantResponse[]>([]);
   const [restStops, setRestStops] = useState<RestStopMerchantResponse[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -158,15 +160,17 @@ export const MerchantDealsContent: React.FC<MerchantDealsContentProps> = ({ user
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
             <div>
               <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-pitstop-muted mb-1">
-                <span>Merchant Hub</span>
+                <span>{isHindi ? 'मर्चेंट हब' : 'Merchant Hub'}</span>
                 <span>/</span>
-                <span className="text-pitstop-charcoal">Promotional Offers</span>
+                <span className="text-pitstop-charcoal">{isHindi ? 'प्रमोशनल ऑफर्स' : 'Promotional Offers'}</span>
               </div>
               <h1 className="text-2xl sm:text-3xl font-extrabold text-pitstop-charcoal tracking-tight">
-                Rider Exclusive Deals
+                {isHindi ? 'राइडर एक्सक्लूसिव डील्स' : 'Rider Exclusive Deals'}
               </h1>
               <p className="text-sm text-pitstop-muted mt-1 max-w-2xl">
-                Create and manage exclusive food, beverage, and service discounts for delivery riders visiting your rest stops.
+                {isHindi
+                  ? 'अपने रेस्ट स्टॉप्स पर आने वाले डिलीवरी राइडर्स के लिए विशेष भोजन, पेय और सेवा छूट बनाएं और प्रबंधित करें।'
+                  : 'Create and manage exclusive food, beverage, and service discounts for delivery riders visiting your rest stops.'}
               </p>
             </div>
 
@@ -177,7 +181,7 @@ export const MerchantDealsContent: React.FC<MerchantDealsContentProps> = ({ user
               className="gap-2 shrink-0 font-bold shadow-sm"
             >
               <Plus className="h-4 w-4" />
-              Create Promotional Deal
+              {isHindi ? 'नया प्रमोशनल ऑफर बनाएं' : 'Create Promotional Deal'}
             </Button>
           </div>
 
@@ -212,8 +216,12 @@ export const MerchantDealsContent: React.FC<MerchantDealsContentProps> = ({ user
             <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 p-4 text-xs text-amber-800 flex items-start gap-3">
               <AlertCircle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
               <div>
-                <strong className="block font-bold">Venues Pending Moderation Approval</strong>
-                Promotional deals require an approved and active rest stop venue. Your rest stops are currently pending administrative review. Once approved, deals can be published immediately.
+                <strong className="block font-bold">
+                  {isHindi ? 'वेन्यू मॉडरेशन अनुमोदन लंबित' : 'Venues Pending Moderation Approval'}
+                </strong>
+                {isHindi
+                  ? 'प्रमोशनल डील्स के लिए स्वीकृत और सक्रिय रेस्ट स्टॉप वेन्यू होना आवश्यक है। आपके रेस्ट स्टॉप वर्तमान में प्रशासनिक समीक्षा के अधीन हैं। एक बार स्वीकृत होने के बाद, डील्स तुरंत प्रकाशित की जा सकती हैं।'
+                  : 'Promotional deals require an approved and active rest stop venue. Your rest stops are currently pending administrative review. Once approved, deals can be published immediately.'}
               </div>
             </div>
           )}
@@ -222,46 +230,54 @@ export const MerchantDealsContent: React.FC<MerchantDealsContentProps> = ({ user
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
             <Card className="p-4 bg-white border-pitstop-border">
               <div className="flex items-center justify-between text-pitstop-muted mb-1 text-xs">
-                <span>Total Deals</span>
+                <span>{isHindi ? 'कुल डील्स' : 'Total Deals'}</span>
                 <Tag className="h-3.5 w-3.5 text-pitstop-charcoal/60" />
               </div>
               <div className="text-2xl font-black text-pitstop-charcoal">
                 {isLoading ? '—' : totalDeals}
               </div>
-              <div className="text-[11px] text-pitstop-muted mt-0.5">Configured deals</div>
+              <div className="text-[11px] text-pitstop-muted mt-0.5">
+                {isHindi ? 'कॉन्फ़िगर की गई डील्स' : 'Configured deals'}
+              </div>
             </Card>
 
             <Card className="p-4 bg-white border-pitstop-border">
               <div className="flex items-center justify-between text-emerald-700 mb-1 text-xs">
-                <span>Active Deals</span>
+                <span>{isHindi ? 'सक्रिय डील्स' : 'Active Deals'}</span>
                 <Sparkles className="h-3.5 w-3.5 text-emerald-600" />
               </div>
               <div className="text-2xl font-black text-emerald-600">
                 {isLoading ? '—' : activeDeals}
               </div>
-              <div className="text-[11px] text-pitstop-muted mt-0.5">Live for verified riders</div>
+              <div className="text-[11px] text-pitstop-muted mt-0.5">
+                {isHindi ? 'सत्यापित राइडर्स के लिए लाइव' : 'Live for verified riders'}
+              </div>
             </Card>
 
             <Card className="p-4 bg-white border-pitstop-border">
               <div className="flex items-center justify-between text-amber-700 mb-1 text-xs">
-                <span>Paused Deals</span>
+                <span>{isHindi ? 'रोकी गई डील्स' : 'Paused Deals'}</span>
                 <Pause className="h-3.5 w-3.5 text-amber-600" />
               </div>
               <div className="text-2xl font-black text-amber-600">
                 {isLoading ? '—' : pausedDeals}
               </div>
-              <div className="text-[11px] text-pitstop-muted mt-0.5">Temporarily inactive</div>
+              <div className="text-[11px] text-pitstop-muted mt-0.5">
+                {isHindi ? 'अस्थायी रूप से निष्क्रिय' : 'Temporarily inactive'}
+              </div>
             </Card>
 
             <Card className="p-4 bg-white border-pitstop-border">
               <div className="flex items-center justify-between text-red-700 mb-1 text-xs">
-                <span>Expired Deals</span>
+                <span>{isHindi ? 'समाप्त डील्स' : 'Expired Deals'}</span>
                 <Calendar className="h-3.5 w-3.5 text-red-600" />
               </div>
               <div className="text-2xl font-black text-red-600">
                 {isLoading ? '—' : expiredDeals}
               </div>
-              <div className="text-[11px] text-pitstop-muted mt-0.5">Past validity date</div>
+              <div className="text-[11px] text-pitstop-muted mt-0.5">
+                {isHindi ? 'वैधता समाप्त हो चुकी' : 'Past validity date'}
+              </div>
             </Card>
           </div>
 
@@ -271,10 +287,10 @@ export const MerchantDealsContent: React.FC<MerchantDealsContentProps> = ({ user
               {/* Status Tabs */}
               <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0">
                 {[
-                  { id: 'all', label: 'All Deals' },
-                  { id: 'active', label: 'Active' },
-                  { id: 'inactive', label: 'Paused' },
-                  { id: 'expired', label: 'Expired' },
+                  { id: 'all', label: isHindi ? 'सभी डील्स' : 'All Deals' },
+                  { id: 'active', label: isHindi ? 'सक्रिय' : 'Active' },
+                  { id: 'inactive', label: isHindi ? 'रोकी गई' : 'Paused' },
+                  { id: 'expired', label: isHindi ? 'समाप्त' : 'Expired' },
                 ].map((tab) => (
                   <button
                     key={tab.id}

@@ -8,7 +8,6 @@ import {
   List,
   Map as MapIcon,
   RotateCcw,
-  Info,
   Check,
   MapPin,
   ChevronRight,
@@ -16,14 +15,14 @@ import {
   AlertTriangle,
   RefreshCw
 } from 'lucide-react';
-import Link from 'next/link';
 import {
   Container,
   Card,
   Badge,
   Button,
   Select,
-  EmptyState
+  EmptyState,
+  PageHeader
 } from '@/components/ui';
 import { RestStopCard } from '@/components/rest-stops/RestStopCard';
 import { RestStopMap } from '@/components/maps/RestStopMap';
@@ -33,6 +32,7 @@ import {
   PublicRestStopsResult
 } from '@/lib/api/rest-stops';
 import { Facility, PaginationMeta } from 'shared-types';
+import { useLanguage } from '@/lib/i18n';
 
 type SortOption = 'newest' | 'rating' | 'name_asc' | 'oldest';
 type ViewMode = 'list' | 'map';
@@ -43,6 +43,7 @@ interface ExploreContentProps {
 }
 
 export function ExploreContent({ initialData, initialError }: ExploreContentProps) {
+  const { isHindi } = useLanguage();
   const searchParams = useSearchParams();
   const facilityParam = searchParams.get('facility');
   const viewParam = searchParams.get('view');
@@ -120,12 +121,12 @@ export function ExploreContent({ initialData, initialError }: ExploreContentProp
         setIsDemoFallback(Boolean(data.isDemoFallback));
       } catch (err: any) {
         if (err.name === 'AbortError') return;
-        setError(err.message || 'Unable to communicate with the rest stops service.');
+        setError(err.message || (isHindi ? 'रेस्ट स्टॉप्स सेवा से संपर्क नहीं हो पाया।' : 'Unable to communicate with the rest stops service.'));
       } finally {
         setIsLoading(false);
       }
     },
-    []
+    [isHindi]
   );
 
   // Debounced filter watcher
@@ -168,8 +169,25 @@ export function ExploreContent({ initialData, initialError }: ExploreContentProp
   const currentPage = pagination?.page ?? page;
   const totalPages = pagination?.totalPages ?? 1;
 
+  const headerTitle = isHindi ? 'अपना अगला पिटस्टॉप खोजें' : 'Find your next pit stop';
+  const headerDesc = isHindi
+    ? 'बेंगलुरु में डिलीवरी पार्टनर्स के लिए समर्पित विश्राम स्थल खोजें—जहाँ मिले पीने का पानी, बैठने की जगह, फोन चार्जिंग और साफ वॉशरूम।'
+    : 'Browse rest stop locations in Bengaluru designed for delivery partners to drink water, sit down, charge phones, and use restrooms between shifts.';
+  const headerBadge = isDemoFallback
+    ? (isHindi ? 'सैंपल कैटलॉग (ऑफलाइन मोड)' : 'Sample Catalog (Offline Mode)')
+    : error
+    ? (isHindi ? 'सर्विस ऑफलाइन' : 'Service Offline')
+    : (isHindi ? 'रेस्ट स्टॉप कैटलॉग' : 'Rest Stop Catalog');
+
   return (
     <>
+      {/* Dynamic Bilingual Header */}
+      <PageHeader
+        title={headerTitle}
+        description={headerDesc}
+        badge={headerBadge}
+      />
+
       {/* Search & Filter Control Bar */}
       <section className="border-b border-pitstop-border bg-white py-6" aria-label="Search and filter controls">
         <Container size="xl">
@@ -180,7 +198,7 @@ export function ExploreContent({ initialData, initialError }: ExploreContentProp
               <div className="w-full sm:w-64">
                 <Select
                   id="sort-select"
-                  label="Sort By"
+                  label={isHindi ? 'क्रमबद्ध करें' : 'Sort By'}
                   aria-label="Sort rest stops by criteria"
                   value={sortBy}
                   onChange={(e) => {
@@ -188,10 +206,10 @@ export function ExploreContent({ initialData, initialError }: ExploreContentProp
                     setPage(1);
                   }}
                   options={[
-                    { label: 'Newest Added', value: 'newest' },
-                    { label: 'Highest Rated', value: 'rating' },
-                    { label: 'Name (A–Z)', value: 'name_asc' },
-                    { label: 'Oldest First', value: 'oldest' },
+                    { label: isHindi ? 'नवीनतम जोड़े गए' : 'Newest Added', value: 'newest' },
+                    { label: isHindi ? 'सर्वोच्च रेटिंग' : 'Highest Rated', value: 'rating' },
+                    { label: isHindi ? 'नाम (A–Z)' : 'Name (A–Z)', value: 'name_asc' },
+                    { label: isHindi ? 'पुराने पहले' : 'Oldest First', value: 'oldest' },
                   ]}
                 />
               </div>
@@ -199,7 +217,7 @@ export function ExploreContent({ initialData, initialError }: ExploreContentProp
               {/* View Selector Controls: List vs Map */}
               <div className="w-full sm:w-auto flex flex-col gap-1.5">
                 <span className="text-xs font-semibold text-pitstop-charcoal">
-                  Display View
+                  {isHindi ? 'प्रदर्शन दृश्य' : 'Display View'}
                 </span>
                 <div
                   className="flex items-center rounded-lg border border-pitstop-border bg-pitstop-bg p-1 min-h-[44px]"
@@ -217,7 +235,7 @@ export function ExploreContent({ initialData, initialError }: ExploreContentProp
                     aria-pressed={viewMode === 'map'}
                   >
                     <MapIcon className="h-3.5 w-3.5" aria-hidden="true" />
-                    <span>Map View</span>
+                    <span>{isHindi ? 'मैप व्यू' : 'Map View'}</span>
                   </button>
                   <button
                     type="button"
@@ -230,7 +248,7 @@ export function ExploreContent({ initialData, initialError }: ExploreContentProp
                     aria-pressed={viewMode === 'list'}
                   >
                     <List className="h-3.5 w-3.5" aria-hidden="true" />
-                    <span>List View</span>
+                    <span>{isHindi ? 'लिस्ट व्यू' : 'List View'}</span>
                   </button>
                 </div>
               </div>
@@ -246,7 +264,9 @@ export function ExploreContent({ initialData, initialError }: ExploreContentProp
                 aria-expanded={showMobileFilters}
                 aria-controls="facility-filters-panel"
               >
-                {showMobileFilters ? 'Hide Facility Filters' : 'Filter by Facilities'}
+                {showMobileFilters
+                  ? (isHindi ? 'सुविधा फ़िल्टर छिपाएं' : 'Hide Facility Filters')
+                  : (isHindi ? 'सुविधाओं से फ़िल्टर करें' : 'Filter by Facilities')}
                 {selectedFacilities.length > 0 && ` (${selectedFacilities.length})`}
               </Button>
 
@@ -257,7 +277,7 @@ export function ExploreContent({ initialData, initialError }: ExploreContentProp
                   className="text-xs text-pitstop-muted hover:text-pitstop-charcoal font-semibold inline-flex items-center gap-1 p-2 rounded focus:outline-none focus:ring-2 focus:ring-pitstop-yellow"
                 >
                   <RotateCcw className="h-3.5 w-3.5" aria-hidden="true" />
-                  Reset all
+                  {isHindi ? 'सभी रीसेट करें' : 'Reset all'}
                 </button>
               )}
             </div>
@@ -265,14 +285,13 @@ export function ExploreContent({ initialData, initialError }: ExploreContentProp
             {/* Facility Multi-Select Filters Panel */}
             <div
               id="facility-filters-panel"
-              className={`${showMobileFilters ? 'block' : 'hidden'
-                } md:block border-t border-pitstop-border pt-4`}
+              className={`${showMobileFilters ? 'block' : 'hidden'} md:block border-t border-pitstop-border pt-4`}
             >
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-2.5">
                 <div className="flex items-center gap-2">
                   <Filter className="h-4 w-4 text-pitstop-muted shrink-0" aria-hidden="true" />
                   <span className="text-xs font-bold uppercase tracking-wider text-pitstop-charcoal">
-                    Filter by Facility Amenities (Select multiple)
+                    {isHindi ? 'सुविधाओं के अनुसार फ़िल्टर करें (एक से अधिक चुनें)' : 'Filter by Facility Amenities (Select multiple)'}
                   </span>
                 </div>
                 {hasActiveFilters && (
@@ -282,7 +301,7 @@ export function ExploreContent({ initialData, initialError }: ExploreContentProp
                     className="hidden md:inline-flex items-center gap-1 text-xs text-pitstop-muted hover:text-pitstop-charcoal font-semibold rounded px-1.5 py-0.5 focus:outline-none focus:ring-2 focus:ring-pitstop-yellow"
                   >
                     <RotateCcw className="h-3 w-3" aria-hidden="true" />
-                    Reset all filters
+                    {isHindi ? 'सभी फ़िल्टर हटाएं' : 'Reset all filters'}
                   </button>
                 )}
               </div>
@@ -293,7 +312,7 @@ export function ExploreContent({ initialData, initialError }: ExploreContentProp
                 role="group"
                 aria-label="Filter rest stops by facilities"
               >
-                {FILTERABLE_FACILITY_LIST.map(({ id, label, icon }) => {
+                {FILTERABLE_FACILITY_LIST.map(({ id, label, labelHi, icon }) => {
                   const isSelected = selectedFacilities.includes(id);
                   return (
                     <button
@@ -307,7 +326,7 @@ export function ExploreContent({ initialData, initialError }: ExploreContentProp
                       aria-pressed={isSelected}
                     >
                       <span className="inline-flex shrink-0">{icon}</span>
-                      <span>{label}</span>
+                      <span>{isHindi ? labelHi : label}</span>
                       {isSelected ? (
                         <Check className="h-3.5 w-3.5 text-pitstop-charcoal ml-0.5 stroke-[2.5]" aria-hidden="true" />
                       ) : null}
@@ -329,10 +348,12 @@ export function ExploreContent({ initialData, initialError }: ExploreContentProp
               <AlertTriangle className="h-5 w-5 text-amber-700 shrink-0 mt-0.5" aria-hidden="true" />
               <div className="text-xs text-amber-900 space-y-1">
                 <p className="font-bold">
-                  Sample Catalog Active (Offline Development Mode)
+                  {isHindi ? 'सैंपल कैटलॉग सक्रिय (ऑफलाइन डेवलपमेंट मोड)' : 'Sample Catalog Active (Offline Development Mode)'}
                 </p>
                 <p>
-                  The backend API service is unreachable or running in offline mode. Illustrative demo rest stops are shown for interface testing.
+                  {isHindi
+                    ? 'बैकएंड सेवा ऑफ़लाइन चल रही है। इंटरफ़ेस परीक्षण के लिए सांकेतिक रेस्ट स्टॉप्स दिखाए गए हैं।'
+                    : 'The backend API service is unreachable or running in offline mode. Illustrative demo rest stops are shown for interface testing.'}
                 </p>
               </div>
             </div>
@@ -343,23 +364,26 @@ export function ExploreContent({ initialData, initialError }: ExploreContentProp
             <div className="flex items-center gap-2">
               <span className="text-sm font-bold text-pitstop-charcoal">
                 {isLoading ? (
-                  'Updating rest stops...'
+                  isHindi ? 'रेस्ट स्टॉप्स अपडेट हो रहे हैं...' : 'Updating rest stops...'
                 ) : (
-                  <>
-                    Showing {items.length > 0 ? (currentPage - 1) * 12 + 1 : 0}–
-                    {Math.min(currentPage * 12, totalCount)} of {totalCount} rest stops
-                  </>
+                  isHindi ? (
+                    `${totalCount} में से ${items.length > 0 ? (currentPage - 1) * 12 + 1 : 0}–${Math.min(currentPage * 12, totalCount)} रेस्ट स्टॉप्स`
+                  ) : (
+                    `Showing ${items.length > 0 ? (currentPage - 1) * 12 + 1 : 0}–${Math.min(currentPage * 12, totalCount)} of ${totalCount} rest stops`
+                  )
                 )}
               </span>
               <span className="text-xs text-pitstop-muted">
-                {isDemoFallback ? '(Sample Catalog — Bengaluru)' : '(Active Rest Stops)'}
+                {isDemoFallback
+                  ? (isHindi ? '(सैंपल कैटलॉग — बेंगलुरु)' : '(Sample Catalog — Bengaluru)')
+                  : (isHindi ? '(सक्रिय रेस्ट स्टॉप्स)' : '(Active Rest Stops)')}
               </span>
             </div>
 
             {/* Active Filters Display */}
             {hasActiveFilters && (
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-xs text-pitstop-muted">Active:</span>
+                <span className="text-xs text-pitstop-muted">{isHindi ? 'सक्रिय:' : 'Active:'}</span>
                 {selectedFacilities.map((fac) => (
                   <Badge key={fac} variant="yellow" size="sm">
                     {fac.replace('_', ' ')}
@@ -370,7 +394,7 @@ export function ExploreContent({ initialData, initialError }: ExploreContentProp
                   onClick={resetFilters}
                   className="text-xs text-pitstop-muted hover:text-red-600 underline ml-1 focus:outline-none focus:ring-2 focus:ring-pitstop-yellow rounded"
                 >
-                  Clear all
+                  {isHindi ? 'सभी हटाएं' : 'Clear all'}
                 </button>
               </div>
             )}
@@ -383,7 +407,7 @@ export function ExploreContent({ initialData, initialError }: ExploreContentProp
                 <AlertTriangle className="h-6 w-6" aria-hidden="true" />
               </div>
               <h3 className="text-base font-bold text-red-900">
-                Unable to Load Rest Stops
+                {isHindi ? 'रेस्ट स्टॉप्स लोड नहीं हो पाए' : 'Unable to Load Rest Stops'}
               </h3>
               <p className="mt-1 text-xs text-red-700 max-w-md mx-auto">
                 {error}
@@ -395,7 +419,7 @@ export function ExploreContent({ initialData, initialError }: ExploreContentProp
                   leftIcon={<RefreshCw className="h-4 w-4" />}
                   onClick={() => loadRestStops(page, selectedFacilities, sortBy)}
                 >
-                  Retry Request
+                  {isHindi ? 'पुनः प्रयास करें' : 'Retry Request'}
                 </Button>
               </div>
             </Card>
@@ -428,11 +452,13 @@ export function ExploreContent({ initialData, initialError }: ExploreContentProp
                         disabled={currentPage <= 1 || isLoading}
                         aria-label="Go to previous page"
                       >
-                        Previous
+                        {isHindi ? 'पिछला' : 'Previous'}
                       </Button>
 
                       <span className="text-xs font-semibold text-pitstop-charcoal">
-                        Page {currentPage} of {totalPages}
+                        {isHindi
+                          ? `पृष्ठ ${currentPage} का ${totalPages}`
+                          : `Page ${currentPage} of ${totalPages}`}
                       </span>
 
                       <Button
@@ -443,19 +469,23 @@ export function ExploreContent({ initialData, initialError }: ExploreContentProp
                         disabled={currentPage >= totalPages || isLoading}
                         aria-label="Go to next page"
                       >
-                        Next
+                        {isHindi ? 'अगला' : 'Next'}
                       </Button>
                     </nav>
                   )}
                 </>
               ) : (
                 <EmptyState
-                  title="No Rest Stops Found"
-                  description="No rest stops match all selected facility amenities. Try removing some filters to see available stops."
+                  title={isHindi ? 'कोई रेस्ट स्टॉप नहीं मिला' : 'No Rest Stops Found'}
+                  description={
+                    isHindi
+                      ? 'चुनी गई सुविधाओं से मेल खाने वाला कोई स्थान नहीं मिला। अधिक स्टॉप देखने के लिए कुछ फ़िल्टर हटाएं।'
+                      : 'No rest stops match all selected facility amenities. Try removing some filters to see available stops.'
+                  }
                   icon={<Filter className="h-7 w-7 text-pitstop-yellow-dark" />}
                   action={
                     <Button variant="primary" size="sm" onClick={resetFilters} leftIcon={<RotateCcw className="h-4 w-4" />}>
-                      Reset All Filters
+                      {isHindi ? 'सभी फ़िल्टर हटाएं' : 'Reset All Filters'}
                     </Button>
                   }
                 />
@@ -479,11 +509,13 @@ export function ExploreContent({ initialData, initialError }: ExploreContentProp
                     <div className="flex items-center gap-2">
                       <MapPin className="h-4 w-4 text-pitstop-yellow-dark" />
                       <h3 className="text-base font-bold text-pitstop-charcoal">
-                        Nearby Rest Stops ({items.length})
+                        {isHindi ? `आसपास के रेस्ट स्टॉप्स (${items.length})` : `Nearby Rest Stops (${items.length})`}
                       </h3>
                     </div>
                     <span className="text-xs text-pitstop-muted">
-                      Select any rest stop card to see facilities and check-in options
+                      {isHindi
+                        ? 'सुविधाएं और चेक-इन विकल्प देखने के लिए किसी भी कार्ड को चुनें'
+                        : 'Select any rest stop card to see facilities and check-in options'}
                     </span>
                   </div>
 
@@ -512,11 +544,13 @@ export function ExploreContent({ initialData, initialError }: ExploreContentProp
                         disabled={currentPage <= 1 || isLoading}
                         aria-label="Go to previous page"
                       >
-                        Previous
+                        {isHindi ? 'पिछला' : 'Previous'}
                       </Button>
 
                       <span className="text-xs font-semibold text-pitstop-charcoal">
-                        Page {currentPage} of {totalPages}
+                        {isHindi
+                          ? `पृष्ठ ${currentPage} का ${totalPages}`
+                          : `Page ${currentPage} of ${totalPages}`}
                       </span>
 
                       <Button
@@ -527,7 +561,7 @@ export function ExploreContent({ initialData, initialError }: ExploreContentProp
                         disabled={currentPage >= totalPages || isLoading}
                         aria-label="Go to next page"
                       >
-                        Next
+                        {isHindi ? 'अगला' : 'Next'}
                       </Button>
                     </nav>
                   )}

@@ -4,10 +4,12 @@ import React from 'react';
 import Link from 'next/link';
 import { Navigation, ArrowRight } from 'lucide-react';
 import { useScrollReveal } from './useScrollReveal';
+import { useLanguage } from '@/lib/i18n';
 
 export const LandingCtaAndFooter: React.FC = () => {
   const [ctaRef, isCtaRevealed] = useScrollReveal();
   const [footerRef, isFooterRevealed] = useScrollReveal(0.05);
+  const { isHindi } = useLanguage();
 
   return (
     <div className="bg-[#0B0B0F] text-white pt-10 sm:pt-16 lg:pt-20 pb-8 sm:pb-12">
@@ -32,22 +34,26 @@ export const LandingCtaAndFooter: React.FC = () => {
 
           <div className="relative">
             <div className="inline-flex items-center gap-1.5 rounded-full bg-white/5 border border-white/10 px-3 py-1 text-xs font-bold text-[#FBBF24] mb-3 sm:mb-4">
-              <span>BENGALURU NETWORK PILOT</span>
+              <span>{isHindi ? 'बेंगलुरु नेटवर्क पायलट' : 'BENGALURU NETWORK PILOT'}</span>
             </div>
 
             <h2 className="text-xl sm:text-3xl lg:text-4xl font-black tracking-tight text-white leading-tight max-w-2xl mx-auto">
-              Delivery riders keep India moving. Give them a place to stop.
+              {isHindi
+                ? 'डिलीवरी राइडर्स भारत की गति बनाए रखते हैं। उन्हें दें एक सम्मानजनक विश्राम स्थल।'
+                : 'Delivery riders keep India moving. Give them a place to stop.'}
             </h2>
 
             <p className="mt-2.5 sm:mt-3 text-xs sm:text-sm text-gray-400 max-w-lg mx-auto leading-relaxed">
-              Open directly on any smartphone. Locate free drinking water, fast phone charging, and clean washrooms in seconds.
+              {isHindi
+                ? 'किसी भी स्मार्टफोन पर तुरंत खोलें। कुछ ही सेकंड में मुफ्त पीने का पानी, फास्ट चार्जिंग और साफ वॉशरूम खोजें।'
+                : 'Open directly on any smartphone. Locate free drinking water, fast phone charging, and clean washrooms in seconds.'}
             </p>
 
             <div className="mt-6 sm:mt-8 flex justify-center">
               <Link href="/explore" className="w-full sm:w-auto">
                 <button className="w-full sm:w-auto min-h-[46px] sm:min-h-[50px] group inline-flex items-center justify-center gap-2 rounded-xl sm:rounded-2xl bg-[#FBBF24] px-6 sm:px-8 py-3 text-sm sm:text-base font-extrabold text-[#0B0B0F] shadow-lg shadow-[#FBBF24]/10 transition-all duration-200 hover:bg-amber-400 active:scale-[0.97]">
                   <Navigation className="h-4 w-4 fill-[#0B0B0F] stroke-[#0B0B0F] transition-transform duration-200 group-hover:-rotate-12" />
-                  <span>Find Nearby Rest Stops</span>
+                  <span>{isHindi ? 'पास के रेस्ट स्टॉप्स खोजें' : 'Find Nearby Rest Stops'}</span>
                   <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
                 </button>
               </Link>
@@ -80,7 +86,9 @@ export const LandingCtaAndFooter: React.FC = () => {
               </Link>
 
               <p className="mt-2 sm:mt-2.5 max-w-sm text-[11px] sm:text-xs text-gray-400 leading-relaxed">
-                India&apos;s dedicated sanctuary network connecting gig delivery riders with verified rest stops, clean water, charging, and afternoon micro-jobs.
+                {isHindi
+                  ? 'भारत का पहला समर्पित नेटवर्क जो गिग डिलीवरी राइडर्स को वेरिफाइड विश्राम स्थलों, शुद्ध पानी, चार्जिंग और दोपहर के माइक्रो-जॉब्स से जोड़ता है।'
+                  : "India's dedicated sanctuary network connecting gig delivery riders with verified rest stops, clean water, charging, and afternoon micro-jobs."}
               </p>
             </div>
 
@@ -90,27 +98,27 @@ export const LandingCtaAndFooter: React.FC = () => {
               {/* Platform Links (3 cols on desktop) */}
               <div className="md:col-span-3">
                 <h4 className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-white mb-2 sm:mb-3">
-                  Platform
+                  {isHindi ? 'प्लेटफॉर्म' : 'Platform'}
                 </h4>
                 <ul className="space-y-1.5 sm:space-y-2 text-[11px] sm:text-xs">
                   <li>
                     <Link href="/explore" className="hover:text-white transition-colors">
-                      Find Rest Stops
+                      {isHindi ? 'रेस्ट स्टॉप्स खोजें' : 'Find Rest Stops'}
                     </Link>
                   </li>
                   <li>
                     <Link href="/jobs" className="hover:text-white transition-colors">
-                      Micro-Jobs
+                      {isHindi ? 'माइक्रो-जॉब्स' : 'Micro-Jobs'}
                     </Link>
                   </li>
                   <li>
                     <a href="#how-it-works" className="hover:text-white transition-colors">
-                      How It Works
+                      {isHindi ? 'यह कैसे काम करता है' : 'How It Works'}
                     </a>
                   </li>
                   <li>
                     <a href="#riders" className="hover:text-white transition-colors">
-                      Rider Benefits
+                      {isHindi ? 'राइडर सुविधाएं' : 'Rider Benefits'}
                     </a>
                   </li>
                 </ul>
@@ -119,22 +127,22 @@ export const LandingCtaAndFooter: React.FC = () => {
               {/* Merchant Links (2 cols on desktop) */}
               <div className="md:col-span-2">
                 <h4 className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-white mb-2 sm:mb-3">
-                  Merchants
+                  {isHindi ? 'मर्चेंट्स' : 'Merchants'}
                 </h4>
                 <ul className="space-y-1.5 sm:space-y-2 text-[11px] sm:text-xs">
                   <li>
                     <Link href="/for-merchants" className="hover:text-white transition-colors">
-                      Overview
+                      {isHindi ? 'अवलोकन' : 'Overview'}
                     </Link>
                   </li>
                   <li>
                     <Link href="/merchant/dashboard" className="hover:text-white transition-colors">
-                      Dashboard
+                      {isHindi ? 'डैशबोर्ड' : 'Dashboard'}
                     </Link>
                   </li>
                   <li>
                     <Link href="/for-merchants" className="hover:text-white transition-colors">
-                      Host Venue
+                      {isHindi ? 'दुकान जोड़ें' : 'Host Venue'}
                     </Link>
                   </li>
                 </ul>
@@ -143,27 +151,27 @@ export const LandingCtaAndFooter: React.FC = () => {
               {/* Legal & Support Links (3 cols on desktop) */}
               <div className="md:col-span-3">
                 <h4 className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-white mb-2 sm:mb-3">
-                  Legal &amp; Support
+                  {isHindi ? 'कानूनी एवं सहायता' : 'Legal & Support'}
                 </h4>
                 <ul className="space-y-1.5 sm:space-y-2 text-[11px] sm:text-xs">
                   <li>
                     <Link href="/privacy" className="hover:text-white transition-colors">
-                      Privacy Policy
+                      {isHindi ? 'गोपनीयता नीति' : 'Privacy Policy'}
                     </Link>
                   </li>
                   <li>
                     <Link href="/terms" className="hover:text-white transition-colors">
-                      Terms of Service
+                      {isHindi ? 'सेवा की शर्तें' : 'Terms of Service'}
                     </Link>
                   </li>
                   <li>
                     <Link href="/about" className="hover:text-white transition-colors">
-                      About PitStop
+                      {isHindi ? 'PitStop के बारे में' : 'About PitStop'}
                     </Link>
                   </li>
                   <li>
                     <Link href="/contact" className="hover:text-white transition-colors">
-                      Contact Us
+                      {isHindi ? 'संपर्क करें' : 'Contact Us'}
                     </Link>
                   </li>
                 </ul>
@@ -175,8 +183,16 @@ export const LandingCtaAndFooter: React.FC = () => {
 
           {/* Copyright & Location Bar: Balanced and aligned */}
           <div className="pt-4 sm:pt-5 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-4 text-[11px] sm:text-xs text-gray-500 text-center sm:text-left">
-            <div>© 2026 PitStop. Built for India&apos;s road heroes.</div>
-            <div className="text-gray-500">Bengaluru Pilot Active • Koramangala &amp; HSR</div>
+            <div>
+              {isHindi
+                ? '© 2026 PitStop. भारत के सड़क नायकों के लिए समर्पित।'
+                : "© 2026 PitStop. Built for India's road heroes."}
+            </div>
+            <div className="text-gray-500">
+              {isHindi
+                ? 'बेंगलुरु पायलट सक्रिय • कोरमंगला एवं HSR'
+                : 'Bengaluru Pilot Active • Koramangala & HSR'}
+            </div>
           </div>
         </footer>
 

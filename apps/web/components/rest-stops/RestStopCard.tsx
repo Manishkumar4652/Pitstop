@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import Link from 'next/link';
 import { 
@@ -12,12 +14,15 @@ import { Card, Badge, Button } from '@/components/ui';
 import { RestStopDisplayItem } from '@/lib/api/rest-stops';
 import { FACILITY_METADATA } from './facility-config';
 import { CapacityStatus } from 'shared-types';
+import { useLanguage } from '@/lib/i18n';
 
 export interface RestStopCardProps {
   stop: RestStopDisplayItem;
 }
 
 export const RestStopCard: React.FC<RestStopCardProps> = ({ stop }) => {
+  const { isHindi } = useLanguage();
+
   const {
     slug,
     name,
@@ -37,19 +42,19 @@ export const RestStopCard: React.FC<RestStopCardProps> = ({ stop }) => {
       case CapacityStatus.AVAILABLE:
         return (
           <Badge variant="success" size="sm" icon={<Users className="h-3 w-3" />}>
-            Available ({current}/{max} spots)
+            {isHindi ? `उपलब्ध (${current}/${max} स्थान)` : `Available (${current}/${max} spots)`}
           </Badge>
         );
       case CapacityStatus.BUSY:
         return (
           <Badge variant="warning" size="sm" icon={<Users className="h-3 w-3" />}>
-            Busy ({current}/{max} spots)
+            {isHindi ? `व्यस्त (${current}/${max} स्थान)` : `Busy (${current}/${max} spots)`}
           </Badge>
         );
       case CapacityStatus.FULL:
         return (
           <Badge variant="danger" size="sm" icon={<Users className="h-3 w-3" />}>
-            Full ({current}/{max} spots)
+            {isHindi ? `पूर्ण (${current}/${max} स्थान)` : `Full (${current}/${max} spots)`}
           </Badge>
         );
       default:
@@ -67,7 +72,7 @@ export const RestStopCard: React.FC<RestStopCardProps> = ({ stop }) => {
               {getCapacityBadge(capacity.status, capacity.currentOccupancy, capacity.maxRiders)}
               {isDemoData && (
                 <span className="text-[10px] text-amber-800 font-semibold tracking-wider bg-amber-50 border border-amber-300 px-1.5 py-0.5 rounded uppercase">
-                  Sample Data
+                  {isHindi ? 'नमूना डेटा' : 'Sample Data'}
                 </span>
               )}
             </div>
@@ -83,7 +88,7 @@ export const RestStopCard: React.FC<RestStopCardProps> = ({ stop }) => {
               </div>
             ) : (
               <span className="text-[11px] text-pitstop-muted bg-pitstop-bg border border-pitstop-border px-2 py-0.5 rounded-full">
-                New Venue
+                {isHindi ? 'नया वेन्यू' : 'New Venue'}
               </span>
             )}
           </div>
@@ -102,7 +107,7 @@ export const RestStopCard: React.FC<RestStopCardProps> = ({ stop }) => {
           <p className="mt-1 text-xs text-pitstop-muted flex items-center gap-1.5 break-words">
             <Store className="h-3.5 w-3.5 shrink-0 text-pitstop-muted" aria-hidden="true" />
             <span className="font-medium text-pitstop-charcoal">
-              {merchantName || 'Rest Stop Partner'}
+              {merchantName || (isHindi ? 'रेस्ट स्टॉप पार्टनर' : 'Rest Stop Partner')}
             </span>
             {venueType && (
               <>
@@ -124,7 +129,7 @@ export const RestStopCard: React.FC<RestStopCardProps> = ({ stop }) => {
           {/* Facility Amenities List */}
           <div className="mt-4">
             <div className="text-[11px] font-semibold text-pitstop-muted uppercase tracking-wider mb-1.5">
-              Available Facilities
+              {isHindi ? 'उपलब्ध सुविधाएं' : 'Available Facilities'}
             </div>
             <div className="flex flex-wrap gap-1.5" role="list" aria-label="Available amenities">
               {facilities.map((facilityKey) => {
@@ -138,7 +143,7 @@ export const RestStopCard: React.FC<RestStopCardProps> = ({ stop }) => {
                     title={meta.description}
                   >
                     {meta.icon}
-                    <span>{meta.label}</span>
+                    <span>{isHindi ? meta.labelHi : meta.label}</span>
                   </span>
                 );
               })}
@@ -151,7 +156,9 @@ export const RestStopCard: React.FC<RestStopCardProps> = ({ stop }) => {
               <Sparkles className="h-4 w-4 text-pitstop-yellow-dark shrink-0 mt-0.5" aria-hidden="true" />
               <div>
                 <span className="font-semibold text-pitstop-charcoal">{dealBadge}</span>
-                <span className="block text-[11px] text-pitstop-muted mt-0.5">Rider perk on check-in</span>
+                <span className="block text-[11px] text-pitstop-muted mt-0.5">
+                  {isHindi ? 'चेक-इन पर राइडर लाभ' : 'Rider perk on check-in'}
+                </span>
               </div>
             </div>
           )}
@@ -160,7 +167,9 @@ export const RestStopCard: React.FC<RestStopCardProps> = ({ stop }) => {
         {/* Card Footer: Action Link */}
         <div className="mt-6 border-t border-pitstop-border pt-4 flex items-center justify-between gap-2">
           <span className="text-[11px] text-pitstop-muted">
-            {isDemoData ? 'Sample location' : 'Rest stop location'}
+            {isDemoData
+              ? (isHindi ? 'नमूना स्थान' : 'Sample location')
+              : (isHindi ? 'रेस्ट स्टॉप स्थान' : 'Rest stop location')}
           </span>
           <Link href={`/rest-stops/${slug}`}>
             <Button 
@@ -169,7 +178,7 @@ export const RestStopCard: React.FC<RestStopCardProps> = ({ stop }) => {
               rightIcon={<ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />}
               aria-label={`View details for ${name}`}
             >
-              View Details
+              {isHindi ? 'विवरण देखें' : 'View Details'}
             </Button>
           </Link>
         </div>

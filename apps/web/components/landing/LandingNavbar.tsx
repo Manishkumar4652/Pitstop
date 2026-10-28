@@ -3,11 +3,14 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Navigation, ArrowRight, X } from 'lucide-react';
+import { useLanguage } from '@/lib/i18n';
+import { LanguageToggle } from '@/components/common/LanguageToggle';
 
 export const LandingNavbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const { isHindi } = useLanguage();
 
   // Trigger desktop entrance transitions on mount
   useEffect(() => {
@@ -40,10 +43,10 @@ export const LandingNavbar: React.FC = () => {
   }, [isOpen]);
 
   const navLinks = [
-    { label: 'How it Works', href: '#how-it-works' },
-    { label: 'Riders', href: '#riders' },
-    { label: 'Merchants', href: '#merchants' },
-    { label: 'FAQ', href: '#faq' },
+    { label: isHindi ? 'यह कैसे काम करता है' : 'How it Works', href: '#how-it-works' },
+    { label: isHindi ? 'राइडर्स' : 'Riders', href: '#riders' },
+    { label: isHindi ? 'मर्चेंट्स' : 'Merchants', href: '#merchants' },
+    { label: isHindi ? 'सवाल-जवाब' : 'FAQ', href: '#faq' },
   ];
 
   return (
@@ -74,10 +77,10 @@ export const LandingNavbar: React.FC = () => {
           </Link>
 
           {/* Desktop Navigation Links - slide in from RIGHT with 70ms stagger */}
-          <nav className="hidden items-center gap-8 md:flex" aria-label="Main Navigation">
+          <nav className="hidden items-center gap-7 md:flex" aria-label="Main Navigation">
             {navLinks.map((link, idx) => (
               <a
-                key={link.label}
+                key={link.href}
                 href={link.href}
                 style={{
                   transitionDelay: `${70 + idx * 70}ms`,
@@ -92,10 +95,13 @@ export const LandingNavbar: React.FC = () => {
             ))}
           </nav>
 
-          {/* Desktop CTAs - slide in from RIGHT following the links */}
-          <div className="hidden items-center gap-3.5 md:flex">
+          {/* Desktop CTAs & Language Switcher */}
+          <div className="hidden items-center gap-3 md:flex">
+            {/* Language Switcher Pill Button */}
+            <LanguageToggle isDark={false} />
+
             <Link
-              href="/login"
+              href="/rider/login"
               style={{
                 transitionDelay: `${70 + navLinks.length * 70}ms`,
                 transitionDuration: '450ms',
@@ -104,7 +110,7 @@ export const LandingNavbar: React.FC = () => {
                 mounted ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-10'
               }`}
             >
-              Log In
+              {isHindi ? 'लॉग इन' : 'Log In'}
             </Link>
 
             <div
@@ -118,39 +124,41 @@ export const LandingNavbar: React.FC = () => {
             >
               <Link href="/explore">
                 <button className="min-h-[44px] group inline-flex items-center gap-2 rounded-xl bg-[#FBBF24] px-5 py-2.5 text-sm font-extrabold text-[#0B0B0F] shadow-sm transition-all duration-200 hover:bg-amber-400 active:scale-[0.97]">
-                  <span>Find a Rest Stop</span>
+                  <span>{isHindi ? 'रेस्ट स्टॉप खोजें' : 'Find a Rest Stop'}</span>
                   <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
                 </button>
               </Link>
             </div>
           </div>
 
-          {/* Mobile Hamburger Button with Morphing Icon (Min 44x44px touch target) */}
-          <button
-            type="button"
-            onClick={() => setIsOpen(!isOpen)}
-            className="relative flex h-11 w-11 items-center justify-center rounded-xl border border-black/10 bg-white text-[#0B0B0F] md:hidden shadow-sm active:scale-[0.97] focus:outline-none focus:ring-2 focus:ring-[#FBBF24] transition-transform duration-200"
-            aria-label={isOpen ? 'Close Navigation Menu' : 'Open Navigation Menu'}
-            aria-expanded={isOpen}
-          >
-            <div className="relative flex h-4 w-5 flex-col justify-between" aria-hidden="true">
-              <span
-                className={`h-0.5 w-full bg-[#0B0B0F] rounded-full transition-all duration-300 ease-out origin-center ${
-                  isOpen ? 'translate-y-[7px] rotate-45' : ''
-                }`}
-              />
-              <span
-                className={`h-0.5 w-full bg-[#0B0B0F] rounded-full transition-opacity duration-200 ${
-                  isOpen ? 'opacity-0' : 'opacity-100'
-                }`}
-              />
-              <span
-                className={`h-0.5 w-full bg-[#0B0B0F] rounded-full transition-all duration-300 ease-out origin-center ${
-                  isOpen ? '-translate-y-[7px] -rotate-45' : ''
-                }`}
-              />
-            </div>
-          </button>
+          {/* Mobile Right Controls: Hamburger Button */}
+          <div className="flex items-center md:hidden">
+            <button
+              type="button"
+              onClick={() => setIsOpen(!isOpen)}
+              className="relative flex h-11 w-11 items-center justify-center rounded-xl border border-black/10 bg-white text-[#0B0B0F] shadow-sm active:scale-[0.97] focus:outline-none focus:ring-2 focus:ring-[#FBBF24] transition-transform duration-200"
+              aria-label={isOpen ? 'Close Navigation Menu' : 'Open Navigation Menu'}
+              aria-expanded={isOpen}
+            >
+              <div className="relative flex h-4 w-5 flex-col justify-between" aria-hidden="true">
+                <span
+                  className={`h-0.5 w-full bg-[#0B0B0F] rounded-full transition-all duration-300 ease-out origin-center ${
+                    isOpen ? 'translate-y-[7px] rotate-45' : ''
+                  }`}
+                />
+                <span
+                  className={`h-0.5 w-full bg-[#0B0B0F] rounded-full transition-opacity duration-200 ${
+                    isOpen ? 'opacity-0' : 'opacity-100'
+                  }`}
+                />
+                <span
+                  className={`h-0.5 w-full bg-[#0B0B0F] rounded-full transition-all duration-300 ease-out origin-center ${
+                    isOpen ? '-translate-y-[7px] -rotate-45' : ''
+                  }`}
+                />
+              </div>
+            </button>
+          </div>
 
         </div>
       </header>
@@ -191,11 +199,19 @@ export const LandingNavbar: React.FC = () => {
                 </button>
               </div>
 
+              {/* Language Switcher inside Drawer */}
+              <div className="mt-4 flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
+                <span className="text-xs font-bold text-gray-300">
+                  {isHindi ? 'भाषा चुनें:' : 'Language:'}
+                </span>
+                <LanguageToggle isDark={true} />
+              </div>
+
               {/* Nav Links with 50ms Stagger Fade-in Effect */}
               <nav className="mt-6 flex flex-col gap-1.5" aria-label="Mobile Navigation Links">
                 {navLinks.map((link, idx) => (
                   <a
-                    key={link.label}
+                    key={link.href}
                     href={link.href}
                     onClick={() => setIsOpen(false)}
                     style={{
@@ -212,11 +228,19 @@ export const LandingNavbar: React.FC = () => {
             {/* Bottom Actions */}
             <div className="pt-6 border-t border-white/10 flex flex-col gap-3">
               <Link
-                href="/login"
+                href="/rider/login"
                 onClick={() => setIsOpen(false)}
                 className="min-h-[48px] flex items-center justify-center w-full rounded-xl border border-white/15 bg-white/5 text-sm font-bold text-white hover:bg-white/10 active:scale-[0.97] transition-all duration-200"
               >
-                Log In
+                {isHindi ? 'राइडर लॉग इन' : 'Rider Log In'}
+              </Link>
+
+              <Link
+                href="/merchant/login"
+                onClick={() => setIsOpen(false)}
+                className="min-h-[48px] flex items-center justify-center w-full rounded-xl border border-white/15 bg-white/5 text-sm font-bold text-gray-300 hover:text-white hover:bg-white/10 active:scale-[0.97] transition-all duration-200"
+              >
+                {isHindi ? 'मर्चेंट पोर्टल' : 'Merchant Portal'}
               </Link>
 
               <Link
@@ -224,7 +248,7 @@ export const LandingNavbar: React.FC = () => {
                 onClick={() => setIsOpen(false)}
                 className="min-h-[48px] group flex items-center justify-center gap-2 w-full rounded-xl bg-[#FBBF24] text-sm font-extrabold text-black shadow-md hover:bg-amber-400 active:scale-[0.97] transition-all duration-200"
               >
-                <span>Find a Rest Stop</span>
+                <span>{isHindi ? 'रेस्ट स्टॉप खोजें' : 'Find a Rest Stop'}</span>
                 <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
               </Link>
             </div>

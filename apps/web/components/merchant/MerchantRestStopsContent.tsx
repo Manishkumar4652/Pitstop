@@ -39,12 +39,14 @@ import {
 import { fetchMerchantRestStops } from '@/lib/api/merchant-rest-stops';
 import { VenueQrModal } from './VenueQrModal';
 import { EditRestStopModal } from './EditRestStopModal';
+import { useLanguage } from '@/lib/i18n';
 
 interface MerchantRestStopsContentProps {
   user: UserPublicProfile;
 }
 
 export const MerchantRestStopsContent: React.FC<MerchantRestStopsContentProps> = ({ user }) => {
+  const { isHindi } = useLanguage();
   const [restStops, setRestStops] = useState<RestStopMerchantResponse[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -92,21 +94,21 @@ export const MerchantRestStopsContent: React.FC<MerchantRestStopsContentProps> =
         return (
           <Badge variant="success" size="sm" className="gap-1 font-semibold">
             <CheckCircle2 className="h-3 w-3" />
-            Live &amp; Active
+            {isHindi ? 'सक्रिय व लाइव' : 'Live & Active'}
           </Badge>
         );
       case RestStopStatus.PENDING_APPROVAL:
         return (
           <Badge variant="warning" size="sm" className="gap-1 font-semibold">
             <Clock className="h-3 w-3" />
-            Pending Admin Approval
+            {isHindi ? 'सत्यापन लंबित' : 'Pending Admin Approval'}
           </Badge>
         );
       case RestStopStatus.SUSPENDED:
         return (
           <Badge variant="danger" size="sm" className="gap-1 font-semibold">
             <AlertCircle className="h-3 w-3" />
-            Suspended
+            {isHindi ? 'निलंबित' : 'Suspended'}
           </Badge>
         );
       default:
@@ -117,11 +119,11 @@ export const MerchantRestStopsContent: React.FC<MerchantRestStopsContentProps> =
   const getCapacityBadge = (status: CapacityStatus) => {
     switch (status) {
       case CapacityStatus.AVAILABLE:
-        return <Badge variant="success" size="sm">Available</Badge>;
+        return <Badge variant="success" size="sm">{isHindi ? 'सीटें उपलब्ध' : 'Available'}</Badge>;
       case CapacityStatus.BUSY:
-        return <Badge variant="warning" size="sm">Busy</Badge>;
+        return <Badge variant="warning" size="sm">{isHindi ? 'मध्यम' : 'Busy'}</Badge>;
       case CapacityStatus.FULL:
-        return <Badge variant="danger" size="sm">Full</Badge>;
+        return <Badge variant="danger" size="sm">{isHindi ? 'फुल (सीटें भरी हैं)' : 'Full'}</Badge>;
       default:
         return null;
     }
@@ -133,14 +135,18 @@ export const MerchantRestStopsContent: React.FC<MerchantRestStopsContentProps> =
   return (
     <main id="main-content" className="pb-20 md:pb-12">
       <PageHeader
-        title="My Rest Stops Overview"
-        description="Manage your physical rest facilities, review amenity provisions, track administrative approval, and access venue QR check-in posters."
-        badge="Merchant Station"
+        title={isHindi ? 'मेरे रेस्ट स्टॉप्स अवलोकन' : 'My Rest Stops Overview'}
+        description={
+          isHindi
+            ? 'अपनी भौतिक विश्राम सुविधाओं को प्रबंधित करें, सुविधाओं की समीक्षा करें और वेन्यू QR चेक-इन पोस्टर्स प्राप्त करें।'
+            : 'Manage your physical rest facilities, review amenity provisions, track administrative approval, and access venue QR check-in posters.'
+        }
+        badge={isHindi ? 'मर्चेंट स्टेशन' : 'Merchant Station'}
         backHref="/merchant"
         action={
           <Link href="/merchant/rest-stops/new">
             <Button variant="primary" size="md" leftIcon={<Plus className="h-4 w-4" />}>
-              Add New Rest Stop
+              {isHindi ? 'नया रेस्ट स्टॉप जोड़ें' : 'Add New Rest Stop'}
             </Button>
           </Link>
         }
@@ -153,7 +159,7 @@ export const MerchantRestStopsContent: React.FC<MerchantRestStopsContentProps> =
             <Card className="p-4 bg-white border-pitstop-border shadow-subtle flex items-center justify-between">
               <div>
                 <p className="text-xs font-semibold text-pitstop-muted uppercase tracking-wider">
-                  Total Listed Venues
+                  {isHindi ? 'कुल सूचीबद्ध वेन्यू' : 'Total Listed Venues'}
                 </p>
                 <p className="text-2xl font-black text-pitstop-charcoal mt-1">
                   {restStops.length}
@@ -167,7 +173,7 @@ export const MerchantRestStopsContent: React.FC<MerchantRestStopsContentProps> =
             <Card className="p-4 bg-white border-pitstop-border shadow-subtle flex items-center justify-between">
               <div>
                 <p className="text-xs font-semibold text-pitstop-muted uppercase tracking-wider">
-                  Live on Public Discovery
+                  {isHindi ? 'पब्लिक डिस्कवरी पर लाइव' : 'Live on Public Discovery'}
                 </p>
                 <p className="text-2xl font-black text-emerald-700 mt-1">
                   {activeCount}
@@ -181,7 +187,7 @@ export const MerchantRestStopsContent: React.FC<MerchantRestStopsContentProps> =
             <Card className="p-4 bg-white border-pitstop-border shadow-subtle flex items-center justify-between">
               <div>
                 <p className="text-xs font-semibold text-pitstop-muted uppercase tracking-wider">
-                  Pending Admin Verification
+                  {isHindi ? 'एडमिन सत्यापन लंबित' : 'Pending Admin Verification'}
                 </p>
                 <p className="text-2xl font-black text-amber-700 mt-1">
                   {pendingCount}
@@ -205,7 +211,7 @@ export const MerchantRestStopsContent: React.FC<MerchantRestStopsContentProps> =
                     : 'text-pitstop-muted hover:text-pitstop-charcoal hover:bg-pitstop-bg'
                 }`}
               >
-                All ({restStops.length})
+                {isHindi ? `सभी (${restStops.length})` : `All (${restStops.length})`}
               </button>
               <button
                 type="button"
@@ -216,7 +222,7 @@ export const MerchantRestStopsContent: React.FC<MerchantRestStopsContentProps> =
                     : 'text-pitstop-muted hover:text-pitstop-charcoal hover:bg-pitstop-bg'
                 }`}
               >
-                Active
+                {isHindi ? 'सक्रिय' : 'Active'}
               </button>
               <button
                 type="button"
@@ -227,7 +233,7 @@ export const MerchantRestStopsContent: React.FC<MerchantRestStopsContentProps> =
                     : 'text-pitstop-muted hover:text-pitstop-charcoal hover:bg-pitstop-bg'
                 }`}
               >
-                Pending Review
+                {isHindi ? 'समीक्षाधीन' : 'Pending Review'}
               </button>
               <button
                 type="button"
@@ -238,7 +244,7 @@ export const MerchantRestStopsContent: React.FC<MerchantRestStopsContentProps> =
                     : 'text-pitstop-muted hover:text-pitstop-charcoal hover:bg-pitstop-bg'
                 }`}
               >
-                Suspended
+                {isHindi ? 'निलंबित' : 'Suspended'}
               </button>
             </div>
 
@@ -249,7 +255,7 @@ export const MerchantRestStopsContent: React.FC<MerchantRestStopsContentProps> =
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search venues..."
+                  placeholder={isHindi ? 'वेन्यू खोजें...' : 'Search venues...'}
                   className="w-full pl-9 pr-3 py-1.5 rounded-lg border border-pitstop-border bg-pitstop-bg text-xs text-pitstop-charcoal placeholder:text-pitstop-muted focus:bg-white focus:border-pitstop-yellow focus:outline-hidden"
                 />
               </div>
@@ -276,7 +282,7 @@ export const MerchantRestStopsContent: React.FC<MerchantRestStopsContentProps> =
               <AlertTriangle className="h-6 w-6 text-red-600 mx-auto" />
               <p className="font-semibold">{error}</p>
               <Button variant="outline" size="sm" onClick={loadRestStops} className="mx-auto">
-                Retry Loading
+                {isHindi ? 'पुनः प्रयास करें' : 'Retry Loading'}
               </Button>
             </div>
           ) : restStops.length === 0 ? (
@@ -284,13 +290,17 @@ export const MerchantRestStopsContent: React.FC<MerchantRestStopsContentProps> =
               icon={<MapPin className="h-8 w-8 text-pitstop-muted" />}
               title={
                 statusFilter !== 'all' || searchQuery
-                  ? 'No matching venues found'
-                  : 'No Rest Stops Registered Yet'
+                  ? (isHindi ? 'कोई मेल खाता वेन्यू नहीं मिला' : 'No matching venues found')
+                  : (isHindi ? 'अभी कोई रेस्ट स्टॉप पंजीकृत नहीं है' : 'No Rest Stops Registered Yet')
               }
               description={
                 statusFilter !== 'all' || searchQuery
-                  ? 'No venues matched your active status or search filter. Try clearing filters to see all registered venues.'
-                  : `Your partner account currently has no registered rest stops. Register your physical venue to offer water, seating, and phone charging to delivery riders.`
+                  ? (isHindi
+                      ? 'आपके सक्रिय स्टेटस या सर्च फ़िल्टर से कोई वेन्यू मेल नहीं खाया। सभी वेन्यू देखने के लिए फ़िल्टर रीसेट करें।'
+                      : 'No venues matched your active status or search filter. Try clearing filters to see all registered venues.')
+                  : (isHindi
+                      ? 'आपके मर्चेंट खाते में अभी कोई पंजीकृत रेस्ट स्टॉप नहीं है। डिलीवरी राइडर्स को पानी, बैठने की जगह और चार्जिंग देने के लिए अपना प्रतिष्ठान जोड़ें।'
+                      : 'Your partner account currently has no registered rest stops. Register your physical venue to offer water, seating, and phone charging to delivery riders.')
               }
               action={
                 statusFilter !== 'all' || searchQuery ? (
@@ -302,12 +312,12 @@ export const MerchantRestStopsContent: React.FC<MerchantRestStopsContentProps> =
                       setSearchQuery('');
                     }}
                   >
-                    Reset All Filters
+                    {isHindi ? 'फ़िल्टर रीसेट करें' : 'Reset All Filters'}
                   </Button>
                 ) : (
                   <Link href="/merchant/rest-stops/new">
                     <Button variant="primary" size="md" leftIcon={<Plus className="h-4 w-4" />}>
-                      Register Your First Rest Stop
+                      {isHindi ? 'पहला रेस्ट स्टॉप रजिस्टर करें' : 'Register Your First Rest Stop'}
                     </Button>
                   </Link>
                 )
@@ -367,7 +377,7 @@ export const MerchantRestStopsContent: React.FC<MerchantRestStopsContentProps> =
                             ))}
                             {safeFacilities.length > 4 && (
                               <span className="px-2 py-0.5 rounded-md bg-pitstop-bg border border-pitstop-border text-[11px] font-medium text-pitstop-muted">
-                                +{safeFacilities.length - 4} more
+                                +{safeFacilities.length - 4} {isHindi ? 'और' : 'more'}
                               </span>
                             )}
                           </div>
@@ -378,16 +388,18 @@ export const MerchantRestStopsContent: React.FC<MerchantRestStopsContentProps> =
                       <div className="text-[11px] text-pitstop-muted border-t border-pitstop-border pt-3 space-y-1 mb-4">
                         <div className="flex items-center justify-between">
                           <span className="flex items-center gap-1">
-                            <Users className="h-3.5 w-3.5" /> Capacity:
+                            <Users className="h-3.5 w-3.5" /> {isHindi ? 'क्षमता:' : 'Capacity:'}
                           </span>
                           <span className="font-semibold text-pitstop-charcoal">
-                            {stop.capacity.maxRiders} riders max
+                            {isHindi
+                              ? `${stop.capacity.maxRiders} अधिकतम राइडर्स`
+                              : `${stop.capacity.maxRiders} riders max`}
                           </span>
                         </div>
                         {stop.operatingHours?.[0] && (
                           <div className="flex items-center justify-between">
                             <span className="flex items-center gap-1">
-                              <Clock className="h-3.5 w-3.5" /> Hours:
+                              <Clock className="h-3.5 w-3.5" /> {isHindi ? 'समय:' : 'Hours:'}
                             </span>
                             <span className="font-semibold text-pitstop-charcoal">
                               {stop.operatingHours[0].openTime} – {stop.operatingHours[0].closeTime}
@@ -401,7 +413,9 @@ export const MerchantRestStopsContent: React.FC<MerchantRestStopsContentProps> =
                         <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 p-2.5 text-[11px] text-amber-800 flex items-start gap-2">
                           <Info className="h-4 w-4 shrink-0 text-amber-600 mt-0.5" />
                           <span>
-                            Under review by PitStop moderation. Once approved, you can generate and print desk QR codes.
+                            {isHindi
+                              ? 'पिटस्टॉप मॉडरेशन द्वारा समीक्षाधीन है। स्वीकृत होने के बाद आप डेस्क QR पोस्टर जनरेट और प्रिंट कर सकते हैं।'
+                              : 'Under review by PitStop moderation. Once approved, you can generate and print desk QR codes.'}
                           </span>
                         </div>
                       )}
@@ -416,7 +430,7 @@ export const MerchantRestStopsContent: React.FC<MerchantRestStopsContentProps> =
                         leftIcon={<Edit3 className="h-3.5 w-3.5" />}
                         className="text-xs"
                       >
-                        Edit
+                        {isHindi ? 'संपादित करें' : 'Edit'}
                       </Button>
 
                       {isActive ? (
@@ -427,7 +441,7 @@ export const MerchantRestStopsContent: React.FC<MerchantRestStopsContentProps> =
                           leftIcon={<QrCode className="h-3.5 w-3.5" />}
                           className="text-xs"
                         >
-                          View QR &amp; Poster
+                          {isHindi ? 'QR पोस्टर देखें' : 'View QR & Poster'}
                         </Button>
                       ) : (
                         <Button
@@ -436,7 +450,7 @@ export const MerchantRestStopsContent: React.FC<MerchantRestStopsContentProps> =
                           disabled
                           className="text-xs text-pitstop-muted cursor-not-allowed opacity-60"
                         >
-                          QR Unavailable
+                          {isHindi ? 'QR अनुपलब्ध' : 'QR Unavailable'}
                         </Button>
                       )}
                     </div>

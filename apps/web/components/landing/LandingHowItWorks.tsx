@@ -3,27 +3,35 @@
 import React from 'react';
 import { MapPin, QrCode, Coffee } from 'lucide-react';
 import { useScrollReveal } from './useScrollReveal';
+import { useLanguage } from '@/lib/i18n';
 
 export const LandingHowItWorks: React.FC = () => {
   const [sectionRef, isRevealed] = useScrollReveal();
+  const { isHindi } = useLanguage();
 
   const steps = [
     {
       number: '01',
-      title: 'Find a stop nearby',
-      description: 'Open PitStop on your phone. See nearby verified cafes, restaurants, and tea stalls on a live map.',
+      title: isHindi ? 'पास का स्टॉप खोजें' : 'Find a stop nearby',
+      description: isHindi
+        ? 'अपने फोन पर PitStop खोलें। लाइव मैप पर पास के वेरिफाइड कैफे, रेस्टोरेंट और टी स्टॉल देखें।'
+        : 'Open PitStop on your phone. See nearby verified cafes, restaurants, and tea stalls on a live map.',
       icon: MapPin,
     },
     {
       number: '02',
-      title: 'Check in with QR',
-      description: 'Show your rider digital pass or scan the venue QR standee at the counter in under two seconds.',
+      title: isHindi ? 'QR से चेक-इन करें' : 'Check in with QR',
+      description: isHindi
+        ? 'अपना राइडर डिजिटल पास दिखाएं या काउंटर पर वेन्यू QR स्टैंडी को दो सेकंड में स्कैन करें।'
+        : 'Show your rider digital pass or scan the venue QR standee at the counter in under two seconds.',
       icon: QrCode,
     },
     {
       number: '03',
-      title: 'Rest or pick a micro-job',
-      description: 'Refill chilled RO water, plug in your charger, use clean washrooms, or take an afternoon helper task.',
+      title: isHindi ? 'विश्राम करें या माइक्रो-जॉब चुनें' : 'Rest or pick a micro-job',
+      description: isHindi
+        ? 'ठंडा RO पानी रिफिल करें, फोन चार्ज करें, साफ वॉशरूम का उपयोग करें या दोपहर का हेल्पर कार्य लें।'
+        : 'Refill chilled RO water, plug in your charger, use clean washrooms, or take an afternoon helper task.',
       icon: Coffee,
     },
   ];
@@ -47,13 +55,15 @@ export const LandingHowItWorks: React.FC = () => {
           }`}
         >
           <span className="text-xs font-black uppercase tracking-widest text-[#FBBF24]">
-            HOW IT WORKS
+            {isHindi ? 'यह कैसे काम करता है' : 'HOW IT WORKS'}
           </span>
           <h2 className="mt-2 text-3xl sm:text-4xl font-black tracking-tight text-[#0B0B0F]">
-            Three Simple Steps
+            {isHindi ? 'तीन आसान चरण' : 'Three Simple Steps'}
           </h2>
           <p className="mt-2 text-sm sm:text-base text-[#0B0B0F]/70">
-            No app download or paperwork. Access verified facilities directly in your browser.
+            {isHindi
+              ? 'कोई ऐप डाउनलोड या कागजी कार्रवाई नहीं। सीधे अपने ब्राउज़र में वेरिफाइड सुविधाओं का उपयोग करें।'
+              : 'No app download or paperwork. Access verified facilities directly in your browser.'}
           </p>
         </div>
 

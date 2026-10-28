@@ -19,6 +19,7 @@ import {
   UpdateRestStopRequest 
 } from 'shared-types';
 import { updateMerchantRestStop } from '@/lib/api/merchant-rest-stops';
+import { sanitizePincode } from '@/lib/utils/input-validators';
 
 interface EditRestStopModalProps {
   restStop: RestStopMerchantResponse;
@@ -66,7 +67,13 @@ export const EditRestStopModal: React.FC<EditRestStopModalProps> = ({
   };
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+    let sanitized = value;
+    if (field === 'pincode') {
+      sanitized = sanitizePincode(value);
+    } else if (field === 'maxRiders') {
+      sanitized = value.replace(/\D/g, '').slice(0, 3);
+    }
+    setFormData((prev) => ({ ...prev, [field]: sanitized }));
     setError(null);
   };
 
@@ -262,6 +269,8 @@ export const EditRestStopModal: React.FC<EditRestStopModalProps> = ({
               />
               <Input
                 label="Pincode *"
+                type="tel"
+                inputMode="numeric"
                 value={formData.pincode}
                 onChange={(e) => handleInputChange('pincode', e.target.value)}
                 maxLength={6}

@@ -153,7 +153,50 @@ async function seedDatabase() {
     qrRotationVersion: 1,
   });
 
-  console.log(`✅ Created Rest Stops: ${stop1.name}, ${stop2.name}`);
+  const stop3 = await RestStop.create({
+    merchantId: merchant._id,
+    name: 'Green Oasis Pitstop',
+    slug: 'green-oasis-hsr',
+    description: 'Quiet recharge hub with lush outdoor seating, EV 2-wheeler charging, cold mineral water, and hygienic restrooms.',
+    address: {
+      street: '27th Main Road, Sector 1',
+      area: 'HSR Layout',
+      city: 'Bengaluru',
+      state: 'Karnataka',
+      pincode: '560102',
+      landmark: 'Near HSR BDA Complex',
+    },
+    location: {
+      type: 'Point',
+      coordinates: [77.6514, 12.9116],
+    },
+    facilities: [
+      Facility.RESTROOM,
+      Facility.DRINKING_WATER,
+      Facility.CHARGING,
+      Facility.SEATING,
+      Facility.WIFI,
+      Facility.PARKING,
+    ],
+    status: RestStopStatus.ACTIVE,
+    capacity: {
+      maxRiders: 12,
+      currentOccupancy: 1,
+      status: CapacityStatus.AVAILABLE,
+    },
+    operatingHours: [
+      { day: 'mon', openTime: '06:00', closeTime: '23:30', isOpen: true },
+      { day: 'tue', openTime: '06:00', closeTime: '23:30', isOpen: true },
+      { day: 'wed', openTime: '06:00', closeTime: '23:30', isOpen: true },
+      { day: 'thu', openTime: '06:00', closeTime: '23:30', isOpen: true },
+      { day: 'fri', openTime: '06:00', closeTime: '23:30', isOpen: true },
+      { day: 'sat', openTime: '06:00', closeTime: '23:30', isOpen: true },
+      { day: 'sun', openTime: '06:00', closeTime: '23:30', isOpen: true },
+    ],
+    qrRotationVersion: 1,
+  });
+
+  console.log(`✅ Created Rest Stops: ${stop1.name}, ${stop2.name}, ${stop3.name}`);
 
   // 3. Seed Deals
   console.log('🏷️ Seeding promotional deals...');
@@ -169,6 +212,29 @@ async function seedDatabase() {
     isActive: true,
   });
 
+  await Deal.create({
+    merchantId: merchant._id,
+    restStopId: stop2._id,
+    title: 'Flat ₹20 Off Thali Meals',
+    description: 'Exclusive fuel meal combo for delivery partners during lunch rush.',
+    discountType: 'fixed_price',
+    discountAmount: 20,
+    validHours: '12:00 - 16:00',
+    terms: 'Valid with active rider check-in pass.',
+    isActive: true,
+  });
+
+  await Deal.create({
+    merchantId: merchant._id,
+    restStopId: stop3._id,
+    title: 'Free Filter Coffee with Any Snack',
+    description: 'Complimentary South Indian filter coffee with any snack order over ₹50.',
+    discountType: 'free_item',
+    validHours: '15:00 - 19:00',
+    terms: 'One coffee per verified check-in.',
+    isActive: true,
+  });
+
   // 4. Seed Micro-Jobs
   console.log('💼 Seeding micro-jobs...');
   await Job.create({
@@ -180,12 +246,46 @@ async function seedDatabase() {
     payAmount: 250,
     payType: 'fixed',
     durationMinutes: 90,
-    startTime: new Date(Date.now() + 2 * 60 * 60 * 1000), // In 2 hours
-    endTime: new Date(Date.now() + 3.5 * 60 * 60 * 1000),
-    requiredRiders: 2,
+    startTime: new Date(Date.now() + 1 * 60 * 60 * 1000), // In 1 hour
+    endTime: new Date(Date.now() + 48 * 60 * 60 * 1000), // 48h window
+    requiredRiders: 3,
     acceptedRidersCount: 0,
     status: JobStatus.OPEN,
     instructions: 'Report to store counter 10 minutes prior to shift start.',
+  });
+
+  await Job.create({
+    merchantId: merchant._id,
+    restStopId: stop2._id,
+    title: 'Inventory Stacking & Box Unloading Assistant',
+    description: 'Help unload afternoon grocery crates and organize pantry shelves in order.',
+    category: JobCategory.LOADING_UNLOADING,
+    payAmount: 350,
+    payType: 'fixed',
+    durationMinutes: 120,
+    startTime: new Date(Date.now() + 2 * 60 * 60 * 1000), // In 2 hours
+    endTime: new Date(Date.now() + 72 * 60 * 60 * 1000), // 72h window
+    requiredRiders: 2,
+    acceptedRidersCount: 0,
+    status: JobStatus.OPEN,
+    instructions: 'Wear comfortable shoes. Store supervisor will guide you on placement.',
+  });
+
+  await Job.create({
+    merchantId: merchant._id,
+    restStopId: stop3._id,
+    title: 'Afternoon Store Counter & Token Assistant',
+    description: 'Assist in handing over pre-packed takeaway orders and managing digital queue tokens during tea hours.',
+    category: JobCategory.STORE_ASSISTANT,
+    payAmount: 200,
+    payType: 'fixed',
+    durationMinutes: 60,
+    startTime: new Date(Date.now() + 30 * 60 * 1000), // In 30 mins
+    endTime: new Date(Date.now() + 96 * 60 * 60 * 1000), // 96h window
+    requiredRiders: 2,
+    acceptedRidersCount: 0,
+    status: JobStatus.OPEN,
+    instructions: 'Be polite and prompt. Mobile token scanner will be provided at the counter.',
   });
 
   // 5. Seed Welcome document into the 'pitstop' collection
